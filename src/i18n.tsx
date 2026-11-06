@@ -151,6 +151,13 @@ export interface DemoCopy {
     expand: (title: string) => string;
     collapse: (title: string) => string;
   };
+  sidebar: {
+    region: string;
+    documents: string;
+    outline: string;
+    developerTools: string;
+    close: string;
+  };
   preview: {
     region: string;
     heading: string;
@@ -334,6 +341,13 @@ const ENGLISH: DemoCopy = {
     expand: (title) => `Expand ${title}`,
     collapse: (title) => `Collapse ${title}`,
   },
+  sidebar: {
+    region: 'Workbench sidebar',
+    documents: 'Documents',
+    outline: 'Outline',
+    developerTools: 'Developer tools',
+    close: 'Close sidebar',
+  },
   preview: {
     region: 'Live preview',
     heading: 'Preview',
@@ -512,6 +526,13 @@ const CHINESE: DemoCopy = {
     close: '关闭大纲',
     expand: (title) => `展开 ${title}`,
     collapse: (title) => `折叠 ${title}`,
+  },
+  sidebar: {
+    region: '工作区侧栏',
+    documents: '文档',
+    outline: '大纲',
+    developerTools: '开发者工具',
+    close: '关闭侧栏',
   },
   preview: {
     region: '实时预览',

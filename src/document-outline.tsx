@@ -3,32 +3,54 @@ import type { LocalDocument } from 'reactive-md';
 import type { EditorViewMode, ReactiveMarkdownEditorHandle } from 'reactive-md-editor';
 import { documentOutline, flattenOutline, outlineHeadingAt, type OutlineHeading } from './document-outline-model';
 import { useCopy } from './i18n';
+import { CloseIcon, FilesIcon, OutlineIcon, SlidersIcon } from './icons';
+import { useScrollContainer } from './use-scroll-container';
 import './document-outline.css';
 
-export function OutlineIcon() {
-  return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true">
-    <path d="M9 5h12M9 12h12M9 19h12M3 5h.01M3 12h.01M3 19h.01" />
-  </svg>;
-}
+export type SidebarTab = 'documents' | 'outline' | 'devtools';
 
-export function OutlineWorkspace({ document, source, documentKey, mode, onModeChange, editor, open, onOpenChange, children }: {
+export interface OutlineWorkspaceProps {
   document: LocalDocument | null;
   source: string;
   documentKey: string;
   mode: EditorViewMode;
   onModeChange(mode: EditorViewMode): void;
   editor: RefObject<ReactiveMarkdownEditorHandle | null>;
-  open: boolean;
-  onOpenChange(open: boolean): void;
+  sidebarOpen: boolean;
+  onSidebarOpenChange(open: boolean): void;
+  sidebarTab: SidebarTab;
+  onSidebarTabChange(tab: SidebarTab): void;
+  documentsPanel: ReactNode;
+  devtoolsPanel: ReactNode;
   children: ReactNode;
-}) {
-  const copy = useCopy().outline;
+}
+
+export function OutlineWorkspace({
+  document,
+  source,
+  documentKey,
+  mode,
+  onModeChange,
+  editor,
+  sidebarOpen,
+  onSidebarOpenChange,
+  sidebarTab,
+  onSidebarTabChange,
+  documentsPanel,
+  devtoolsPanel,
+  children,
+}: OutlineWorkspaceProps) {
+  const copy = useCopy();
+  const outlineCopy = copy.outline;
+  const sidebarCopy = copy.sidebar;
   const root = useRef<HTMLDivElement>(null);
+  const outlineScroll = useScrollContainer<HTMLElement>();
   const headings = useMemo(() => documentOutline(document), [document]);
   const flat = useMemo(() => flattenOutline(headings), [headings]);
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
   const [active, setActive] = useState<string | null>(null);
   const current = document?.source === source;
+  const outlineVisible = sidebarOpen && sidebarTab === 'outline';
 
   useEffect(() => { setCollapsed(new Set()); setActive(null); }, [documentKey]);
 
@@ -52,12 +74,12 @@ export function OutlineWorkspace({ document, source, documentKey, mode, onModeCh
   }
 
   const sourcePosition = () => {
-    if (!open || !current || mode === 'preview') return;
+    if (!outlineVisible || !current || mode === 'preview') return;
     setActive(outlineHeadingAt(flat, editor.current?.getSelection().start ?? 0)?.key ?? null);
   };
 
   useEffect(() => {
-    if (!open || !current) return;
+    if (!outlineVisible || !current || sidebarTab !== 'outline') return;
     if (mode === 'edit') { sourcePosition(); return; }
     const preview = root.current?.querySelector('.editor-preview');
     if (!preview) return;
@@ -90,11 +112,11 @@ export function OutlineWorkspace({ document, source, documentKey, mode, onModeCh
       window.removeEventListener('scroll', schedule);
       window.removeEventListener('resize', schedule);
     };
-  }, [flat, mode, current, editor, open]);
+  }, [flat, mode, current, editor, outlineVisible, sidebarTab]);
 
   function close() {
-    onOpenChange(false);
-    window.document.getElementById('outline-toggle')?.focus();
+    onSidebarOpenChange(false);
+    window.document.getElementById('sidebar-toggle')?.focus();
   }
 
   function navigate(heading: OutlineHeading) {
@@ -122,18 +144,18 @@ export function OutlineWorkspace({ document, source, documentKey, mode, onModeCh
         requestAnimationFrame(() => editor.current?.selectRange(heading.range));
       }
     }
-    if (window.matchMedia('(max-width: 1099px)').matches) onOpenChange(false);
+    if (window.matchMedia('(max-width: 1099px)').matches) onSidebarOpenChange(false);
   }
 
   function branch(items: readonly OutlineHeading[]): ReactNode {
     return <ul className="outline-list">{items.map(heading => {
       const expanded = !collapsed.has(heading.key);
-      const title = heading.title || copy.untitled;
+      const title = heading.title || outlineCopy.untitled;
       const hasActiveChild = flattenOutline(heading.children).some(item => item.key === active);
       return <li key={heading.key}>
         <div className={`outline-row${active === heading.key ? ' is-active' : ''}${hasActiveChild ? ' has-active-child' : ''}`}>
           {heading.children.length ? <button type="button" className="outline-disclosure" aria-expanded={expanded}
-            aria-label={expanded ? copy.collapse(title) : copy.expand(title)}
+            aria-label={expanded ? outlineCopy.collapse(title) : outlineCopy.expand(title)}
             onClick={() => setCollapsed(previous => {
               const next = new Set(previous);
               if (expanded) next.add(heading.key); else next.delete(heading.key);
@@ -149,18 +171,48 @@ export function OutlineWorkspace({ document, source, documentKey, mode, onModeCh
     })}</ul>;
   }
 
-  return <div ref={root} className={`workspace has-editor${open ? ' has-outline' : ''}`}
+  return <div ref={root} className={`workspace has-editor${sidebarOpen ? ' has-sidebar' : ''}`}
     onKeyUp={sourcePosition} onPointerUp={sourcePosition} onFocusCapture={sourcePosition}>
-    <aside id="document-outline" className="outline-panel" hidden={!open} aria-label={copy.heading}
-      onKeyDown={event => { if (event.key === 'Escape') { event.preventDefault(); close(); } }}>
-      <div className="outline-header"><h2><OutlineIcon />{copy.heading}</h2>
-        <button type="button" className="outline-close" aria-label={copy.close} onClick={close}>
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="m4 4 8 8M12 4l-8 8" /></svg>
+    {sidebarOpen ? <button type="button" className="sidebar-backdrop" aria-label={sidebarCopy.close} onClick={close} /> : null}
+    <aside id="document-sidebar" className="workspace-sidebar" hidden={!sidebarOpen} aria-label={sidebarCopy.region}
+      onKeyDown={event => {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          close();
+        }
+      }}>
+      <div className="sidebar-tabs" role="tablist" aria-label={sidebarCopy.region}>
+        <button type="button" role="tab" aria-selected={sidebarTab === 'documents'} title={sidebarCopy.documents}
+          aria-label={sidebarCopy.documents} className="sidebar-tab"
+          onClick={() => onSidebarTabChange('documents')}>
+          <FilesIcon />
+        </button>
+        <button type="button" role="tab" aria-selected={sidebarTab === 'outline'} title={sidebarCopy.outline}
+          aria-label={sidebarCopy.outline} className="sidebar-tab" id="outline-toggle"
+          onClick={() => onSidebarTabChange('outline')}>
+          <OutlineIcon />
+        </button>
+        <button type="button" role="tab" aria-selected={sidebarTab === 'devtools'} title={sidebarCopy.developerTools}
+          aria-label={sidebarCopy.developerTools} className="sidebar-tab"
+          onClick={() => onSidebarTabChange('devtools')}>
+          <SlidersIcon />
+        </button>
+        <button type="button" className="icon-button sidebar-close" title={sidebarCopy.close}
+          aria-label={sidebarCopy.close} onClick={close}>
+          <CloseIcon />
         </button>
       </div>
-      <nav aria-label={copy.heading} className="outline-scroll">
-        {headings.length ? branch(headings) : <p className="outline-empty">{copy.empty}</p>}
-      </nav>
+      <div className="sidebar-body" role="tabpanel" hidden={sidebarTab !== 'documents'}>
+        {documentsPanel}
+      </div>
+      <div className="sidebar-body" role="tabpanel" hidden={sidebarTab !== 'outline'}>
+        <nav id="document-outline" aria-label={outlineCopy.heading} className="outline-scroll" ref={outlineScroll}>
+          {headings.length ? branch(headings) : <p className="outline-empty">{outlineCopy.empty}</p>}
+        </nav>
+      </div>
+      <div className="sidebar-body" role="tabpanel" hidden={sidebarTab !== 'devtools'}>
+        {devtoolsPanel}
+      </div>
     </aside>
     {children}
   </div>;

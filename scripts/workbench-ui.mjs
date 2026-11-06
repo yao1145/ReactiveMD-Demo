@@ -11,29 +11,29 @@ export async function openWorkbench(page,value) {
   await installEditorProbe(page);
 }
 
-/** The old component examples now live under one feature-demo menu entry. */
+/** Select an example by reloading with its stable URL parameter. */
 export async function selectWorkbenchExample(page, id) {
-  if (['pricing', 'functions', 'forms', 'statistics', 'layout', 'flow', 'tasks'].includes(id)) {
-    const url = new URL(page.url());
-    url.searchParams.set('example', id);
-    await openWorkbench(page, url.href);
-    await page.evaluate(() => {
-      const url = new URL(location.href); url.searchParams.delete('example');
-      history.replaceState(null, '', url.href);
-    });
-  } else {
-    await page.locator('#example-select').selectOption(id);
-  }
+  const url = new URL(page.url());
+  url.searchParams.set('example', id);
+  await openWorkbench(page, url.href);
+  await page.evaluate(() => {
+    const next = new URL(location.href);
+    next.searchParams.delete('example');
+    history.replaceState(null, '', next.href);
+  });
 }
 
-/** Actions kept behind More options in the compact workbench. */
+/** Click a workbench action by its accessible name. */
 export async function clickWorkbenchAction(page, name) {
-  const options = page.locator('.workbench-options');
-  const button = options.getByRole('button', {name, exact: typeof name === 'string'});
-  if (!await button.isVisible()) {
-    if (!await options.evaluate(element => element.open)) await options.locator(':scope > summary').click();
+  if (name === 'Show source') {
+    const edit = page.locator('[data-editor-view-option="edit"]');
+    if (await edit.count()) { await edit.first().click(); return; }
+    const split = page.locator('[data-editor-view-option="split"]');
+    if (await split.count()) await split.first().click();
+    return;
   }
-  await button.click();
+  const button = page.getByRole('button', { name, exact: typeof name === 'string' });
+  await button.first().click();
 }
 /** Replace source through native input after the editor's layout settles. */
 export async function replaceWorkbenchSource(page, text) {

@@ -1,75 +1,115 @@
-.outline-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-}
+/* Shared workbench sidebar: documents, outline and developer tools. */
 
-.outline-toggle[aria-expanded="true"] {
-  background: var(--neutral-soft);
-  border-color: var(--line-strong);
-}
-
-.app-shell .workspace.has-editor.has-outline {
-  grid-template-columns: 236px minmax(0, 1fr);
+.app-shell .workspace.has-editor.has-sidebar {
+  grid-template-columns: 264px minmax(0, 1fr);
   align-items: start;
 }
 
-.outline-panel {
+.workspace-sidebar {
   position: sticky;
   top: var(--space-3);
+  display: flex;
+  flex-direction: column;
   min-width: 0;
+  height: calc(100dvh - 2 * var(--space-3));
+  max-height: calc(100dvh - 2 * var(--space-3));
   margin: var(--space-4) 0 var(--space-4) var(--space-3);
   background: var(--surface-subtle);
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
+  overflow: hidden;
 }
 
-.outline-panel[hidden] {
+.workspace-sidebar[hidden] {
   display: none;
 }
 
-.outline-header {
+.sidebar-tabs {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
-  padding: var(--space-1) var(--space-1) var(--space-1) var(--space-3);
+  gap: 2px;
+  padding: var(--space-1);
   border-bottom: 1px solid var(--line);
+  background: var(--surface);
 }
 
-.outline-header h2 {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  margin: 0;
-  color: var(--ink-soft);
-  font-size: var(--text-sm);
-  font-weight: var(--weight-semibold);
-}
-
-.outline-close,
-.outline-disclosure,
-.outline-link {
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-}
-
-.outline-close {
+.sidebar-tab {
   display: grid;
   place-items: center;
-  width: 44px;
-  height: 44px;
+  width: 38px;
+  height: 34px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid transparent;
   border-radius: var(--radius-control);
   color: var(--ink-muted);
+  cursor: pointer;
+  transition:
+    background-color var(--motion-fast) var(--ease-standard),
+    color var(--motion-fast) var(--ease-standard);
+}
+
+.sidebar-tab:hover {
+  background: var(--surface-hover);
+  color: var(--ink);
+}
+
+.sidebar-tab[aria-selected="true"] {
+  background: var(--blue);
+  color: var(--surface);
+}
+
+.sidebar-tab:focus-visible,
+.sidebar-close:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: 1px;
+}
+
+.sidebar-close {
+  margin-left: auto;
+}
+
+.sidebar-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.sidebar-body[hidden] {
+  display: none;
+}
+
+.sidebar-backdrop {
+  display: none;
 }
 
 .outline-scroll {
-  max-height: min(720px, calc(90dvh - 64px));
-  overflow: auto;
+  height: 100%;
+  max-height: calc(100dvh - 140px);
+  overflow-x: hidden;
+  overflow-y: scroll;
   scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
   overscroll-behavior: contain;
   padding: var(--space-2) var(--space-1);
+}
+
+.outline-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.outline-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.outline-scroll::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 4px;
+}
+
+.outline-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-muted);
 }
 
 .outline-list {
@@ -85,7 +125,7 @@
 .outline-row {
   display: flex;
   align-items: stretch;
-  min-height: 44px;
+  min-height: 40px;
   border-radius: var(--radius-control);
   color: var(--ink-muted);
 }
@@ -100,23 +140,28 @@
   place-items: center;
   padding: 0;
   color: inherit;
+  border: 0;
+  background: transparent;
   border-radius: var(--radius-control);
+  cursor: pointer;
 }
 
 .outline-link {
   flex: 1;
   min-width: 0;
   padding: var(--space-2) var(--space-1);
+  border: 0;
+  background: transparent;
   border-radius: var(--radius-control);
   color: inherit;
   font-size: var(--text-sm);
   text-align: left;
   overflow-wrap: anywhere;
   line-height: var(--leading-snug);
+  cursor: pointer;
 }
 
-.outline-row:hover,
-.outline-close:hover {
+.outline-row:hover {
   background: var(--surface-hover);
   color: var(--ink);
 }
@@ -135,7 +180,8 @@
   cursor: default;
 }
 
-.outline-panel button:focus-visible {
+.outline-panel button:focus-visible,
+.workspace-sidebar button:focus-visible {
   outline: var(--focus-outline);
   outline-offset: -2px;
 }
@@ -152,17 +198,38 @@
 }
 
 @media (max-width: 1099px) {
-  .app-shell .workspace.has-editor.has-outline {
+  .app-shell .workspace.has-editor.has-sidebar {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .outline-panel {
-    position: static;
-    margin: var(--space-3) var(--space-4) 0;
+  .workspace-sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 60;
+    width: min(310px, 88vw);
+    height: 100dvh;
+    max-height: none;
+    margin: 0;
+    border-radius: 0;
+    border-left: 0;
+    border-top: 0;
+    border-bottom: 0;
+    box-shadow: 0 18px 60px color-mix(in srgb, var(--ink) 24%, transparent);
+  }
+
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    padding: 0;
+    border: 0;
+    background: color-mix(in srgb, var(--ink) 36%, transparent);
+    cursor: default;
   }
 
   .outline-scroll {
-    max-height: min(320px, 45dvh);
+    max-height: none;
   }
 
   .outline-disclosure,

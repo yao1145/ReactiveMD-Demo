@@ -186,6 +186,28 @@ textarea {
   border-bottom: 1px solid var(--line);
 }
 
+.workbench-title {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  line-height: 1.2;
+}
+
+.workbench-title-name {
+  color: var(--ink);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workbench-title-kind {
+  color: var(--ink-muted);
+  font-size: var(--text-xs);
+}
+
 .bar-group {
   display: flex;
   align-items: center;
@@ -472,6 +494,66 @@ textarea {
 .button:disabled {
   opacity: var(--disabled-opacity);
   cursor: not-allowed;
+}
+
+.button-danger {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: var(--surface);
+}
+
+.button-danger:hover:not(:disabled),
+.button-danger:active:not(:disabled) {
+  background: color-mix(in srgb, var(--danger) 85%, var(--ink));
+  border-color: color-mix(in srgb, var(--danger) 85%, var(--ink));
+  color: var(--surface);
+}
+
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  color: var(--ink-soft);
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color var(--motion-fast) var(--ease-standard),
+    color var(--motion-fast) var(--ease-standard);
+}
+
+.icon-button:hover:not(:disabled) {
+  background: var(--surface-hover);
+  color: var(--ink);
+}
+
+.icon-button:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: 1px;
+}
+
+.icon-button:disabled {
+  opacity: var(--disabled-opacity);
+  cursor: not-allowed;
+}
+
+.icon-button.is-small {
+  width: 26px;
+  height: 26px;
+}
+
+.icon-button.is-danger {
+  color: var(--danger);
+}
+
+.icon-button.is-danger:hover:not(:disabled) {
+  background: var(--danger-soft);
+  color: var(--danger);
 }
 
 .workspace {

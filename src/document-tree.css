@@ -1,0 +1,235 @@
+/* Document tree inside the shared workbench sidebar. */
+
+.document-tree {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  color: var(--ink);
+}
+
+.tree-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: var(--space-1) var(--space-2);
+  border-bottom: 1px solid var(--line);
+}
+
+.tree-toolbar .tree-close {
+  margin-left: auto;
+}
+
+.tree-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  padding: var(--space-1) 0 var(--space-2);
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+  overscroll-behavior: contain;
+}
+
+.tree-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.tree-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tree-scroll::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 4px;
+}
+
+.tree-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-muted);
+}
+
+.tree-branch {
+  min-width: 0;
+}
+
+.tree-divider {
+  height: 1px;
+  margin: var(--space-1) var(--space-2);
+  background: var(--line);
+}
+
+.tree-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 34px;
+  padding-right: var(--space-2);
+  border-radius: 6px;
+  color: var(--ink-soft);
+}
+
+.tree-row:hover {
+  background: var(--surface-hover);
+  color: var(--ink);
+}
+
+.tree-row.is-active {
+  background: var(--blue);
+  color: var(--surface);
+}
+
+.tree-row.is-muted {
+  color: var(--ink-muted);
+}
+
+.tree-row.is-drop-target {
+  background: color-mix(in srgb, var(--blue) 14%, transparent);
+  box-shadow: inset 0 0 0 2px var(--blue);
+}
+
+.tree-branch.is-drop-root {
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 2px var(--blue);
+}
+
+.tree-row.is-active .tree-icon,
+.tree-row.is-active .tree-label {
+  color: inherit;
+}
+
+.tree-disclosure,
+.tree-disclosure-spacer {
+  flex: 0 0 18px;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.tree-disclosure svg {
+  transition: transform var(--motion-fast) var(--ease-standard);
+}
+
+.tree-disclosure.is-open svg {
+  transform: rotate(90deg);
+}
+
+.tree-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  color: var(--ink-muted);
+}
+
+.tree-row.is-active .tree-icon {
+  color: inherit;
+}
+
+.tree-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 6px 2px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.tree-rename {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 28px;
+  padding: 0 6px;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-field);
+  color: var(--ink);
+  font-size: var(--text-sm);
+}
+
+.tree-rename:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: 1px;
+}
+
+.tree-trailing {
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.tree-empty {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  color: var(--ink-muted);
+  font-size: var(--text-xs);
+}
+
+.tree-confirm {
+  margin: var(--space-1) var(--space-2);
+  padding: var(--space-2);
+  background: var(--danger-soft);
+  border: 1px solid var(--danger-line);
+  border-radius: var(--radius-control);
+  color: var(--ink);
+  font-size: var(--text-xs);
+  line-height: var(--leading-snug);
+}
+
+.tree-confirm p {
+  margin: 0 0 var(--space-2);
+}
+
+.tree-confirm-actions {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.tree-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border-top: 1px solid var(--line);
+  color: var(--ink-muted);
+  font-size: var(--text-xs);
+}
+
+.tree-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--success);
+}
+
+.tree-status.is-saving .tree-status-dot {
+  background: var(--warning);
+}
+
+.tree-status.is-failed .tree-status-dot {
+  background: var(--danger);
+}
+
+.tree-status .button {
+  margin-left: auto;
+}
+
+.tree-problem {
+  margin: 0;
+  padding: var(--space-1) var(--space-2);
+  background: var(--warning-soft);
+  border-top: 1px solid var(--warning-line);
+  color: var(--ink-soft);
+  font-size: var(--text-xs);
+  line-height: var(--leading-snug);
+}

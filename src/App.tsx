@@ -7,7 +7,7 @@ import {
   useRef,
   useState,
   useSyncExternalStore,
-  type ChangeEvent,
+  type MouseEvent as ReactMouseEvent,
 } from 'react';
 import { formatLocalDiagnostic, notifyLocalRuntime, type Diagnostic, type LocalRuntime, type SourceRange } from 'reactive-md';
 import { LocalDocumentView } from 'reactive-md/react';
@@ -20,23 +20,23 @@ import {
   type EditorViewMode,
 } from 'reactive-md-editor';
 import type {LocalCompileEditHint} from 'reactive-md';
-import { AuthorTools } from './author-tools';
 import {
   DocumentLibrary,
   LIBRARY_MODE_STORAGE_KEY,
+  activeDocuments,
   documentFileStem,
+  trashedRoots,
   uniqueDocumentName,
-  type LibraryDocument,
   type LibraryMode,
 } from './document-library';
-import { DocumentLibraryBar, LibraryModeSwitch, LIBRARY_COPY } from './document-library-bar';
-import { OutlineIcon, OutlineWorkspace } from './document-outline';
+import { DocumentTree, TREE_COPY } from './document-tree';
+import { DeveloperTools } from './developer-tools';
+import { OutlineWorkspace, type SidebarTab } from './document-outline';
+import { DownloadIcon, PanelLeftIcon } from './icons';
 import { ExportDialog } from './export-dialog';
-import { ImageAssetsPanel } from './image-assets-panel';
-import { createImageAsset, documentImageUrls, imagePolicy, ImageAssetError, MAX_IMAGE_BYTES, MAX_IMAGE_TOTAL_BYTES, validateImageManifest, type ImageAsset } from './image-assets';
+import { createImageAsset, imagePolicy, ImageAssetError, MAX_IMAGE_BYTES, MAX_IMAGE_TOTAL_BYTES, validateImageManifest, type ImageAsset } from './image-assets';
 import { IMAGE_COPY } from './image-copy';
 import { useDocumentImages } from './use-document-images';
-import { HtmlCompatibilityControls } from './html-compatibility';
 import {
   freshHtmlOptions,
   toCompileOptions,
@@ -46,7 +46,6 @@ import {
   DEFAULT_EXAMPLE_ID,
   EXAMPLES,
   exampleSource,
-  isFeatureExample,
   localizedExample,
   localizedExamples,
   resolveExampleId,
@@ -337,13 +336,14 @@ export default function App() {
   const libraryState = useSyncExternalStore(library.subscribe, library.getSnapshot);
   const [initial] = useState(() => {
     const snapshot = library.getSnapshot();
+    const documents = activeDocuments(snapshot);
     const requestedExample = new URLSearchParams(window.location.search).get('example');
     const reopenDocuments = !requestedExample
       && savedItem(LIBRARY_MODE_STORAGE_KEY) === 'documents'
-      && snapshot.documents.length > 0;
+      && documents.length > 0;
     const exampleId = initialExampleId();
-    const document = snapshot.documents.find((item) => item.id === snapshot.selectedId)
-      ?? snapshot.documents[0];
+    const document = documents.find((item) => item.id === snapshot.selectedId)
+      ?? documents[0];
     return {
       mode: (reopenDocuments ? 'documents' : 'example') as LibraryMode,
       exampleId,
@@ -357,29 +357,25 @@ export default function App() {
   const [editorView, setEditorView] = useState<EditorViewMode>(() =>
     initial.mode === 'documents' || EXAMPLES.find((item) => item.id === selectedExample)?.section === 'debug' ? 'split' : 'preview');
   const simple = editorView === 'preview';
-  const [outlineOpen, setOutlineOpen] = useState(() => window.matchMedia('(min-width: 1100px)').matches);
+  const [sidebarOpen, setSidebarOpen] = useState(() => window.matchMedia('(min-width: 1100px)').matches);
+  const [sidebarTab, setSidebarTab] = useState<SidebarTab>('documents');
   const [instanceKey, setInstanceKey] = useState(0);
   const [retainPreviewState, setRetainPreviewState] = useState(true);
   const [previewSession, setPreviewSession] = useState(() => new PreviewStateSession());
   const [exportOpen, setExportOpen] = useState(false);
-  const optionsRef = useRef<HTMLDetailsElement>(null);
-  const [libraryActionsTarget, setLibraryActionsTarget] = useState<HTMLDivElement | null>(null);
   const [runtimeDiagnostics, setRuntimeDiagnostics] = useState<Diagnostic[]>([]);
   // Capabilities are session-only: they start disabled on every load and are
   // reset whenever the document switches, never inferred from source or state.
   const [htmlOptions, setHtmlOptions] = useState<DemoHtmlOptions>(freshHtmlOptions);
+  const [markdownBreaks, setMarkdownBreaks] = useState(true);
+  const [strict, setStrict] = useState(true);
+  const [editorToolbar, setEditorToolbar] = useState(true);
+  const [editorAuthoring, setEditorAuthoring] = useState(true);
 
   const copy = COPY[language];
-  useEffect(() => {
-    const dismiss = (event: MouseEvent) => {
-      const menu = optionsRef.current;
-      if (menu?.open && event.target instanceof Node && !menu.contains(event.target)) menu.open = false;
-    };
-    document.addEventListener('click', dismiss);
-    return () => document.removeEventListener('click', dismiss);
-  }, []);
-  const libraryCopy = LIBRARY_COPY[language];
+  const treeCopy = TREE_COPY[language];
   const editorHandle = useRef<ReactiveMarkdownEditorHandle|null>(null);
+  const imagePicker = useRef<HTMLInputElement>(null);
   const editHint=useRef<LocalCompileEditHint|undefined>(undefined);
   const onEditorTransaction=useCallback((transaction:EditorTransaction)=>{
     const changes=transaction.changes;
@@ -463,6 +459,21 @@ export default function App() {
     setImageError(null);
   }, [documentImages.replace]);
 
+  /** Route the editor toolbar's image action to a local file picker. */
+  const captureImageInsert = useCallback((event: ReactMouseEvent<HTMLElement>) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const item = target.closest('.editor-toolbar-insert-menu .editor-toolbar-insert-item');
+    if (!item) return;
+    const label = item.textContent?.trim();
+    if (label !== 'Image' && label !== '图片') return;
+    event.preventDefault();
+    event.stopPropagation();
+    // Dismiss the editor's Insert menu before the native picker takes focus.
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    imagePicker.current?.click();
+  }, []);
+
   const pendingSourceWrite = useRef<{
     exampleId: string;
     source: string;
@@ -470,7 +481,7 @@ export default function App() {
   } | null>(null);
   const sourceWriteTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const compileOptions = useMemo(() => ({ ...toCompileOptions(htmlOptions), markdownBreaks: true, config: demoConfig }), [htmlOptions]);
+  const compileOptions = useMemo(() => ({ ...toCompileOptions(htmlOptions), markdownBreaks, strict, config: demoConfig }), [htmlOptions, markdownBreaks, strict]);
   const compilation = useLocalCompilation(source, compileOptions, true, editHint.current);
   const currentExample = localizedExample(
     EXAMPLES.find((item) => item.id === selectedExample) ?? DEFAULT_EXAMPLE,
@@ -478,6 +489,14 @@ export default function App() {
   );
   const compiled = compilation.result;
   const exampleOptions = useMemo(() => localizedExamples(language), [language]);
+  const activeDocumentCount = useMemo(() => activeDocuments(libraryState).length, [libraryState]);
+  const trashItemCount = useMemo(() => {
+    const roots = trashedRoots(libraryState);
+    return roots.documents.length + roots.folders.length;
+  }, [libraryState]);
+  const extensionExamples = useMemo(() => exampleOptions
+    .filter(example => example.section === 'reference')
+    .map(example => ({ id: example.id, title: example.title })), [exampleOptions]);
   const currentDocument = useMemo(() => {
     const id = libraryState.selectedId;
     if (!id) return null;
@@ -563,6 +582,18 @@ export default function App() {
 
   const resetHtmlOptions = useCallback(() => setHtmlOptions(freshHtmlOptions()), []);
 
+  const resetDefaults = useCallback(() => {
+    setHtmlOptions(freshHtmlOptions());
+    setMarkdownBreaks(true);
+    setStrict(true);
+    setEditorToolbar(true);
+    setEditorAuthoring(true);
+    setRetainPreviewState(true);
+    setPreviewSession(new PreviewStateSession(true));
+    setInstanceKey((key) => key + 1);
+    setRuntimeDiagnostics([]);
+  }, []);
+
   // A capability change is a whole-document route change. Clear trial state so
   // values captured under the previous renderer can never be reused, and let
   // the compilation hook drop the old preview before the new one is ready.
@@ -578,7 +609,7 @@ export default function App() {
     imageTask.current += 1;
     flushSourceWrite();
     const documents = library.getSnapshot().documents;
-    const name = uniqueDocumentName(documents.map((item) => item.name), libraryCopy.importedName);
+    const name = uniqueDocumentName(documents.map((item) => item.name), treeCopy.importedName);
     const document = library.createDocument({ name, source: next });
     if (!document) return;
     setEditorView('split');
@@ -591,7 +622,7 @@ export default function App() {
   }, [
     flushSourceWrite,
     library,
-    libraryCopy.importedName,
+    treeCopy.importedName,
     resetHtmlOptions,
     beginPreviewSession,
   ]);
@@ -616,12 +647,13 @@ export default function App() {
     flushSourceWrite();
     const next = savedSource(example.id, language);
     resetHtmlOptions();
+    setLibraryMode('example');
+    writeLibraryMode('example');
     setSelectedExample(example.id);
     setSource(next);
     setRuntimeDiagnostics([]);
     beginPreviewSession();
     try { browserStorage()?.setItem(SELECTION_KEY, example.id); } catch { /* optional storage */ }
-    writeLibraryMode('example');
   }, [flushSourceWrite, resetHtmlOptions, beginPreviewSession, language]);
 
   const restoreExample = useCallback(() => {
@@ -637,66 +669,10 @@ export default function App() {
     beginPreviewSession();
   }, [beginPreviewSession]);
 
-  const showExamples = useCallback(() => {
-    if (libraryMode === 'example') return;
-    library.flush();
-    const next = savedSource(selectedExample, language);
-    setLibraryMode('example');
-    writeLibraryMode('example');
-    resetHtmlOptions();
-    setSource(next);
-    setRuntimeDiagnostics([]);
-    beginPreviewSession();
-    try { browserStorage()?.setItem(SELECTION_KEY, selectedExample); } catch { /* optional storage */ }
-  }, [
-    libraryMode,
-    library,
-    selectedExample,
-    language,
-    resetHtmlOptions,
-    beginPreviewSession,
-  ]);
-
-  const showDocuments = useCallback(() => {
-    if (libraryMode === 'documents') return;
-    flushSourceWrite();
-    const snapshot = library.getSnapshot();
-    let document: LibraryDocument | null = snapshot.documents.find((item) => item.id === snapshot.selectedId)
-      ?? snapshot.documents[0]
-      ?? null;
-    if (!document) {
-      document = library.createDocument({ name: libraryCopy.defaultName, source: '' });
-    }
-    if (!document) return;
-    const selected = library.select(document.id) ?? document;
-    setEditorView('split');
-    setLibraryMode('documents');
-    writeLibraryMode('documents');
-    resetHtmlOptions();
-    setSource(selected.source);
-    setRuntimeDiagnostics([]);
-    beginPreviewSession();
-  }, [
-    libraryMode,
-    flushSourceWrite,
-    library,
-    libraryCopy.defaultName,
-    resetHtmlOptions,
-    beginPreviewSession,
-  ]);
-
   const openDocument = useCallback((id: string) => {
+    flushSourceWrite();
     const document = library.select(id);
     if (!document) return;
-    resetHtmlOptions();
-    setSource(document.source);
-    setRuntimeDiagnostics([]);
-    beginPreviewSession();
-  }, [library, resetHtmlOptions, beginPreviewSession]);
-
-  const createDocument = useCallback((name: string) => {
-    const document = library.createDocument({ name, source: '' });
-    if (!document) return;
     setEditorView('split');
     setLibraryMode('documents');
     writeLibraryMode('documents');
@@ -704,31 +680,76 @@ export default function App() {
     setSource(document.source);
     setRuntimeDiagnostics([]);
     beginPreviewSession();
-  }, [library, resetHtmlOptions, beginPreviewSession]);
+  }, [flushSourceWrite, library, resetHtmlOptions, beginPreviewSession]);
 
-  const renameDocument = useCallback((id: string, name: string) => {
-    library.rename(id, name);
-  }, [library]);
+  /** Reload the current source after a document or folder leaves the tree. */
+  const refreshAfterRemoval = useCallback(() => {
+    const snapshot = library.getSnapshot();
+    const next = snapshot.selectedId ? library.getDocument(snapshot.selectedId) : null;
+    if (next) {
+      setLibraryMode('documents');
+      writeLibraryMode('documents');
+      setSource(next.source);
+    } else {
+      setLibraryMode('example');
+      writeLibraryMode('example');
+      setSource(savedSource(selectedExample, language));
+    }
+    resetHtmlOptions();
+    setRuntimeDiagnostics([]);
+    beginPreviewSession();
+  }, [library, selectedExample, language, resetHtmlOptions, beginPreviewSession]);
 
-  const duplicateDocument = useCallback((id: string, name: string) => {
-    const document = library.duplicate(id, name);
-    if (!document) return;
+  const createDocument = useCallback((folderId: string | null) => {
+    flushSourceWrite();
+    const snapshot = library.getSnapshot();
+    const name = uniqueDocumentName(snapshot.documents.map(item => item.name), treeCopy.untitled);
+    const document = library.createDocument({ name, source: '', folderId });
+    if (!document) return null;
+    setEditorView('split');
+    setLibraryMode('documents');
+    writeLibraryMode('documents');
     resetHtmlOptions();
     setSource(document.source);
     setRuntimeDiagnostics([]);
     beginPreviewSession();
-  }, [library, resetHtmlOptions, beginPreviewSession]);
+    return document.id;
+  }, [
+    flushSourceWrite,
+    library,
+    treeCopy.untitled,
+    resetHtmlOptions,
+    beginPreviewSession,
+  ]);
 
-  const deleteDocument = useCallback((id: string) => {
-    const wasSelected = library.getSnapshot().selectedId === id;
-    if (!library.remove(id) || !wasSelected) return;
-    const nextId = library.getSnapshot().selectedId;
-    const next = nextId ? library.getDocument(nextId) : null;
-    resetHtmlOptions();
-    setSource(next?.source ?? '');
-    setRuntimeDiagnostics([]);
-    beginPreviewSession();
-  }, [library, resetHtmlOptions, beginPreviewSession]);
+  const createFolder = useCallback((parentId: string | null) => {
+    const folder = library.createFolder({ name: treeCopy.newFolderName, parentId });
+    return folder ? { id: folder.id, name: folder.name } : null;
+  }, [library, treeCopy.newFolderName]);
+
+  const renameNode = useCallback((kind: 'document' | 'folder', id: string, name: string) => {
+    if (kind === 'folder') library.renameFolder(id, name);
+    else library.rename(id, name);
+  }, [library]);
+
+  const trashNode = useCallback((kind: 'document' | 'folder', id: string) => {
+    const changed = kind === 'folder' ? library.trashFolder(id) : library.trashDocument(id);
+    if (changed) refreshAfterRemoval();
+  }, [library, refreshAfterRemoval]);
+
+  const restoreNode = useCallback((kind: 'document' | 'folder', id: string) => {
+    if (kind === 'folder') library.restoreFolder(id);
+    else library.restoreDocument(id);
+  }, [library]);
+
+  const deleteNode = useCallback((kind: 'document' | 'folder', id: string) => {
+    const changed = kind === 'folder' ? library.deleteFolder(id) : library.deleteDocument(id);
+    if (changed) refreshAfterRemoval();
+  }, [library, refreshAfterRemoval]);
+
+  const emptyTrash = useCallback(() => {
+    if (library.emptyTrash()) refreshAfterRemoval();
+  }, [library, refreshAfterRemoval]);
 
   // Copy the example exactly as it currently appears in the editor, including
   // any unpublished edits in the draft.
@@ -737,7 +758,7 @@ export default function App() {
     const documents = library.getSnapshot().documents;
     const name = uniqueDocumentName(
       documents.map((item) => item.name),
-      `${currentExample.title}${libraryCopy.copySuffix}`,
+      `${currentExample.title}${treeCopy.copySuffix}`,
     );
     const document = library.createDocument({ name, source });
     if (!document) return;
@@ -752,16 +773,11 @@ export default function App() {
     flushSourceWrite,
     library,
     currentExample.title,
-    libraryCopy.copySuffix,
+    treeCopy.copySuffix,
     source,
     resetHtmlOptions,
     beginPreviewSession,
   ]);
-
-  const changeLibraryMode = useCallback((next: LibraryMode) => {
-    if (next === 'documents') showDocuments();
-    else showExamples();
-  }, [showDocuments, showExamples]);
 
   // Keep the example selected, but save the current draft under the old
   // language and load that example's draft (or default source) in the new one.
@@ -882,118 +898,29 @@ export default function App() {
           <GuideView onBack={() => setView('playground')} />
         ) : (
         <main className="workbench">
-          <div className="workbench-bar library-workbench">
-            <LibraryModeSwitch mode={libraryMode} onChange={changeLibraryMode} />
-            {libraryMode === 'example' ? (
-              <>
-                <label className="bar-label" htmlFor="example-select">{copy.showcase.navigation}</label>
-                <select
-                  id="example-select"
-                  className="bar-select example-select"
-                  value={isFeatureExample(currentExample) ? 'features' : selectedExample}
-                  title={currentExample.hint}
-                  onChange={(event: ChangeEvent<HTMLSelectElement>) => {
-                    const id = resolveExampleId(event.target.value);
-                    if (id && id !== selectedExample) loadExample(id);
-                  }}
-                >
-                  {exampleOptions.filter(example => example.section === 'scenario').map((example) => (
-                    <option key={example.id} value={example.id}>{example.title}</option>
-                  ))}
-                  <option value="features">{copy.showcase.features}</option>
-                  {exampleOptions.filter(example => example.section !== 'scenario' && !isFeatureExample(example)).map(example => (
-                    <option key={example.id} value={example.id}>{example.title}</option>
-                  ))}
-                </select>
-              </>
-            ) : (
-              <DocumentLibraryBar
-                actionsTarget={libraryActionsTarget}
-                documents={libraryState.documents}
-                selectedId={libraryState.selectedId}
-                saveStatus={libraryState.saveStatus}
-                problem={libraryState.problem}
-                onSelect={openDocument}
-                onCreate={createDocument}
-                onRename={renameDocument}
-                onDuplicate={duplicateDocument}
-                onDelete={deleteDocument}
-                onRetry={() => library.retry()}
-              />
-            )}
-            <div className="workbench-quick-actions">
-              <button id="outline-toggle" type="button" className="button button-secondary outline-toggle"
-                aria-expanded={outlineOpen} aria-controls="document-outline" onClick={() => setOutlineOpen(open => !open)}>
-                <OutlineIcon />{copy.outline.heading}
-              </button>
-              <ImageAssetsPanel compact assets={documentImages.assets} references={[]}
-                busy={imageBusy || !documentImages.ready} error={imageError} storageError={documentImages.storageError}
-                onFiles={addImages} onRemove={removeImage} />
+          <div className="workbench-bar">
+            <button
+              id="sidebar-toggle"
+              type="button"
+              className="icon-button"
+              aria-expanded={sidebarOpen}
+              aria-controls="document-sidebar"
+              title={copy.sidebar.region}
+              aria-label={copy.sidebar.region}
+              onClick={() => setSidebarOpen(open => !open)}
+            >
+              <PanelLeftIcon />
+            </button>
+            <div className="workbench-title">
+              <span className="workbench-title-name">{activeDocument?.name ?? currentExample.title}</span>
+              <span className="workbench-title-kind">
+                {libraryMode === 'documents' ? copy.sidebar.documents : copy.showcase.navigation}
+              </span>
             </div>
-            <details ref={optionsRef} className="workbench-options" key={documentKey}
-              onKeyDown={event => {
-                if (event.key === 'Escape') {
-                  event.preventDefault();
-                  event.currentTarget.open = false;
-                  event.currentTarget.querySelector('summary')?.focus();
-                }
-              }}>
-              <summary>{libraryCopy.moreOptions}</summary>
-              <div className="workbench-options-body" onClick={event => {
-                if (event.target instanceof Element && event.target.closest('button')) {
-                  if (optionsRef.current) optionsRef.current.open = false;
-                  optionsRef.current?.querySelector('summary')?.focus();
-                }
-              }}>
-                <div className="options-group">
-                  <h3 className="options-heading">{copy.authorTools.ariaLabel}</h3>
-                  <AuthorTools simple={simple}
-                    onSimple={() => setEditorView(current => current === 'preview' ? 'split' : 'preview')}
-                    onImport={importSource} onExport={openExportDialog} />
-                </div>
-                <div className="options-group">
-                  <h3 className="options-heading">
-                    {libraryMode === 'documents' ? libraryCopy.documents : copy.workbench.example}
-                  </h3>
-                  <div className="options-actions-row">
-                    <div className="library-more-actions" ref={setLibraryActionsTarget} />
-                    <div className="options-actions">
-                      {libraryMode === 'example' ? (
-                        <button type="button" className="button button-secondary" onClick={copyExampleToDocuments}>
-                          {libraryCopy.copyExample}
-                        </button>
-                      ) : null}
-                      {libraryMode === 'example' ? (
-                        <button type="button" className="button button-secondary" onClick={restoreExample}>
-                          {copy.workbench.restoreExample}
-                        </button>
-                      ) : null}
-                      <button type="button" className="button button-secondary" onClick={resetInstance}>
-                        {copy.workbench.runAgain}
-                      </button>
-                    </div>
-                  </div>
-                  <label className="options-check edit-only" title={copy.workbench.keepTrialStateTitle}>
-                    <input
-                      type="checkbox"
-                      checked={retainPreviewState}
-                      aria-describedby="preview-state-note"
-                      onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                        previewSession.setRetention(event.target.checked);
-                        setRetainPreviewState(event.target.checked);
-                      }}
-                    />
-                    <span>{copy.workbench.keepTrialState}</span>
-                  </label>
-                </div>
-                <HtmlCompatibilityControls options={htmlOptions} onChange={changeHtmlOptions} />
-                {(documentImages.assets.length > 0 || (compiled?.ok && documentImageUrls(compiled.document).length > 0)) &&
-                  <ImageAssetsPanel assets={documentImages.assets}
-                    references={compiled?.ok ? documentImageUrls(compiled.document) : []}
-                    busy={imageBusy || !documentImages.ready} error={null} storageError={false}
-                    onFiles={addImages} onRemove={removeImage} allowInsert={false} />}
-              </div>
-            </details>
+            <button type="button" className="icon-button" title={copy.authorTools.exportDocument}
+              aria-label={copy.authorTools.exportDocument} onClick={openExportDialog}>
+              <DownloadIcon />
+            </button>
             <span
               className={`status-chip ${compiling ? 'is-pending' : previewFailed ? 'is-error' : ''}`}
               role="status"
@@ -1005,8 +932,65 @@ export default function App() {
 
           <OutlineWorkspace document={previewDocument} source={source} documentKey={documentKey}
             mode={editorView} onModeChange={setEditorView} editor={editorHandle}
-            open={outlineOpen} onOpenChange={setOutlineOpen}>
+            sidebarOpen={sidebarOpen} onSidebarOpenChange={setSidebarOpen}
+            sidebarTab={sidebarTab} onSidebarTabChange={setSidebarTab}
+            documentsPanel={<DocumentTree
+              snapshot={libraryState}
+              examples={exampleOptions}
+              language={language}
+              activeMode={libraryMode}
+              activeExampleId={libraryMode === 'example' ? selectedExample : null}
+              onCreateDocument={createDocument}
+              onCreateFolder={createFolder}
+              onSelectDocument={openDocument}
+              onSelectExample={loadExample}
+              onRename={renameNode}
+              onTrash={trashNode}
+              onRestore={restoreNode}
+              onDelete={deleteNode}
+              onEmptyTrash={emptyTrash}
+              onMoveDocument={(id, folderId) => { library.moveDocument(id, folderId); }}
+              onMoveFolder={(id, parentId) => { library.moveFolder(id, parentId); }}
+              onRetry={() => library.retry()}
+            />}
+            devtoolsPanel={<DeveloperTools
+              language={language}
+              markdownBreaks={markdownBreaks}
+              onMarkdownBreaksChange={setMarkdownBreaks}
+              strict={strict}
+              onStrictChange={setStrict}
+              htmlOptions={htmlOptions}
+              onHtmlOptionsChange={changeHtmlOptions}
+              editorToolbar={editorToolbar}
+              onEditorToolbarChange={setEditorToolbar}
+              editorAuthoring={editorAuthoring}
+              onEditorAuthoringChange={setEditorAuthoring}
+              viewMode={editorView}
+              onViewModeChange={setEditorView}
+              onResetDefaults={resetDefaults}
+              retainPreviewState={retainPreviewState}
+              onRetainPreviewStateChange={(checked) => {
+                previewSession.setRetention(checked);
+                setRetainPreviewState(checked);
+              }}
+              onImport={importSource}
+              onExport={openExportDialog}
+              onDownloadMarkdown={exportSource}
+              onRunAgain={resetInstance}
+              onRestoreExample={restoreExample}
+              onSaveCopy={copyExampleToDocuments}
+              activeKind={libraryMode}
+              activeName={activeDocument?.name ?? currentExample.title}
+              documentCount={activeDocumentCount}
+              folderCount={libraryState.folders.length}
+              trashCount={trashItemCount}
+              diagnosticsCount={currentDiagnostics.length}
+              compileDuration={compilation.duration}
+              compileMode={compilation.mode ?? 'idle'}
+              extensions={extensionExamples}
+            />}>
             <section id="source-pane" className="pane pane-editor" aria-label={copy.editor.region}
+              onClickCapture={captureImageInsert}
               onPasteCapture={event => {
                 if (!(event.target instanceof HTMLTextAreaElement)
                   && !(event.target instanceof HTMLElement && event.target.closest('.cm-content'))) return;
@@ -1048,8 +1032,8 @@ export default function App() {
                     )}
                   </div>
                 </section>}
-                authoring
-                toolbar
+                authoring={editorAuthoring}
+                toolbar={editorToolbar}
               />
 
               <p className="editor-note" id="preview-state-note">
@@ -1092,6 +1076,13 @@ export default function App() {
             <p>{copy.footer.trial}</p>
           ) : null}
         </footer>
+
+        <input ref={imagePicker} type="file" accept="image/*" multiple hidden
+          onChange={event => {
+            const files = Array.from(event.currentTarget.files ?? []);
+            if (files.length) void addImages(files);
+            event.currentTarget.value = '';
+          }} />
 
         <ExportDialog
           imageAssets={documentImages.assets}

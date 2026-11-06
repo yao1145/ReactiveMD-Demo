@@ -29,14 +29,24 @@ try {
     await openWorkbench(page, baseURL);
     const bar = page.locator('.editor-status-bar');
     const mode = name => bar.getByRole('button', { name, exact: true });
-    const toggle = page.locator('#outline-toggle');
+    const toggle = page.locator('#sidebar-toggle');
     const outline = page.locator('#document-outline');
     const stage = page.locator('.preview-stage');
+    const sidebarOpen = async () => (await toggle.getAttribute('aria-expanded')) === 'true';
+    const closeSidebar = async () => {
+      if (!(await sidebarOpen())) return;
+      if (width < 1100) await page.locator('.sidebar-close').click();
+      else await toggle.click();
+    };
+    const openOutline = async () => {
+      if (!(await sidebarOpen())) await toggle.click();
+      await page.getByRole('tab', { name: /^(Outline|大纲)$/ }).click();
+    };
     await expect(toggle).toHaveAttribute('aria-expanded', String(width >= 1100));
     await mode('Edit').click();
     await replaceWorkbenchSource(page, source);
     await expect(stage).toHaveAttribute('aria-busy', 'false');
-    if (width < 1100) await toggle.click();
+    await openOutline();
     await expect(outline).toBeVisible();
     await expect(outline.locator('.outline-link')).toHaveCount(7);
     await expect(outline).not.toContainText('Not a heading');
@@ -58,11 +68,11 @@ try {
 
     // Preview navigation scrolls the preview and leaves source mode unchanged.
     await mode('Preview').click();
-    if (width < 1100) await toggle.click();
+    await openOutline();
     await jumpWithoutPageScroll(page, outline.getByRole('button', { name: 'Validation', exact: true }));
     await expect(mode('Preview')).toHaveAttribute('aria-pressed', 'true');
     await expect(page.locator('.pane-preview h3', { hasText: 'Validation' })).toBeFocused();
-    if (width < 1100) await toggle.click();
+    await openOutline();
     await expect(outline.getByRole('button', { name: 'Validation', exact: true })).toHaveAttribute('aria-current', 'location');
     await page.locator('.editor-preview').evaluate(element => { element.scrollTop = element.scrollHeight; });
     await expect(outline.getByRole('button', { name: 'Acceptance', exact: true })).toHaveAttribute('aria-current', 'location');
@@ -80,20 +90,25 @@ try {
     }
 
     // Editing prose preserves collapsed branches; changing a title updates the outline.
+    await closeSidebar();
     await mode('Edit').click();
+    await openOutline();
     await outline.getByRole('button', { name: 'Collapse Demo updates', exact: true }).click();
+    await closeSidebar();
     await replaceWorkbenchSource(page, source.replace('# Project', 'Intro\n\n# Project'));
     await expect(stage).toHaveAttribute('aria-busy', 'false');
+    await openOutline();
     await expect(outline.getByRole('button', { name: 'Expand Demo updates', exact: true })).toHaveAttribute('aria-expanded', 'false');
+    await closeSidebar();
     await replaceWorkbenchSource(page, source.replace('## npm release', '## Revised release'));
+    await openOutline();
     await expect(outline.getByRole('button', { name: 'Revised release', exact: true })).toBeVisible();
     await expect(outline.getByRole('button', { name: 'npm release', exact: true })).toHaveCount(0);
 
-    await outline.getByRole('button', { name: 'Close outline', exact: true }).focus();
+    await page.locator('.sidebar-close').focus();
     await page.keyboard.press('Escape');
     await expect(outline).toBeHidden();
     await expect(toggle).toBeFocused();
-    await toggle.click();
     await replaceWorkbenchSource(page, 'No headings here.');
     await expect(outline).toContainText('No headings yet');
 
@@ -101,27 +116,32 @@ try {
     const duplicateSource = '# Same\n\n## Same\n\n## Same';
     await replaceWorkbenchSource(page, duplicateSource);
     await expect(stage).toHaveAttribute('aria-busy', 'false');
+    await openOutline();
     const duplicates = outline.locator('.outline-link');
     await expect(duplicates).toHaveCount(3);
     await duplicates.last().click();
     await expect.poll(() => page.locator('#source-editor').evaluate(element => window.rmdEditorProbe.snapshot(element).start)).toBe(duplicateSource.lastIndexOf('## Same'));
-    if (width < 1100) await toggle.click();
+    await closeSidebar();
 
     await replaceWorkbenchSource(page, source);
     await expect(stage).toHaveAttribute('aria-busy', 'false');
     await page.getByRole('button', { name: 'Switch to Chinese', exact: true }).click();
-    await expect(toggle).toHaveText('大纲');
-    await expect(outline.getByRole('button', { name: '关闭大纲', exact: true })).toBeVisible();
+    await openOutline();
+    await expect(page.getByRole('tab', { name: '大纲' })).toBeVisible();
+    await expect(page.locator('.sidebar-close')).toHaveAttribute('aria-label', '关闭侧栏');
+    await closeSidebar();
     await replaceWorkbenchSource(page, source.replace('Project', 'ReactiveMD 项目约定').replace('Demo updates', 'Demo 网站更新')
       .replace('Deployment', '部署位置').replace('Validation', '构建与最小化验证').replace('npm release', 'npm 发布')
       .replace('Preparation', '版本与发布准备').replace('Acceptance', '发布后验收'));
     await expect(stage).toHaveAttribute('aria-busy', 'false');
     if (width > 600) await bar.getByRole('button', { name: '并排', exact: true }).click();
     else await bar.getByRole('button', { name: '预览', exact: true }).click();
-    await outline.getByRole('button', { name: 'ReactiveMD 项目约定', exact: true }).click();
-    if (width < 1100) await toggle.click();
+    await openOutline();
+    await outline.getByRole('button', { name: 'ReactiveMD 项目约定', exact: true }).click({ force: true });
     for (const theme of ['light', 'dark']) {
+      await closeSidebar();
       if (theme === 'dark') await page.getByRole('button', { name: '深色主题', exact: true }).click();
+      await openOutline();
       await outline.scrollIntoViewIfNeeded();
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
       await page.screenshot({ path: `artifacts/outline/${width}-${theme}.png` });

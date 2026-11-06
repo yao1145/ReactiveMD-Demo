@@ -181,7 +181,7 @@ describe('document library recovery', () => {
     const library = new DocumentLibrary({ storage: () => storage, now: () => 50, createId: () => 'new' });
     const snapshot = library.getSnapshot();
     expect(snapshot.documents).toEqual([
-      { id: 'valid', name: 'Valid name', source: 'ok', createdAt: 1, updatedAt: 2 },
+      { id: 'valid', name: 'Valid name', source: 'ok', folderId: null, trashedAt: null, createdAt: 1, updatedAt: 2 },
     ]);
     expect(snapshot.selectedId).toBe('valid');
     expect(snapshot.problem).toBe('corrupt');
@@ -253,8 +253,7 @@ describe('document library storage failures', () => {
   });
 });
 
-describe('document library naming', () => {
-  it('normalizes names and rejects empty ones', () => {
+describe('document library naming', () => {  it('normalizes names and rejects empty ones', () => {
     expect(normalizeDocumentName('   ')).toBeNull();
     expect(normalizeDocumentName('  Project   notes  ')).toBe('Project notes');
     expect(normalizeDocumentName('x'.repeat(200))).toHaveLength(80);
@@ -270,5 +269,96 @@ describe('document library naming', () => {
     expect(documentFileStem('Quarter/Plan: Q1?')).toBe('Quarter-Plan- Q1');
     expect(documentFileStem('季度计划')).toBe('季度计划');
     expect(documentFileStem('   ')).toBe('document');
+  });
+});
+
+describe('document library folders and trash', () => {
+  it('creates nested folders, moves documents and makes sibling names unique', () => {
+    const { library, storage } = setup();
+    const folder = library.createFolder({ name: 'Projects' })!;
+    expect(folder.parentId).toBeNull();
+    const child = library.createFolder({ name: 'Nested', parentId: folder.id })!;
+    expect(child.parentId).toBe(folder.id);
+    expect(library.createFolder({ name: 'Projects' })!.name).toBe('Projects (2)');
+
+    const document = library.createDocument({ name: 'Plan', source: 'body', folderId: child.id })!;
+    expect(document.folderId).toBe(child.id);
+    expect(library.getSnapshot().documents[0].folderId).toBe(child.id);
+
+    expect(library.moveDocument(document.id, folder.id)).toBe(true);
+    expect(library.getSnapshot().documents[0].folderId).toBe(folder.id);
+    expect(library.moveDocument(document.id, 'missing')).toBe(false);
+
+    const reopened = reopen(storage);
+    expect(reopened.getSnapshot().folders.map(item => item.name).sort()).toEqual(['Nested', 'Projects', 'Projects (2)']);
+    expect(reopened.getSnapshot().documents[0].folderId).toBe(folder.id);
+  });
+
+  it('trashes and restores documents without losing their folder', () => {
+    const { library } = setup();
+    const folder = library.createFolder({ name: 'Work' })!;
+    const first = library.createDocument({ name: 'First', source: 'one', folderId: folder.id })!;
+    const second = library.createDocument({ name: 'Second', source: 'two' })!;
+    expect(library.getSnapshot().selectedId).toBe(second.id);
+
+    expect(library.trashDocument(first.id)).toBe(true);
+    expect(library.getSnapshot().documents.find(item => item.id === first.id)?.trashedAt).not.toBeNull();
+    expect(library.restoreDocument(first.id)).toBe(true);
+    expect(library.getSnapshot().documents.find(item => item.id === first.id)).toMatchObject({
+      folderId: folder.id,
+      trashedAt: null,
+    });
+  });
+
+  it('hides a trashed folder subtree and restores it as a unit', () => {
+    const { library } = setup();
+    const folder = library.createFolder({ name: 'Work' })!;
+    const child = library.createFolder({ name: 'Child', parentId: folder.id })!;
+    const document = library.createDocument({ name: 'Inside', source: 'body', folderId: child.id })!;
+    library.select(document.id);
+
+    expect(library.trashFolder(folder.id)).toBe(true);
+    expect(library.getSnapshot().selectedId).not.toBe(document.id);
+    expect(library.getSnapshot().folders.find(item => item.id === folder.id)?.trashedAt).not.toBeNull();
+
+    expect(library.restoreFolder(folder.id)).toBe(true);
+    expect(library.getSnapshot().folders.find(item => item.id === folder.id)?.trashedAt).toBeNull();
+    expect(library.getSnapshot().documents.find(item => item.id === document.id)?.folderId).toBe(child.id);
+  });
+
+  it('deletes a folder recursively and empties the trash', () => {
+    const { library } = setup();
+    const folder = library.createFolder({ name: 'Work' })!;
+    const child = library.createFolder({ name: 'Child', parentId: folder.id })!;
+    library.createDocument({ name: 'Inside', source: 'body', folderId: child.id });
+    const rootDocument = library.createDocument({ name: 'Root', source: 'root' })!;
+
+    expect(library.deleteFolder(folder.id)).toBe(true);
+    expect(library.getSnapshot().folders).toEqual([]);
+    expect(library.getSnapshot().documents.map(item => item.name)).toEqual(['Root']);
+    expect(library.getSnapshot().selectedId).toBe(rootDocument.id);
+
+    const trashed = library.createDocument({ name: 'Trashed', source: 'x' })!;
+    library.trashDocument(trashed.id);
+    expect(library.emptyTrash()).toBe(true);
+    expect(library.getSnapshot().documents.map(item => item.name)).toEqual(['Root']);
+    expect(library.emptyTrash()).toBe(false);
+  });
+
+  it('migrates a version 1 library into the root without folders or trash', () => {
+    const storage = new MemoryStorage();
+    storage.values.set(LIBRARY_STORAGE_KEY, JSON.stringify({
+      version: 1,
+      selectedId: 'old',
+      documents: [{ id: 'old', name: 'Old', source: 'body', createdAt: 1, updatedAt: 2 }],
+    }));
+    const library = new DocumentLibrary({ storage: () => storage, now: () => 0, createId: () => 'new' });
+    const snapshot = library.getSnapshot();
+    expect(snapshot.problem).toBeNull();
+    expect(snapshot.folders).toEqual([]);
+    expect(snapshot.documents).toEqual([
+      { id: 'old', name: 'Old', source: 'body', folderId: null, trashedAt: null, createdAt: 1, updatedAt: 2 },
+    ]);
+    expect(snapshot.selectedId).toBe('old');
   });
 });
