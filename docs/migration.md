@@ -1,5 +1,7 @@
 # Migration from the monorepo
 
+**English** · [中文](migration-ch.md)
+
 This repository was `demo/` inside the ReactiveMD monorepo. It now builds against installed packages and owns its content, configuration and workflows.
 
 ## Dependencies

@@ -1,5 +1,7 @@
 # Implementation and verification notes
 
+**English** · [中文](IMPLEMENTATION-ch.md)
+
 > Historical record from the monorepo. Current install, build, test and deployment commands are in [README.md](README.md) and [AGENTS.md](AGENTS.md). Links to `../docs/` and `examples/local/` describe the earlier repository layout.
 
 ## Current release: 0.4.0 / local-draft-2

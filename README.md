@@ -1,5 +1,7 @@
 # Reactive MD Demo
 
+**English** · [中文](README-ch.md)
+
 The Playground for Reactive MD: an editor, live preview, document library, HTML export and a set of bilingual example articles. It consumes the candidate `reactive-md` engine and the `reactive-md-editor` package from committed tarballs, so this repository builds without the engine source tree.
 
 Live site: [yaozi.raricy.com](https://yaozi.raricy.com/).

@@ -1,5 +1,7 @@
 # Demo extension packages
 
+**English** · [中文](README-ch.md)
+
 The Demo installs Tetris and 2048 from the committed npm tarballs in this
 directory. Filenames include a SHA256 prefix; `package-lock.json` records the
 full npm integrity value. Installation uses each package's built JavaScript,
