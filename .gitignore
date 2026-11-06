@@ -6,3 +6,7 @@ artifacts/
 *.tgz
 !vendor/*.tgz
 .DS_Store
+
+# Agent instructions stay local
+AGENTS.md
+AGENTS-ch.md
