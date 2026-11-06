@@ -22,7 +22,8 @@
     "test:export": "node scripts/verify-export.mjs && node scripts/verify-image-assets.mjs",
     "test:extensions": "node scripts/verify-extensions.mjs",
     "test:outline": "node scripts/verify-outline.mjs",
-    "test:workbench": "node scripts/verify-compact-workbench.mjs"
+    "test:workbench": "node scripts/verify-compact-workbench.mjs",
+    "update:feature-demo": "node scripts/update-feature-demo.mjs"
   },
   "dependencies": {
     "react": "19.3.1",
