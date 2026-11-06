@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { compileLocal, createLocalStateFile } from 'reactive-md';
-import { buildShareableHtml } from '../src/export-html';
-import { createImageAsset } from '../src/image-assets';
+import { buildShareableHtml } from '../src/export/export-html';
+import { createImageAsset } from '../src/images/image-assets';
 import { parse, serializeOuter, type DefaultTreeAdapterTypes } from 'parse5';
 
 // Parse the document so strings inside the bundled runtime are not counted as

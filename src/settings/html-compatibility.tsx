@@ -1,5 +1,5 @@
 import { type ChangeEvent } from 'react';
-import { useCopy } from './i18n';
+import { useCopy } from '../ui/i18n';
 import { isHtmlOptionsActive, type DemoHtmlOptions } from './html-options';
 
 type HtmlOptionKey = keyof DemoHtmlOptions;

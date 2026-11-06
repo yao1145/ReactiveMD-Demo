@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { compileLocal, type LocalDocument } from 'reactive-md';
-import { documentOutline, flattenOutline, outlineHeadingAt } from '../src/document-outline-model';
+import { documentOutline, flattenOutline, outlineHeadingAt } from '../src/documents/document-outline-model';
 
 function outline(source: string) {
   const result = compileLocal(source);

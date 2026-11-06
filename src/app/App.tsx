@@ -28,20 +28,20 @@ import {
   trashedRoots,
   uniqueDocumentName,
   type LibraryMode,
-} from './document-library';
-import { DocumentTree, TREE_COPY } from './document-tree';
-import { DeveloperTools } from './developer-tools';
-import { OutlineWorkspace, type SidebarTab } from './document-outline';
-import { DownloadIcon, PanelLeftIcon } from './icons';
-import { ExportDialog } from './export-dialog';
-import { createImageAsset, imagePolicy, ImageAssetError, MAX_IMAGE_BYTES, MAX_IMAGE_TOTAL_BYTES, validateImageManifest, type ImageAsset } from './image-assets';
-import { IMAGE_COPY } from './image-copy';
-import { useDocumentImages } from './use-document-images';
+} from '../documents/document-library';
+import { DocumentTree, TREE_COPY } from '../documents/document-tree';
+import { DeveloperTools } from '../developer/developer-tools';
+import { OutlineWorkspace, type SidebarTab } from '../documents/document-outline';
+import { DownloadIcon, PanelLeftIcon } from '../ui/icons';
+import { ExportDialog } from '../export/export-dialog';
+import { createImageAsset, imagePolicy, ImageAssetError, MAX_IMAGE_BYTES, MAX_IMAGE_TOTAL_BYTES, validateImageManifest, type ImageAsset } from '../images/image-assets';
+import { IMAGE_COPY } from '../images/image-copy';
+import { useDocumentImages } from '../images/use-document-images';
 import {
   freshHtmlOptions,
   toCompileOptions,
   type DemoHtmlOptions,
-} from './html-options';
+} from '../settings/html-options';
 import {
   DEFAULT_EXAMPLE_ID,
   EXAMPLES,
@@ -49,7 +49,7 @@ import {
   localizedExample,
   localizedExamples,
   resolveExampleId,
-} from './examples';
+} from '../content/examples';
 import {
   COPY,
   DEFAULT_LANGUAGE,
@@ -58,12 +58,12 @@ import {
   useCopy,
   useLanguage,
   type Language,
-} from './i18n';
-import { useLocalCompilation, type LocalCompiledDocument } from './use-local-compilation';
-import { PreviewStateSession } from './preview-state';
-import { GuideDocument } from './guide-examples';
-import guideEnSource from '../content/guides/local-guide-en.md?raw';
-import guideZhSource from '../content/guides/local-guide-ch.md?raw';
+} from '../ui/i18n';
+import { useLocalCompilation, type LocalCompiledDocument } from '../compilation/use-local-compilation';
+import { PreviewStateSession } from '../compilation/preview-state';
+import { GuideDocument } from '../content/guide-examples';
+import guideEnSource from '../../content/guides/local-guide-en.md?raw';
+import guideZhSource from '../../content/guides/local-guide-ch.md?raw';
 
 type LocalRuntimeInstance = LocalRuntime;
 

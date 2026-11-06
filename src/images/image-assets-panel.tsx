@@ -1,5 +1,5 @@
 import { useId, useRef } from 'react';
-import { useLanguage } from './i18n';
+import { useLanguage } from '../ui/i18n';
 import { IMAGE_ACCEPT, type ImageAsset } from './image-assets';
 import { IMAGE_COPY } from './image-copy';
 

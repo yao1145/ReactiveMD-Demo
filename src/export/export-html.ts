@@ -14,7 +14,7 @@ import {
 import { LocalDocumentView, type LocalDocumentViewProps } from 'reactive-md/react';
 import { createLocalShareableHtml, type LocalStandaloneBundle } from 'reactive-md/export';
 import { host } from 'virtual:reactive-md/host';
-import { imagePolicy, resolveDocumentImages, validateImageManifest, type ImageAsset } from './image-assets';
+import { imagePolicy, resolveDocumentImages, validateImageManifest, type ImageAsset } from '../images/image-assets';
 
 const { config: demoConfig, reactConfig, resources, notices } = host;
 

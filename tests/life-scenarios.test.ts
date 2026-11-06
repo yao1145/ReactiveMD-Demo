@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { compileLatex, compileLocal, createLocalRuntime, type LocalValue } from 'reactive-md';
-import { DEFAULT_EXAMPLE_ID, EXAMPLES, isFeatureExample, localizedExample, resolveExampleId } from '../src/examples';
+import { DEFAULT_EXAMPLE_ID, EXAMPLES, isFeatureExample, localizedExample, resolveExampleId } from '../src/content/examples';
 
 describe('scenario catalog', () => {
   it('opens with a classroom lesson and collects the old examples into one feature group', () => {

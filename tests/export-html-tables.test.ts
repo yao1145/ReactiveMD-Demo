@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { compileLocal, createLocalStateFile } from 'reactive-md';
-import { buildShareableHtml } from '../src/export-html';
+import { buildShareableHtml } from '../src/export/export-html';
 import { parseFragment } from 'parse5';
 
 const elements = (n: any, tag: string): any[] => [...(n.tagName === tag ? [n] : []), ...(n.childNodes ?? []).flatMap((c: any) => elements(c, tag))];

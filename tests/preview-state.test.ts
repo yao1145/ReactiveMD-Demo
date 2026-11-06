@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { compileLocal, type LocalDocument, type LocalNode } from 'reactive-md';
-import { PreviewStateSession } from '../src/preview-state';
+import { PreviewStateSession } from '../src/compilation/preview-state';
 
 function compile(source: string): LocalDocument {
   const result = compileLocal(source);

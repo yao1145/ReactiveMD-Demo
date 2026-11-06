@@ -2,9 +2,9 @@ import { useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } 
 import type { LocalDocument } from 'reactive-md';
 import type { EditorViewMode, ReactiveMarkdownEditorHandle } from 'reactive-md-editor';
 import { documentOutline, flattenOutline, outlineHeadingAt, type OutlineHeading } from './document-outline-model';
-import { useCopy } from './i18n';
-import { CloseIcon, FilesIcon, OutlineIcon, SlidersIcon } from './icons';
-import { useScrollContainer } from './use-scroll-container';
+import { useCopy } from '../ui/i18n';
+import { CloseIcon, FilesIcon, OutlineIcon, SlidersIcon } from '../ui/icons';
+import { useScrollContainer } from '../ui/use-scroll-container';
 import './document-outline.css';
 
 export type SidebarTab = 'documents' | 'outline' | 'devtools';

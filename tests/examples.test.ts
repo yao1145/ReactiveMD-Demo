@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { compileLatex, compileLocal, createLocalRuntime, type LocalValue } from 'reactive-md';
-import { EXAMPLES, DEFAULT_EXAMPLE_ID, localizedExample, localizedExamples } from '../src/examples';
+import { EXAMPLES, DEFAULT_EXAMPLE_ID, localizedExample, localizedExamples } from '../src/content/examples';
 import { host, examples as extensionExamples } from '../extensions';
 
 function exampleSource(id: string) {

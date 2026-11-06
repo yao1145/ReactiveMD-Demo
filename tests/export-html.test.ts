@@ -5,7 +5,7 @@ import {
   countParameterDifferences,
   deriveDocumentTitle,
   readPackageVersion,
-} from '../src/export-html';
+} from '../src/export/export-html';
 
 function compile(source: string): LocalDocument {
   const result = compileLocal(source);

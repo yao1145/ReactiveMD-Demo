@@ -2,7 +2,7 @@ import {readFileSync} from 'node:fs';
 import {describe, expect, it} from 'vitest';
 import {renderToStaticMarkup} from 'react-dom/server';
 import {compileLocal, createLocalRuntime, type LocalNode} from 'reactive-md';
-import {buildGuideExamples, GuideDocument, GUIDE_COMPILE_OPTIONS} from '../src/guide-examples';
+import {buildGuideExamples, GuideDocument, GUIDE_COMPILE_OPTIONS} from '../src/content/guide-examples';
 
 const flatten = (nodes: LocalNode[]): LocalNode[] => nodes.flatMap(node => [node, ...flatten(node.children ?? [])]);
 

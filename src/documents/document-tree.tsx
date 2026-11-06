@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type DragEvent, type ReactNode } from 'react';
-import type { Language } from './i18n';
+import type { Language } from '../ui/i18n';
 import {
   MAX_DOCUMENT_NAME_LENGTH,
   MAX_FOLDER_NAME_LENGTH,
@@ -23,9 +23,9 @@ import {
   PencilIcon,
   RestoreIcon,
   TrashIcon,
-} from './icons';
-import type { LocalizedExample } from './examples';
-import { useScrollContainer } from './use-scroll-container';
+} from '../ui/icons';
+import type { LocalizedExample } from '../content/examples';
+import { useScrollContainer } from '../ui/use-scroll-container';
 import './document-tree.css';
 
 export interface DocumentTreeCopy {

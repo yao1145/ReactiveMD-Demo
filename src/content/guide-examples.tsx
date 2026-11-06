@@ -1,7 +1,7 @@
 import {useMemo} from 'react';
 import {compileLocal, type LocalCompileOptions} from 'reactive-md';
 import {LocalReactiveDocument, type LocalHostRenderer} from 'reactive-md/react';
-import type {Language} from './i18n';
+import type {Language} from '../ui/i18n';
 
 export const GUIDE_COMPILE_OPTIONS: LocalCompileOptions = {
   hostComponents: [{

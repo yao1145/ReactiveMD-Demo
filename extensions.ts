@@ -4,7 +4,7 @@ import { tetrisPackage } from 'reactive-md-tetris-package/react';
 import tetrisNotices from 'reactive-md-tetris-package/notices?raw';
 import { game2048Package } from 'reactive-md-game-2048-package/react';
 import game2048Notices from 'reactive-md-game-2048-package/notices?raw';
-import type { PlaygroundExample } from './src/examples';
+import type { PlaygroundExample } from './src/content/examples';
 
 export const host = createReactHost({
   packages: [tetrisPackage, game2048Package],

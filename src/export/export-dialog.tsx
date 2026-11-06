@@ -7,11 +7,11 @@ import {
   type LocalStateFile,
   type LocalValue,
 } from 'reactive-md';
-import { useCopy, useLanguage } from './i18n';
-import { isHtmlOptionsActive } from './html-options';
-import { resolveDocumentImages, type ImageAsset } from './image-assets';
-import { IMAGE_COPY } from './image-copy';
-import { ImageAssetsPanel } from './image-assets-panel';
+import { useCopy, useLanguage } from '../ui/i18n';
+import { isHtmlOptionsActive } from '../settings/html-options';
+import { resolveDocumentImages, type ImageAsset } from '../images/image-assets';
+import { IMAGE_COPY } from '../images/image-copy';
+import { ImageAssetsPanel } from '../images/image-assets-panel';
 import {
   buildShareableHtml,
   countParameterDifferences,

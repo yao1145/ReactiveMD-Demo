@@ -7,10 +7,10 @@ import {
   LANGUAGE_STORAGE_KEY,
   LanguageProvider,
   type Language,
-} from './i18n';
+} from './ui/i18n';
 import 'reactive-md/styles.css';
-import './styles.css';
-import './author.css';
+import './app/styles.css';
+import './app/author.css';
 
 const EMBED_SOURCES: Record<Language, string> = {
   en: [

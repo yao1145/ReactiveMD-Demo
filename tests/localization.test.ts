@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { COPY, DEFAULT_LANGUAGE, copyFor, pick } from '../src/i18n';
+import { COPY, DEFAULT_LANGUAGE, copyFor, pick } from '../src/ui/i18n';
 
 function shapeOf(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(shapeOf);

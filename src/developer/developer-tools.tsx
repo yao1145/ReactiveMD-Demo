@@ -5,9 +5,9 @@ import * as authoringApi from 'reactive-md/authoring';
 import engineManifest from 'reactive-md/package.json';
 import editorManifest from 'reactive-md-editor/package.json';
 import type { EditorViewMode } from 'reactive-md-editor';
-import { DEFAULT_HTML_OPTIONS, type DemoHtmlOptions } from './html-options';
-import type { Language } from './i18n';
-import { useScrollContainer } from './use-scroll-container';
+import { DEFAULT_HTML_OPTIONS, type DemoHtmlOptions } from '../settings/html-options';
+import type { Language } from '../ui/i18n';
+import { useScrollContainer } from '../ui/use-scroll-container';
 import {
   CheckIcon,
   ChevronRightIcon,
@@ -22,7 +22,7 @@ import {
   RestoreIcon,
   SlidersIcon,
   UploadIcon,
-} from './icons';
+} from '../ui/icons';
 import './developer-tools.css';
 
 export interface DeveloperToolsCopy {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { compileLocal, type LocalNode } from 'reactive-md';
-import { EXAMPLES, localizedExample, resolveExampleId } from '../src/examples';
+import { EXAMPLES, localizedExample, resolveExampleId } from '../src/content/examples';
 
 const names = 'input textarea number slider toggle checkbox date select choices radio-group option counter timer checklist progress panel card grid tabs tab accordion disclosure if alert badge tooltip table chart plot timeline diagram node edge jump anchor text section multi-select range-slider coordinate quiz steps step validation data-table column'.split(' ');
 function componentNames(nodes: LocalNode[]): string[] {

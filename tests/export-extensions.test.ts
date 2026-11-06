@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { compileLocal, createLocalStateFile } from 'reactive-md';
 import { host } from '../extensions';
-import { buildShareableHtml } from '../src/export-html';
+import { buildShareableHtml } from '../src/export/export-html';
 
 const { config } = host;
 

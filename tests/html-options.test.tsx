@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { compileLocal, type LocalCompileOptions, type LocalDocument } from 'reactive-md';
-import { ExportDialog } from '../src/export-dialog';
-import { HtmlCompatibilityControls } from '../src/html-compatibility';
+import { ExportDialog } from '../src/export/export-dialog';
+import { HtmlCompatibilityControls } from '../src/settings/html-compatibility';
 import {
   DEFAULT_HTML_OPTIONS,
   compileOptionsKey,
@@ -10,8 +10,8 @@ import {
   isHtmlOptionsActive,
   toCompileOptions,
   type DemoHtmlOptions,
-} from '../src/html-options';
-import { COPY, LanguageProvider } from '../src/i18n';
+} from '../src/settings/html-options';
+import { COPY, LanguageProvider } from '../src/ui/i18n';
 
 type HtmlPolicy = {
   enableCss: boolean;

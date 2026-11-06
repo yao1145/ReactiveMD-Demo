@@ -3,7 +3,7 @@ import { compileLocal } from 'reactive-md';
 import {
   createImageAsset, validateImageManifest, resolveDocumentImages,
   MAX_IMAGE_BYTES, MAX_IMAGE_TOTAL_BYTES, type ImageAsset,
-} from '../src/image-assets';
+} from '../src/images/image-assets';
 
 const png = Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII='), c => c.charCodeAt(0));
 const file = (bytes = png, type = 'image/png') => new File([bytes], 'photo.png', { type });

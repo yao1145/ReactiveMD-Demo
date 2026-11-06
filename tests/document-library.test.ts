@@ -7,7 +7,7 @@ import {
   parseLibraryText,
   uniqueDocumentName,
   type LibraryStorage,
-} from '../src/document-library';
+} from '../src/documents/document-library';
 
 class MemoryStorage implements LibraryStorage {
   readonly values = new Map<string, string>();

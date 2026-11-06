@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { compileLocal, createLocalStateFile, type LocalCompileOptions } from 'reactive-md';
-import { buildShareableHtml } from '../src/export-html';
+import { buildShareableHtml } from '../src/export/export-html';
 import { host } from '../extensions';
 
 const { config } = host;

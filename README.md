@@ -60,7 +60,11 @@ DEMO_URL=http://127.0.0.1:5173 PLAYWRIGHT_CHANNEL=msedge npm run test:editor
 - `src/` contains the application: editor shell, preview, document library, export dialog and extension registration.
 - `extensions.ts` registers the Tetris and 2048 packages.
 
-Example and guide files are ordinary Markdown sources imported with `?raw`. Edit them in place; the navigation titles and hints live in `src/examples.ts`.
+Example and guide files are ordinary Markdown sources imported with `?raw`. Edit them in place; the navigation titles and hints live in `src/content/examples.ts`.
+
+## Source layout
+
+`src/` is grouped by feature. See [docs/source-layout-en.md](docs/source-layout-en.md) or [docs/source-layout-ch.md](docs/source-layout-ch.md) for each group, where new files belong, cross-group imports and the stable browser entries `src/main.tsx` and `src/embed.tsx`.
 
 ## Export assets
 
