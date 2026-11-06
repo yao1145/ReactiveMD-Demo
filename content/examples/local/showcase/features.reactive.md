@@ -58,6 +58,24 @@ y = \begin{cases}
 $$
 </plot>
 </tab>
+<tab label="Parametric and implicit">
+Some curves are not graphs of a function of x. A parametric block traces x(t) and y(t); an implicit equation is traced over a square region. Drag the scale to resize the lemniscate.
+
+<slider bind="functionsLemniscate" label="Lemniscate scale" initial="1" min="0.5" max="2" step="0.25">
+
+<grid>
+<card>
+<plot min="0" max="12.566" label="Cycloid" x-label="x" y-label="y">
+$$ \begin{cases} x = t - \sin t \\ y = 1 - \cos t \end{cases} $$
+</plot>
+</card>
+<card>
+<plot min="-3" max="3" samples="200" label="Lemniscate" x-label="x" y-label="y">
+$$ (x^2 + y^2)^2 = 2\mathrm{functionsLemniscate}^2(x^2 - y^2) $$
+</plot>
+</card>
+</grid>
+</tab>
 <tab label="Savings application">
 Monthly deposits and monthly compounding turn a formula into a small planning tool. Set the annual rate to zero to compare deposits alone.
 

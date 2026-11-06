@@ -58,6 +58,24 @@ y = \begin{cases}
 $$
 </plot>
 </tab>
+<tab label="参数方程与隐函数">
+有些曲线不是 x 的函数图像。参数方程用 `t` 同时给出 x(t) 与 y(t)，隐式方程则在方形区域内追踪等值线。拖动缩放参数，观察双纽线如何变化。
+
+<slider bind="functionsLemniscate" label="双纽线缩放 a" initial="1" min="0.5" max="2" step="0.25">
+
+<grid>
+<card>
+<plot min="0" max="12.566" label="摆线" x-label="x" y-label="y">
+$$ \begin{cases} x = t - \sin t \\ y = 1 - \cos t \end{cases} $$
+</plot>
+</card>
+<card>
+<plot min="-3" max="3" samples="200" label="双纽线" x-label="x" y-label="y">
+$$ (x^2 + y^2)^2 = 2\mathrm{functionsLemniscate}^2(x^2 - y^2) $$
+</plot>
+</card>
+</grid>
+</tab>
 <tab label="应用：储蓄增长">
 每月末存入固定金额，按月复利计算。将年利率调到零，比较只存本金时的增长。
 
