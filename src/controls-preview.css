@@ -1,0 +1,168 @@
+/* Page layout and the acceptance lab's clearly labeled local overrides.
+   Document-internal button skin stays in reactive-md/styles.css. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+.controls-page {
+  width: 100%;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: var(--space-5);
+}
+
+.controls-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  align-items: end;
+  justify-content: space-between;
+  padding-block-end: var(--space-4);
+  border-block-end: 1px solid var(--line);
+}
+
+.controls-head h1 {
+  margin: var(--space-1) 0;
+  font-size: var(--text-2xl);
+}
+
+.controls-eyebrow {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.controls-lede {
+  max-width: 62ch;
+  margin: 0;
+  color: var(--ink-soft);
+}
+
+.controls-back {
+  color: var(--accent-text);
+  font-weight: var(--weight-medium);
+}
+
+.controls-head-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.controls-density {
+  display: inline-flex;
+  gap: var(--space-2);
+  align-items: center;
+  color: var(--ink-muted);
+  font-size: var(--text-sm);
+}
+
+.controls-density select {
+  padding: var(--space-1) var(--space-2);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-control);
+  color: var(--ink);
+  font: inherit;
+}
+
+.controls-outside {
+  margin: var(--space-4) 0;
+  color: var(--ink-muted);
+}
+
+.controls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr));
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.controls-card {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
+}
+
+.controls-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+  align-items: start;
+  justify-content: space-between;
+}
+
+.controls-card-head h2 {
+  margin: 0 0 var(--space-1);
+  font-size: var(--text-lg);
+}
+
+.controls-card-head p {
+  margin: 0;
+  color: var(--ink-muted);
+}
+
+.controls-theme-button {
+  flex: none;
+  padding: var(--space-2) var(--space-3);
+  background: var(--neutral-soft);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-pill);
+  color: var(--ink);
+  font: inherit;
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+}
+
+.controls-theme-button:hover {
+  background: var(--surface-hover);
+}
+
+.controls-footnote {
+  margin-block-start: var(--space-4);
+  color: var(--ink-muted);
+}
+
+.controls-footnote code {
+  font-family: var(--font-mono);
+}
+
+@media (max-width: 760px) {
+  .controls-page {
+    padding: var(--space-3);
+  }
+
+  .controls-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* The accepted button lab and example layout rules travel with the SDK
+   packages in controls-examples.tsx so the offline export keeps them. */
+
+@media (prefers-reduced-motion: reduce) {
+  .controls-theme-button {
+    transition: none;
+  }
+}

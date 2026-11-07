@@ -5,9 +5,12 @@ import tetrisNotices from 'reactive-md-tetris-package/notices?raw';
 import { game2048Package } from 'reactive-md-game-2048-package/react';
 import game2048Notices from 'reactive-md-game-2048-package/notices?raw';
 import type { PlaygroundExample } from './src/content/examples';
+import { controlsTheme } from './src/controls-theme';
+import { buttonLabPackage, controlsExamplesPackage } from './src/controls-examples';
 
 export const host = createReactHost({
-  packages: [tetrisPackage, game2048Package],
+  packages: [tetrisPackage, game2048Package, buttonLabPackage, controlsExamplesPackage],
+  themes: [controlsTheme],
   notices: [
     { id: 'reactive-md-tetris-package', license: 'MIT', text: tetrisNotices },
     { id: 'reactive-md-game-2048-package', license: 'MIT', text: game2048Notices },
