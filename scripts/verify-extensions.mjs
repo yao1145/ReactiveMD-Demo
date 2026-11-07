@@ -3,16 +3,17 @@ import { createServer, preview } from 'vite';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import path from 'node:path';
-import { openWorkbench, clickWorkbenchAction } from './workbench-ui.mjs';
+import { openWorkbench, selectWorkbenchExample, clickWorkbenchAction } from './workbench-ui.mjs';
 
 const dev = process.argv.includes('--dev');
 const root = fileURLToPath(new URL('../', import.meta.url));
 const artifacts = fileURLToPath(new URL('../artifacts/demo-extensions/', import.meta.url));
 await mkdir(artifacts, { recursive: true });
 const config = { root, configFile: path.join(root, 'vite.config.ts'), server: { host: '127.0.0.1', port: 5187, strictPort: true }, preview: { host: '127.0.0.1', port: 5187, strictPort: true } };
-const server = dev ? await createServer(config) : await preview(config);
-if (dev) await server.listen();
-const baseURL = server.resolvedUrls.local[0];
+const targetURL = process.env.DEMO_URL;
+const server = targetURL ? undefined : dev ? await createServer(config) : await preview(config);
+if (dev && server) await server.listen();
+const baseURL = targetURL ?? server.resolvedUrls.local[0];
 const channel = process.env.PLAYWRIGHT_CHANNEL ?? 'msedge';
 let browser;
 const checks = [];
@@ -37,7 +38,7 @@ try {
   await openWorkbench(page, baseURL);
   const examplesButton = page.getByRole('button', { name: 'Try examples', exact: true });
   if (await examplesButton.isVisible()) await examplesButton.click();
-  await page.locator('#example-select').selectOption('games');
+  await selectWorkbenchExample(page, 'games');
   const game = page.locator('[data-tetris]');
   await check('registered sample compiles through the worker and renders with CSS', async () => {
     await expect(game).toBeVisible();
@@ -64,7 +65,7 @@ try {
   });
   await check('the 2048 plugin renders and responds to pointer and lock controls', async () => {
     await page.locator('[data-editor-view-option="preview"]').click();
-    await page.locator('#example-select').selectOption('games');
+    await selectWorkbenchExample(page, 'games');
     const board = page.locator('[data-game-2048]');
     await expect(board).toBeVisible();
     await expect(page.locator('[data-game-2048-board] .rmd-2048-cell')).toHaveCount(16);
@@ -77,7 +78,7 @@ try {
     await expect(page.locator('[data-game-2048-left]')).toBeDisabled();
     await page.getByRole('checkbox', { name: 'Lock 2048', exact: true }).uncheck();
     await expect(page.locator('[data-game-2048-left]')).toBeEnabled();
-    await page.locator('#example-select').selectOption('games');
+    await selectWorkbenchExample(page, 'games');
     await expect(game).toBeVisible();
   });
 
@@ -114,11 +115,15 @@ try {
         } else {
           expect(html).not.toMatch(/<script\b/);
         }
+        await expect(exported.locator('[data-rmd-theme="sci-fi"]')).toBeVisible();
+        expect(await exported.locator('[data-rmd-theme="sci-fi"]').evaluate(element => getComputedStyle(element).getPropertyValue('--sf-neutral-0').trim())).toBe('#ffffff');
         expect(requests).toEqual([]);
       } finally { await offlineContext.close(); }
     });
   }
   await check('mobile preview retains a visible board and usable controls', async () => {
+    const sidebarToggle = page.locator('#sidebar-toggle');
+    if (await sidebarToggle.getAttribute('aria-expanded') === 'true') await sidebarToggle.click();
     await page.setViewportSize({ width: 390, height: 844 });
     await page.locator('[data-editor-view-option="preview"]').click();
     await expect(game).toBeVisible();
@@ -131,6 +136,6 @@ try {
 } finally {
   await writeFile(path.join(artifacts, `verification-${dev ? 'dev' : 'production'}.json`), JSON.stringify({ status, baseURL, dev, checks, errors, workers }, null, 2));
   await browser?.close();
-  if (dev) await server.close();
-  else await new Promise(resolve => { server.httpServer.close(resolve); server.httpServer.closeAllConnections(); });
+  if (server && dev) await server.close();
+  else if (server) await new Promise(resolve => { server.httpServer.close(resolve); server.httpServer.closeAllConnections(); });
 }

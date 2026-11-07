@@ -6,6 +6,12 @@ Reactive MD 的 Playground：包含编辑器、实时预览、文档库、HTML �
 
 在线站点：[yaozi.raricy.com](https://yaozi.raricy.com/)。
 
+## 添加主题或组件
+
+Vite 启用 `reactiveMd()`。主题放入 `theme/<名称>/theme.css`；组件在 `plugin/<名称>/index.ts` 默认导出组件包。`component.css` 与本地 CSS 资源自动收集。`plugin/tetris/` 与 `plugin/game-2048/` 已包含本地 React 实现、manifest、游戏逻辑、样式和 notices；`theme/sci-fi/` 包含主题元数据与 CSS 资源。复制或编辑这些目录即可使用，无需额外安装游戏包或主题包。`extensions.ts` 保留样例元数据与兼容 host 导出。
+
+独立消费者测试 `tests/directory-discovery.test.ts` 验证编译与编辑器数据、SSR 及离线资源。
+
 ## 环境要求
 
 - Node.js 22.12 或更高版本。CI 使用 Node 24。
@@ -26,11 +32,10 @@ npm run dev
 
 - `reactive-md` 0.8.0-next.0
 - `reactive-md-editor` 0.1.0-next.0
-- `reactive-md-sci-fi-theme` 1.0.0
 
-科幻主题在 `extensions.ts` 中注册，因此声明 `<theme name="sci-fi">` 的文档可以在预览、编辑器与离线导出中正常渲染。
+科幻主题从 `theme/sci-fi/theme.css` 自动发现，因此声明 `<theme name="sci-fi">` 的文档可以在预览、编辑器与离线导出中正常渲染。
 
-已提交的游戏包仍声明 `reactive-md` 的 peer 范围为 `^0.7.0`，而 Demo 运行的是 0.8 预发布版。请使用 `--legacy-peer-deps` 安装。Demo 使用它们公开的 React 入口，而这些入口调用的引擎 API 没有变化。
+原有游戏与主题 npm 包仅保留为开发测试夹具，用于验证安装包兼容接入；页面运行使用本地 `plugin/` 和 `theme/`。
 
 ## 脚本
 

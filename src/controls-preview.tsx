@@ -88,7 +88,7 @@ function extensionHint(names: readonly string[]): void {
   const missing = names.filter(name => !demoConfig.registry.some(item => item.name === name));
   if (missing.length === 0) return;
   throw new Error(
-    `extensions.ts is missing ${missing.join(', ')}. See artifacts/themed-elements/integration-demo.md.`,
+    `The plugin/ directory is missing ${missing.join(', ')}. See artifacts/themed-elements/integration-demo.md.`,
   );
 }
 

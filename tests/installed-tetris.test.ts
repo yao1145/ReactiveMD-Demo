@@ -10,7 +10,7 @@ it('consumes a copied npm distribution with built entries and packaged resources
   const root = new URL('../../', entry);
   expect((await lstat(fileURLToPath(root))).isSymbolicLink()).toBe(false);
   const metadata = JSON.parse(await readFile(new URL('package.json', root), 'utf8'));
-  expect(metadata.peerDependencies['reactive-md']).toBe('^0.7.0');
+  expect(metadata.peerDependencies['reactive-md']).toBe('^0.8.0-next.0');
   expect(metadata.dependencies?.['reactive-md']).toBeUndefined();
   await access(new URL('dist/types/node-entry.d.ts', root));
   await access(new URL('LICENSE', root));

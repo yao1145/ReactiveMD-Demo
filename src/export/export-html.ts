@@ -16,7 +16,7 @@ import { createLocalShareableHtml, type LocalStandaloneBundle } from 'reactive-m
 import { host } from 'virtual:reactive-md/host';
 import { imagePolicy, resolveDocumentImages, validateImageManifest, type ImageAsset } from '../images/image-assets';
 
-const { config: demoConfig, reactConfig, resources, notices } = host;
+
 
 export const DEMO_GENERATOR_NAME = 'reactive-md-demo';
 export const FALLBACK_DOCUMENT_TITLE = 'Reactive MD document';
@@ -282,6 +282,7 @@ export function formatBuildError(error: unknown): string {
 export async function buildShareableHtml(
   options: ShareableHtmlBuildOptions,
 ): Promise<ShareableHtmlBuildResult> {
+  const { config: demoConfig, reactConfig, resources, notices } = host;
   const { source, state, mode } = options;
   const locale: 'en' | 'zh' = options.locale === 'zh' ? 'zh' : 'en';
   const colorScheme: ShareableColorScheme = options.colorScheme ?? 'auto';

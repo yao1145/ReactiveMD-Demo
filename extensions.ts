@@ -1,22 +1,6 @@
-/** Register packages here. Preview, authoring and export share this module. */
-import { createReactHost } from 'reactive-md/react';
-import { tetrisPackage } from 'reactive-md-tetris-package/react';
-import tetrisNotices from 'reactive-md-tetris-package/notices?raw';
-import { game2048Package } from 'reactive-md-game-2048-package/react';
-import game2048Notices from 'reactive-md-game-2048-package/notices?raw';
+/** Compatibility entry for host consumers and Demo example metadata. */
+export { host } from 'virtual:reactive-md/host';
 import type { PlaygroundExample } from './src/content/examples';
-import { controlsTheme } from './src/controls-theme';
-import { sciFiTheme } from 'reactive-md-sci-fi-theme';
-import { buttonLabPackage, controlsExamplesPackage } from './src/controls-examples';
-
-export const host = createReactHost({
-  packages: [tetrisPackage, game2048Package, buttonLabPackage, controlsExamplesPackage],
-  themes: [controlsTheme, sciFiTheme],
-  notices: [
-    { id: 'reactive-md-tetris-package', license: 'MIT', text: tetrisNotices },
-    { id: 'reactive-md-game-2048-package', license: 'MIT', text: game2048Notices },
-  ],
-});
 
 /** Host metadata stays beside the registration; the virtual module exposes it. */
 export const examples: readonly PlaygroundExample[] = [{
@@ -29,7 +13,9 @@ export const examples: readonly PlaygroundExample[] = [{
 
 function gamesSource(zh: boolean): string {
   const t = (en: string, cn: string) => zh ? cn : en;
-  return `# ${t('Games', '小游戏')}
+  return `<theme name="sci-fi">
+
+# ${t('Games', '小游戏')}
 
 ${t('Two games share this page. Their controls and progress are independent; click a board before using its keyboard controls.', '两款小游戏放在同一页中，操作和进度各自独立。使用键盘前，先点击要玩的棋盘。')}
 

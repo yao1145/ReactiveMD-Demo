@@ -1,5 +1,5 @@
 import type { Language } from '../ui/i18n';
-import { extensions as installedExtensions } from 'virtual:reactive-md/host';
+import * as installedExtensions from '../../extensions';
 import functionsSource from '../../content/examples/local/showcase/functions.reactive.md?raw';
 import formsSource from '../../content/examples/local/showcase/forms.reactive.md?raw';
 import statisticsSource from '../../content/examples/local/showcase/statistics.reactive.md?raw';

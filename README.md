@@ -26,12 +26,11 @@ The engine and editor arrive as tarballs under `vendor/`:
 
 - `reactive-md` 0.8.0-next.0
 - `reactive-md-editor` 0.1.0-next.0
-- `reactive-md-sci-fi-theme` 1.0.0
 
-The sci-fi theme is registered in `extensions.ts`, so documents that declare
+The sci-fi theme is discovered from `theme/sci-fi/theme.css`, so documents that declare
 `<theme name="sci-fi">` render in the preview, the editor and the offline export.
 
-The committed game packages still declare a `reactive-md` peer range of `^0.7.0`, while the Demo runs the 0.8 prerelease. Install with `--legacy-peer-deps`. The Demo uses their public React entries, and the engine APIs those entries call are unchanged.
+Tetris and 2048 run from local source under `plugin/tetris/` and `plugin/game-2048/`. The sci-fi theme lives under `theme/sci-fi/`. The original npm packages remain development-only fixtures for installed-package compatibility tests.
 
 ## Scripts
 
@@ -46,7 +45,7 @@ The committed game packages still declare a `reactive-md` peer range of `^0.7.0`
 | `npm run test:toolbar` | Toolbar and component insertion checks |
 | `npm run test:interactions` | Editor selection and interaction checks |
 | `npm run test:export` | HTML and image export checks |
-| `npm run test:extensions` | Installed game packages and offline bundle checks |
+| `npm run test:extensions` | Local game directories and offline bundle checks |
 | `npm run test:outline` | Document outline behavior |
 | `npm run test:workbench` | Compact workbench layout |
 
@@ -62,9 +61,16 @@ DEMO_URL=http://127.0.0.1:5173 PLAYWRIGHT_CHANNEL=msedge npm run test:editor
 - `content/examples/local/` contains the example articles shown in the Playground.
 - `content/guides/` contains the English and Chinese user guide.
 - `src/` contains the application: editor shell, preview, document library, export dialog and extension registration.
-- `extensions.ts` registers the Tetris and 2048 packages.
+- `plugin/` contains automatically discovered package entries; `theme/` contains CSS themes.
+- `extensions.ts` keeps example metadata and a compatibility host export.
 
 Example and guide files are ordinary Markdown sources imported with `?raw`. Edit them in place; the navigation titles and hints live in `src/content/examples.ts`.
+
+## Add a theme or component
+
+Vite uses `reactiveMd()`. Add `theme/<name>/theme.css` for a theme or a default package export in `plugin/<name>/index.ts` for a component. `component.css` and local CSS assets are collected automatically. The existing Tetris and 2048 directories contain their React implementations, manifests, game engines, styles and notices. The sci-fi directory contains its metadata and CSS assets. These directories can be edited or copied as local extensions without installing separate game or theme packages.
+
+`tests/directory-discovery.test.ts` creates an independent directory-only consumer and checks serializable compiler/editor data, SSR and offline resources.
 
 ## Source layout
 
