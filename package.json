@@ -28,10 +28,10 @@
   "dependencies": {
     "react": "19.3.1",
     "react-dom": "19.3.1",
-    "reactive-md": "file:vendor/reactive-md-0.8.0-next.0-62a41fb24bab.tgz",
+    "reactive-md": "file:vendor/reactive-md-0.8.0-next.0-50f19b469b63.tgz",
     "reactive-md-editor": "file:vendor/reactive-md-editor-0.1.0-next.0-4a47efdf9d2e.tgz",
-    "reactive-md-game-2048-package": "file:vendor/reactive-md-game-2048-package-0.1.0-811733537169.tgz",
-    "reactive-md-tetris-package": "file:vendor/reactive-md-tetris-package-0.1.0-1d7d5c9bd55d.tgz"
+    "reactive-md-game-2048-package": "file:vendor/reactive-md-game-2048-package-0.1.0-50f19b469b63.tgz",
+    "reactive-md-tetris-package": "file:vendor/reactive-md-tetris-package-0.1.0-50f19b469b63.tgz"
   },
   "devDependencies": {
     "@codemirror/view": "6.43.15",

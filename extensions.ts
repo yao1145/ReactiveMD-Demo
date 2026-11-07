@@ -31,7 +31,7 @@ ${t('Two games share this page. Their controls and progress are independent; cli
 
 ## ${t('Tetris', '俄罗斯方块')}
 
-${t('Use the arrows to move and rotate, Space to drop, P to pause and R to restart. The buttons also work with touch.', '方向键移动与旋转，空格键落下，P 暂停，R 重新开始；也可以使用棋盘旁的触控按钮。')}
+${t('Use the arrows to move and rotate, Space to drop, P to pause and R to restart. The buttons also work with touch, and switching tabs pauses the game.', '方向键移动与旋转，空格键落下，P 暂停，R 重新开始；也可以使用棋盘旁的触控按钮。切换到其他标签页时游戏会暂停。')}
 
 <checkbox bind="showTetris" label="${t('Show tetris', '显示俄罗斯方块')}" initial="true">
 <checkbox bind="lockTetris" label="${t('Lock tetris', '锁定俄罗斯方块')}">
@@ -41,7 +41,7 @@ ${t('Use the arrows to move and rotate, Space to drop, P to pause and R to resta
 
 ## 2048
 
-${t('Use the arrows or W A S D to slide tiles. Equal tiles combine; try to reach 2048. Press R to restart.', '用方向键或 W A S D 移动方块，让相同数字合并，试着拼出 2048。R 重新开始。')}
+${t('Use the arrows, W A S D or swipe to slide tiles. Equal tiles combine; try to reach 2048. Press R to restart.', '用方向键、W A S D 或滑动来移动方块，让相同数字合并，试着拼出 2048。R 重新开始。')}
 
 <checkbox bind="show2048" label="${t('Show 2048', '显示 2048')}" initial="true">
 <checkbox bind="lock2048" label="${t('Lock 2048', '锁定 2048')}">
