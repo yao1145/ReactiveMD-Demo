@@ -26,6 +26,9 @@ npm run dev
 
 - `reactive-md` 0.8.0-next.0
 - `reactive-md-editor` 0.1.0-next.0
+- `reactive-md-sci-fi-theme` 1.0.0
+
+科幻主题在 `extensions.ts` 中注册，因此声明 `<theme name="sci-fi">` 的文档可以在预览、编辑器与离线导出中正常渲染。
 
 已提交的游戏包仍声明 `reactive-md` 的 peer 范围为 `^0.7.0`，而 Demo 运行的是 0.8 预发布版。请使用 `--legacy-peer-deps` 安装。Demo 使用它们公开的 React 入口，而这些入口调用的引擎 API 没有变化。
 

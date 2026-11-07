@@ -26,6 +26,10 @@ The engine and editor arrive as tarballs under `vendor/`:
 
 - `reactive-md` 0.8.0-next.0
 - `reactive-md-editor` 0.1.0-next.0
+- `reactive-md-sci-fi-theme` 1.0.0
+
+The sci-fi theme is registered in `extensions.ts`, so documents that declare
+`<theme name="sci-fi">` render in the preview, the editor and the offline export.
 
 The committed game packages still declare a `reactive-md` peer range of `^0.7.0`, while the Demo runs the 0.8 prerelease. Install with `--legacy-peer-deps`. The Demo uses their public React entries, and the engine APIs those entries call are unchanged.
 
