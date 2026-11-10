@@ -4,6 +4,7 @@ import {
   planLocalStateRetention,
   updateLocalRuntime,
   type LocalDocument,
+  type LocalRuntimeOptions,
   type LocalValue,
 } from 'reactive-md';
 
@@ -47,9 +48,12 @@ export class PreviewStateSession {
     return this.saved.state;
   }
 
-  open(document: LocalDocument) {
+  open(
+    document: LocalDocument,
+    runtimeOptions: Pick<LocalRuntimeOptions, 'documentId' | 'componentState'> = {},
+  ) {
     let currentDocument = document;
-    const runtime = createLocalRuntime(document);
+    const runtime = createLocalRuntime(document, runtimeOptions);
     if (this.retention && this.saved) {
       // plan/apply validate every value against the new document and write
       // atomically, leaving the new initial values in place when a candidate

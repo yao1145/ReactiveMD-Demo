@@ -3,7 +3,7 @@ import {
   defineReactComponentPackage,
   type LocalComponentContext,
 } from 'reactive-md/react';
-import { useTicker } from 'reactive-md/react/runtime';
+import { useTicker, useComponentState } from 'reactive-md/react/runtime';
 import { tetris } from './manifests';
 import {
   createTetrisState,
@@ -16,6 +16,7 @@ import {
   softDrop,
   tick,
   togglePause,
+  type ActivePiece,
   type TetrisCell,
   type TetrisPiece,
   type TetrisState,
@@ -50,6 +51,44 @@ function readOptions(context: LocalComponentContext): TetrisOptions {
 function readLabel(context: LocalComponentContext): string {
   const raw = context.props.label;
   return typeof raw === 'string' && raw.length > 0 ? raw : 'Tetris';
+}
+
+const PIECES: readonly TetrisPiece[] = ['I', 'O', 'T', 'S', 'Z', 'J', 'L'];
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isPiece(value: unknown): value is TetrisPiece {
+  return typeof value === 'string' && (PIECES as readonly string[]).includes(value);
+}
+
+function isCell(value: unknown): value is TetrisCell {
+  return value === null || isPiece(value);
+}
+
+function isActivePiece(value: unknown): value is ActivePiece {
+  return isRecord(value)
+    && isPiece(value.type)
+    && typeof value.rotation === 'number' && Number.isInteger(value.rotation)
+    && typeof value.x === 'number' && Number.isInteger(value.x)
+    && typeof value.y === 'number' && Number.isInteger(value.y);
+}
+
+function isTetrisState(value: unknown): value is TetrisState {
+  if (!isRecord(value)) return false;
+  const { width, height, seed, board, active, queue, rng, score, lines, level, moves, status } = value;
+  if (typeof width !== 'number' || !Number.isInteger(width) || width < 6 || width > 14) return false;
+  if (typeof height !== 'number' || !Number.isInteger(height) || height < 12 || height > 24) return false;
+  if (typeof seed !== 'number' || !Number.isFinite(seed)) return false;
+  if (!Array.isArray(board) || board.length !== height) return false;
+  if (!board.every((row) => Array.isArray(row) && row.length === width && row.every(isCell))) return false;
+  if (active !== null && !isActivePiece(active)) return false;
+  if (!Array.isArray(queue) || !queue.every(isPiece)) return false;
+  for (const number of [rng, score, lines, level, moves]) {
+    if (typeof number !== 'number' || !Number.isFinite(number)) return false;
+  }
+  return status === 'playing' || status === 'paused' || status === 'over';
 }
 
 function BoardView(props: {
@@ -120,7 +159,22 @@ export function Tetris(context: LocalComponentContext) {
   const debug = context.props.debug === true;
   const locked = context.disabled;
 
-  const [game, setGame] = useState<TetrisState>(() => createTetrisState(options));
+  const { value: game, setValue } = useComponentState<TetrisState>(context, {
+    initial: () => createTetrisState(options),
+    validate: (value): value is TetrisState => isTetrisState(value)
+      && value.width === options.width
+      && value.height === options.height
+      && value.seed === options.seed,
+    version: 1,
+    autoSave: true,
+  });
+  const gameRef = useRef(game);
+  gameRef.current = game;
+  // The engine reducers read the previous state; adapt them to the hook's
+  // value setter while still saving every accepted update.
+  const updateGame = (next: TetrisState | ((previous: TetrisState) => TetrisState)): void => {
+    setValue(typeof next === 'function' ? next(gameRef.current) : next);
+  };
   const [exploded, setExploded] = useState(false);
 
   const signature = `${options.width}:${options.height}:${options.seed}`;
@@ -128,17 +182,10 @@ export function Tetris(context: LocalComponentContext) {
   useEffect(() => {
     if (signatureRef.current === signature) return;
     signatureRef.current = signature;
-    setGame(createTetrisState(options));
+    updateGame(createTetrisState(options));
   }, [signature, options.width, options.height, options.seed]);
 
-  const resetRef = useRef(context.resetToken);
-  useEffect(() => {
-    if (resetRef.current === context.resetToken) return;
-    resetRef.current = context.resetToken;
-    setGame(createTetrisState(options));
-  }, [context.resetToken, options.width, options.height, options.seed]);
-
-  useTicker(context, speed, () => setGame((previous) => tick(previous)), {
+  useTicker(context, speed, () => updateGame((previous) => tick(previous)), {
     enabled: !locked && context.visible && game.status === 'playing',
     background: 'pause',
   });
@@ -150,7 +197,7 @@ export function Tetris(context: LocalComponentContext) {
   const t = context.locale.t;
   const resetGame = (): void => {
     context.runtime.reset(context.content);
-    setGame(createTetrisState(options));
+    updateGame(createTetrisState(options));
   };
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>): void => {
@@ -158,35 +205,35 @@ export function Tetris(context: LocalComponentContext) {
     switch (event.key) {
       case 'ArrowLeft':
         event.preventDefault();
-        setGame((previous) => shift(previous, -1));
+        updateGame((previous) => shift(previous, -1));
         break;
       case 'ArrowRight':
         event.preventDefault();
-        setGame((previous) => shift(previous, 1));
+        updateGame((previous) => shift(previous, 1));
         break;
       case 'ArrowDown':
         event.preventDefault();
-        setGame((previous) => softDrop(previous));
+        updateGame((previous) => softDrop(previous));
         break;
       case 'ArrowUp':
       case 'x':
       case 'X':
         event.preventDefault();
-        setGame((previous) => rotate(previous));
+        updateGame((previous) => rotate(previous));
         break;
       case ' ':
         event.preventDefault();
-        setGame((previous) => hardDrop(previous));
+        updateGame((previous) => hardDrop(previous));
         break;
       case 'p':
       case 'P':
         event.preventDefault();
-        setGame((previous) => togglePause(previous));
+        updateGame((previous) => togglePause(previous));
         break;
       case 'r':
       case 'R':
         event.preventDefault();
-        setGame((previous) => restart(previous));
+        updateGame((previous) => restart(previous));
         break;
       default:
         break;
@@ -241,15 +288,15 @@ export function Tetris(context: LocalComponentContext) {
           <div className="rmd-tetris-next-label">{t('Next', '下一个')}</div>
           <NextView pieces={game.queue.slice(0, 3)} />
           <div className="rmd-tetris-controls">
-            <button type="button" data-tetris-left disabled={locked} onClick={() => setGame((previous) => shift(previous, -1))} aria-label={t('Move left', '左移')}>←</button>
-            <button type="button" data-tetris-rotate disabled={locked} onClick={() => setGame((previous) => rotate(previous))} aria-label={t('Rotate', '旋转')}>↻</button>
-            <button type="button" data-tetris-right disabled={locked} onClick={() => setGame((previous) => shift(previous, 1))} aria-label={t('Move right', '右移')}>→</button>
-            <button type="button" data-tetris-down disabled={locked} onClick={() => setGame((previous) => softDrop(previous))} aria-label={t('Soft drop', '下移')}>↓</button>
-            <button type="button" data-tetris-drop disabled={locked} onClick={() => setGame((previous) => hardDrop(previous))}>{t('Drop', '落底')}</button>
-            <button type="button" data-tetris-pause disabled={locked} onClick={() => setGame((previous) => togglePause(previous))}>
+            <button type="button" data-tetris-left disabled={locked} onClick={() => updateGame((previous) => shift(previous, -1))} aria-label={t('Move left', '左移')}>←</button>
+            <button type="button" data-tetris-rotate disabled={locked} onClick={() => updateGame((previous) => rotate(previous))} aria-label={t('Rotate', '旋转')}>↻</button>
+            <button type="button" data-tetris-right disabled={locked} onClick={() => updateGame((previous) => shift(previous, 1))} aria-label={t('Move right', '右移')}>→</button>
+            <button type="button" data-tetris-down disabled={locked} onClick={() => updateGame((previous) => softDrop(previous))} aria-label={t('Soft drop', '下移')}>↓</button>
+            <button type="button" data-tetris-drop disabled={locked} onClick={() => updateGame((previous) => hardDrop(previous))}>{t('Drop', '落底')}</button>
+            <button type="button" data-tetris-pause disabled={locked} onClick={() => updateGame((previous) => togglePause(previous))}>
               {paused ? t('Resume', '继续') : t('Pause', '暂停')}
             </button>
-            <button type="button" className="md-button-primary" data-tetris-new disabled={locked} onClick={() => setGame(createTetrisState(options))}>
+            <button type="button" className="md-button-primary" data-tetris-new disabled={locked} onClick={() => updateGame(createTetrisState(options))}>
               {t('New', '新局')}
             </button>
             <button type="button" data-tetris-reset onClick={resetGame}>{t('Reset', '重置')}</button>

@@ -61,6 +61,13 @@ import {
 } from '../ui/i18n';
 import { useLocalCompilation, type LocalCompiledDocument } from '../compilation/use-local-compilation';
 import { PreviewStateSession } from '../compilation/preview-state';
+import {
+  clearSavedComponentState,
+  hasSavableComponents,
+  readSavedComponentState,
+  savableComponentNodes,
+  writeSavedComponentState,
+} from '../compilation/component-state-storage';
 import { GuideDocument } from '../content/guide-examples';
 import guideEnSource from '../../content/guides/local-guide-en.md?raw';
 import guideZhSource from '../../content/guides/local-guide-ch.md?raw';
@@ -212,12 +219,14 @@ function DiagnosticList({ diagnostics, focusDiagnostic, emptyText }: DiagnosticL
 interface LocalPreviewProps {
   document: LocalCompiledDocument;
   session: PreviewStateSession;
+  /** Stable document identity used to scope saved component progress. */
+  stateId: string;
   onDiagnostics: (diagnostics: Diagnostic[]) => void;
   images: readonly ImageAsset[];
   onSourceNavigate?(target: LocalSourceTarget): void;
 }
 
-export const LocalPreview = memo(function LocalPreview({ document, session, onDiagnostics, images, onSourceNavigate }: LocalPreviewProps) {
+export const LocalPreview = memo(function LocalPreview({ document, session, stateId, onDiagnostics, images, onSourceNavigate }: LocalPreviewProps) {
   const language = useLanguage();
   const copy = useCopy();
   const imageProps = useMemo(() => imagePolicy(Object.fromEntries(images.map(a => [a.url, a.dataUrl]))), [images]);
@@ -227,6 +236,7 @@ export const LocalPreview = memo(function LocalPreview({ document, session, onDi
     session: PreviewStateSession;
   } | null>(null);
   const [initError, setInitError] = useState<string | null>(null);
+  const [progressMessage, setProgressMessage] = useState<'saved' | 'saveFailed' | 'reset' | null>(null);
   const reportRef = useRef(onDiagnostics);
   reportRef.current = onDiagnostics;
   const activeRef = useRef<{session:PreviewStateSession; lease:ReturnType<PreviewStateSession['open']>} | null>(null);
@@ -243,7 +253,14 @@ export const LocalPreview = memo(function LocalPreview({ document, session, onDi
     try {
       let active = activeRef.current;
       if (!active || active.session !== session || !active.lease.update(document)) {
-        const lease = session.open(document);
+        // Component progress is restored only while creating a runtime; later
+        // document updates keep the existing registry.
+        const lease = session.open(
+          document,
+          hasSavableComponents(document)
+            ? { documentId: stateId, componentState: readSavedComponentState(stateId) }
+            : {},
+        );
         const previous = active;
         active = {session,lease};
         activeRef.current = active;
@@ -256,7 +273,11 @@ export const LocalPreview = memo(function LocalPreview({ document, session, onDi
       reportRef.current([unexpectedDiagnostic(error, copy.status.unexpectedError)]);
       return;
     }
-  }, [document, session, copy.status.unexpectedError]);
+  }, [document, session, stateId, copy.status.unexpectedError]);
+
+  useEffect(() => {
+    setProgressMessage(null);
+  }, [stateId]);
 
   useLayoutEffect(() => {
     if (instance?.document === document) notifyLocalRuntime(instance.runtime);
@@ -271,16 +292,62 @@ export const LocalPreview = memo(function LocalPreview({ document, session, onDi
   if (!instance || instance.session !== session) {
     return <div className="preview-loading" role="status"><p>{copy.preview.preparing}</p></div>;
   }
+  const savable = hasSavableComponents(instance.document);
+  const saveProgress = () => {
+    const services = instance.runtime.services;
+    setProgressMessage(
+      services && writeSavedComponentState(stateId, services.state.snapshot())
+        ? 'saved'
+        : 'saveFailed',
+    );
+  };
+  const resetProgress = () => {
+    // Deleting the sidecar is separate from restoring the running instances to
+    // their initial state. Components using the state hook reset on the token
+    // bumped by `runtime.reset`, and may save that initial state again later.
+    clearSavedComponentState(stateId);
+    const services = instance.runtime.services;
+    if (services) {
+      for (const key of Object.keys(services.state.snapshot().records)) {
+        services.state.clear(key);
+      }
+    }
+    for (const node of savableComponentNodes(instance.runtime.document)) {
+      instance.runtime.reset(node);
+    }
+    setProgressMessage('reset');
+  };
+  const progressText = progressMessage === 'saved'
+    ? copy.preview.progressSaved
+    : progressMessage === 'saveFailed'
+      ? copy.preview.progressSaveFailed
+      : progressMessage === 'reset'
+        ? copy.preview.progressReset
+        : null;
   return (
-    <LocalDocumentView
-      reactConfig={demoReactConfig}
-      {...imageProps}
-      document={instance.document}
-      runtime={instance.runtime}
-      onDiagnostics={onDiagnostics}
-      locale={language}
-      onSourceNavigate={onSourceNavigate}
-    />
+    <>
+      {savable ? (
+        <div className="preview-state-bar" role="group" aria-label={copy.preview.stateGroupLabel}>
+          <span className="preview-state-hint">{copy.preview.stateHint}</span>
+          <button type="button" className="button button-secondary" onClick={saveProgress}>
+            {copy.preview.saveProgress}
+          </button>
+          <button type="button" className="button button-secondary" onClick={resetProgress}>
+            {copy.preview.resetProgress}
+          </button>
+          {progressText ? <span className="preview-state-message" role="status">{progressText}</span> : null}
+        </div>
+      ) : null}
+      <LocalDocumentView
+        reactConfig={demoReactConfig}
+        {...imageProps}
+        document={instance.document}
+        runtime={instance.runtime}
+        onDiagnostics={onDiagnostics}
+        locale={language}
+        onSourceNavigate={onSourceNavigate}
+      />
+    </>
   );
 });
 
@@ -1026,7 +1093,7 @@ export default function App() {
                         <DiagnosticList diagnostics={compiled.diagnostics} focusDiagnostic={focusDiagnostic} />
                       </div>
                     ) : previewDocument ? (
-                      <LocalPreview key={instanceKey} document={previewDocument} session={previewSession} onDiagnostics={report} images={documentImages.assets} onSourceNavigate={editorView === 'split' ? revealSource : undefined} />
+                      <LocalPreview key={instanceKey} document={previewDocument} session={previewSession} stateId={documentKey} onDiagnostics={report} images={documentImages.assets} onSourceNavigate={editorView === 'split' ? revealSource : undefined} />
                     ) : (
                       <div className="preview-loading" role="status"><p>{copy.preview.preparing}</p></div>
                     )}

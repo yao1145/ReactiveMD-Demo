@@ -3,7 +3,7 @@ import {
   defineReactComponentPackage,
   type LocalComponentContext,
 } from 'reactive-md/react';
-import { useSwipe } from 'reactive-md/react/runtime';
+import { useSwipe, useComponentState } from 'reactive-md/react/runtime';
 import { game2048 } from './manifest';
 import {
   createGameState,
@@ -48,6 +48,33 @@ function readLabel(context: LocalComponentContext): string {
 
 function cellKey(cell: Cell2048): string {
   return `${cell.row}:${cell.column}`;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isCell(value: unknown): value is Cell2048 {
+  return isRecord(value)
+    && typeof value.row === 'number' && Number.isInteger(value.row)
+    && typeof value.column === 'number' && Number.isInteger(value.column);
+}
+
+function isGame2048State(value: unknown): value is Game2048State {
+  if (!isRecord(value)) return false;
+  const { size, seed, target, board, score, moves, status, rng, spawned, merged } = value;
+  if (typeof size !== 'number' || !Number.isInteger(size) || size < 3 || size > 6) return false;
+  if (typeof seed !== 'number' || !Number.isFinite(seed)) return false;
+  if (typeof target !== 'number' || !Number.isFinite(target)) return false;
+  if (!Array.isArray(board) || board.length !== size) return false;
+  if (!board.every((row) => Array.isArray(row) && row.length === size
+    && row.every((cell) => typeof cell === 'number' && Number.isFinite(cell)))) return false;
+  if (typeof score !== 'number' || !Number.isFinite(score)) return false;
+  if (typeof moves !== 'number' || !Number.isFinite(moves)) return false;
+  if (status !== 'playing' && status !== 'won' && status !== 'over') return false;
+  if (typeof rng !== 'number' || !Number.isFinite(rng)) return false;
+  return Array.isArray(spawned) && spawned.every(isCell)
+    && Array.isArray(merged) && merged.every(isCell);
 }
 
 function BoardView(props: {
@@ -114,7 +141,22 @@ export function Game2048(context: LocalComponentContext) {
   const debug = context.props.debug === true;
   const locked = context.disabled;
 
-  const [game, setGame] = useState<Game2048State>(() => createGameState(options));
+  const { value: game, setValue } = useComponentState<Game2048State>(context, {
+    initial: () => createGameState(options),
+    validate: (value): value is Game2048State => isGame2048State(value)
+      && value.size === options.size
+      && value.seed === options.seed
+      && value.target === options.target,
+    version: 1,
+    autoSave: true,
+  });
+  const gameRef = useRef(game);
+  gameRef.current = game;
+  // The engine reducers read the previous state; adapt them to the hook's
+  // value setter while still saving every accepted update.
+  const updateGame = (next: Game2048State | ((previous: Game2048State) => Game2048State)): void => {
+    setValue(typeof next === 'function' ? next(gameRef.current) : next);
+  };
   const [exploded, setExploded] = useState(false);
 
   const signature = `${options.size}:${options.seed}:${options.target}`;
@@ -122,15 +164,8 @@ export function Game2048(context: LocalComponentContext) {
   useEffect(() => {
     if (signatureRef.current === signature) return;
     signatureRef.current = signature;
-    setGame(createGameState(options));
+    updateGame(createGameState(options));
   }, [signature, options.size, options.seed, options.target]);
-
-  const resetRef = useRef(context.resetToken);
-  useEffect(() => {
-    if (resetRef.current === context.resetToken) return;
-    resetRef.current = context.resetToken;
-    setGame(createGameState(options));
-  }, [context.resetToken, options.size, options.seed, options.target]);
 
   if (exploded) {
     throw new Error('2048 exploded during render');
@@ -139,12 +174,12 @@ export function Game2048(context: LocalComponentContext) {
   const t = context.locale.t;
   const apply = (direction: Direction2048): void => {
     if (locked) return;
-    setGame((previous) => move(previous, direction));
+    updateGame((previous) => move(previous, direction));
   };
 
   const resetGame = (): void => {
     context.runtime.reset(context.content);
-    setGame(createGameState(options));
+    updateGame(createGameState(options));
   };
 
   const boardRef = useRef<HTMLDivElement | null>(null);
@@ -187,7 +222,7 @@ export function Game2048(context: LocalComponentContext) {
       case 'r':
       case 'R':
         event.preventDefault();
-        setGame(createGameState(options));
+        updateGame(createGameState(options));
         break;
       default:
         break;
@@ -242,7 +277,7 @@ export function Game2048(context: LocalComponentContext) {
             <button type="button" data-game-2048-up disabled={locked} onClick={() => apply('up')} aria-label={t('Move up', '上移')}>↑</button>
             <button type="button" data-game-2048-right disabled={locked} onClick={() => apply('right')} aria-label={t('Move right', '右移')}>→</button>
             <button type="button" data-game-2048-down disabled={locked} onClick={() => apply('down')} aria-label={t('Move down', '下移')}>↓</button>
-            <button type="button" className="md-button-primary" data-game-2048-new disabled={locked} onClick={() => setGame(createGameState(options))}>
+            <button type="button" className="md-button-primary" data-game-2048-new disabled={locked} onClick={() => updateGame(createGameState(options))}>
               {t('New', '新局')}
             </button>
             <button type="button" data-game-2048-reset onClick={resetGame}>{t('Reset', '重置')}</button>
