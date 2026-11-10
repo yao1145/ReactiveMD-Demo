@@ -19,6 +19,10 @@ export const game2048 = defineLocalComponent({
   form: 'leaf',
   props: {
     label: { kind: 'string', default: '2048' },
+    'save-progress': {
+      kind: 'boolean', static: true, default: true,
+      description: { en: 'Save progress in this browser.', zh: '在当前浏览器保存进度。' },
+    },
     size: {
       kind: 'number',
       dynamic: true,

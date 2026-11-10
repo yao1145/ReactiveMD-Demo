@@ -1,52 +1,24 @@
 import type { LocalDocument, LocalNode } from 'reactive-md';
+import { createLocalBrowserStateStorage } from 'reactive-md/runtime/browser';
 
 /**
- * Demo-owned sidecar storage for the engine component-state protocol. The demo
- * persists the snapshot explicitly; the engine never touches browser storage.
+ * The host selects browser storage; components decide whether to save progress.
  */
 const STORAGE_PREFIX = 'reactive-md:component-state:';
 
 /** Components that expose saveable progress through `useComponentState`. */
 const SAVABLE_COMPONENTS = new Set(['game-2048', 'tetris']);
 
-function browserStorage(): Storage | undefined {
-  try {
-    return typeof window === 'undefined' ? undefined : window.localStorage;
-  } catch {
-    return undefined;
-  }
-}
-
 export function componentStateStorageKey(documentId: string): string {
   return `${STORAGE_PREFIX}${documentId}`;
 }
 
-/** Parse a saved sidecar; corrupt or unavailable storage behaves like no state. */
-export function readSavedComponentState(documentId: string): unknown {
+/** Unavailable storage keeps the game usable with in-memory state. */
+export function createSavedComponentStateStorage(documentId: string) {
   try {
-    const raw = browserStorage()?.getItem(componentStateStorageKey(documentId));
-    return raw ? JSON.parse(raw) : undefined;
+    return createLocalBrowserStateStorage({ documentId, keyPrefix: STORAGE_PREFIX });
   } catch {
     return undefined;
-  }
-}
-
-export function writeSavedComponentState(documentId: string, state: unknown): boolean {
-  try {
-    const storage = browserStorage();
-    if (!storage) return false;
-    storage.setItem(componentStateStorageKey(documentId), JSON.stringify(state));
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-export function clearSavedComponentState(documentId: string): void {
-  try {
-    browserStorage()?.removeItem(componentStateStorageKey(documentId));
-  } catch {
-    /* optional storage */
   }
 }
 
@@ -61,7 +33,8 @@ function flatten(nodes: readonly LocalNode[], result: LocalNode[] = []): LocalNo
 /** Current document component nodes whose progress the demo can save. */
 export function savableComponentNodes(document: LocalDocument): LocalNode[] {
   return flatten(document.nodes).filter(
-    (node) => node.name !== undefined && SAVABLE_COMPONENTS.has(node.name),
+    (node) => node.name !== undefined && SAVABLE_COMPONENTS.has(node.name)
+      && node.attrs?.['save-progress'] !== 'false',
   );
 }
 

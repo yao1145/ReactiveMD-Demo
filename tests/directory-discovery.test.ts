@@ -54,7 +54,8 @@ describe('directory-only installed consumer', () => {
       const { default: bundle } = await populated.ssrLoadModule('virtual:reactive-md/bundle');
       expect(bundle.error).toBeUndefined();
       expect(bundle.configKey).toBe(host.config.key);
-      expect(bundle.manifest.components.map((item: { name: string }) => item.name)).toEqual(['game-2048', 'tetris']);
+      expect(bundle.manifest.components.map((item: { name: string }) => item.name))
+        .toEqual(host.config.registry.map((item: { name: string }) => item.name));
       expect(bundle.manifest.themes.map((item: { name: string }) => item.name)).toEqual(['sci-fi']);
       expect(bundle.css).toBe(host.css);
       expect(bundle.css).toContain('data:font/woff2;base64,');

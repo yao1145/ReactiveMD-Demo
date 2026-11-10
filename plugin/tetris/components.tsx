@@ -166,7 +166,7 @@ export function Tetris(context: LocalComponentContext) {
       && value.height === options.height
       && value.seed === options.seed,
     version: 1,
-    autoSave: true,
+    autoSave: context.props['save-progress'] !== false,
   });
   const gameRef = useRef(game);
   gameRef.current = game;

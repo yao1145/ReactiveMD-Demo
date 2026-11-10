@@ -166,13 +166,6 @@ export interface DemoCopy {
     preparing: string;
     disabledTitle: string;
     disabledBody: string;
-    stateGroupLabel: string;
-    stateHint: string;
-    saveProgress: string;
-    resetProgress: string;
-    progressSaved: string;
-    progressSaveFailed: string;
-    progressReset: string;
   };
   status: {
     compileFailed: string;
@@ -364,13 +357,6 @@ const ENGLISH: DemoCopy = {
     disabledTitle: 'Preview disabled',
     disabledBody:
       'Fix the errors marked on the left; the preview returns automatically once compilation succeeds.',
-    stateGroupLabel: 'Game progress',
-    stateHint: 'Saved for this document in this browser.',
-    saveProgress: 'Save progress',
-    resetProgress: 'Reset',
-    progressSaved: 'Progress saved.',
-    progressSaveFailed: 'Could not save progress.',
-    progressReset: 'Saved progress deleted; games are back to their initial state.',
   },
   status: {
     compileFailed: 'Compile failed',
@@ -556,13 +542,6 @@ const CHINESE: DemoCopy = {
     preparing: '正在准备交互文档…',
     disabledTitle: '预览已停用',
     disabledBody: '请修正左侧标记的错误，编译成功后预览会自动恢复。',
-    stateGroupLabel: '游戏进度',
-    stateHint: '进度保存在当前浏览器的这篇文档中。',
-    saveProgress: '保存进度',
-    resetProgress: '重置',
-    progressSaved: '进度已保存。',
-    progressSaveFailed: '无法保存进度。',
-    progressReset: '已删除保存的进度，游戏回到初始状态。',
   },
   status: {
     compileFailed: '编译失败',

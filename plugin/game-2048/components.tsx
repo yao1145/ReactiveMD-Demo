@@ -148,7 +148,7 @@ export function Game2048(context: LocalComponentContext) {
       && value.seed === options.seed
       && value.target === options.target,
     version: 1,
-    autoSave: true,
+    autoSave: context.props['save-progress'] !== false,
   });
   const gameRef = useRef(game);
   gameRef.current = game;

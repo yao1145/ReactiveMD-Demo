@@ -15,6 +15,10 @@ export const tetris = defineLocalComponent({
   form: 'leaf',
   props: {
     label: { kind: 'string', default: 'Tetris' },
+    'save-progress': {
+      kind: 'boolean', static: true, default: true,
+      description: { en: 'Save progress in this browser.', zh: '在当前浏览器保存进度。' },
+    },
     width: {
       kind: 'number',
       dynamic: true,

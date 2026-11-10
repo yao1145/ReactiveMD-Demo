@@ -62,11 +62,8 @@ import {
 import { useLocalCompilation, type LocalCompiledDocument } from '../compilation/use-local-compilation';
 import { PreviewStateSession } from '../compilation/preview-state';
 import {
-  clearSavedComponentState,
+  createSavedComponentStateStorage,
   hasSavableComponents,
-  readSavedComponentState,
-  savableComponentNodes,
-  writeSavedComponentState,
 } from '../compilation/component-state-storage';
 import { GuideDocument } from '../content/guide-examples';
 import guideEnSource from '../../content/guides/local-guide-en.md?raw';
@@ -236,7 +233,6 @@ export const LocalPreview = memo(function LocalPreview({ document, session, stat
     session: PreviewStateSession;
   } | null>(null);
   const [initError, setInitError] = useState<string | null>(null);
-  const [progressMessage, setProgressMessage] = useState<'saved' | 'saveFailed' | 'reset' | null>(null);
   const reportRef = useRef(onDiagnostics);
   reportRef.current = onDiagnostics;
   const activeRef = useRef<{session:PreviewStateSession; lease:ReturnType<PreviewStateSession['open']>} | null>(null);
@@ -258,7 +254,7 @@ export const LocalPreview = memo(function LocalPreview({ document, session, stat
         const lease = session.open(
           document,
           hasSavableComponents(document)
-            ? { documentId: stateId, componentState: readSavedComponentState(stateId) }
+            ? { documentId: stateId, componentStateStorage: createSavedComponentStateStorage(stateId) }
             : {},
         );
         const previous = active;
@@ -275,10 +271,6 @@ export const LocalPreview = memo(function LocalPreview({ document, session, stat
     }
   }, [document, session, stateId, copy.status.unexpectedError]);
 
-  useEffect(() => {
-    setProgressMessage(null);
-  }, [stateId]);
-
   useLayoutEffect(() => {
     if (instance?.document === document) notifyLocalRuntime(instance.runtime);
   }, [instance, document]);
@@ -292,62 +284,16 @@ export const LocalPreview = memo(function LocalPreview({ document, session, stat
   if (!instance || instance.session !== session) {
     return <div className="preview-loading" role="status"><p>{copy.preview.preparing}</p></div>;
   }
-  const savable = hasSavableComponents(instance.document);
-  const saveProgress = () => {
-    const services = instance.runtime.services;
-    setProgressMessage(
-      services && writeSavedComponentState(stateId, services.state.snapshot())
-        ? 'saved'
-        : 'saveFailed',
-    );
-  };
-  const resetProgress = () => {
-    // Deleting the sidecar is separate from restoring the running instances to
-    // their initial state. Components using the state hook reset on the token
-    // bumped by `runtime.reset`, and may save that initial state again later.
-    clearSavedComponentState(stateId);
-    const services = instance.runtime.services;
-    if (services) {
-      for (const key of Object.keys(services.state.snapshot().records)) {
-        services.state.clear(key);
-      }
-    }
-    for (const node of savableComponentNodes(instance.runtime.document)) {
-      instance.runtime.reset(node);
-    }
-    setProgressMessage('reset');
-  };
-  const progressText = progressMessage === 'saved'
-    ? copy.preview.progressSaved
-    : progressMessage === 'saveFailed'
-      ? copy.preview.progressSaveFailed
-      : progressMessage === 'reset'
-        ? copy.preview.progressReset
-        : null;
   return (
-    <>
-      {savable ? (
-        <div className="preview-state-bar" role="group" aria-label={copy.preview.stateGroupLabel}>
-          <span className="preview-state-hint">{copy.preview.stateHint}</span>
-          <button type="button" className="button button-secondary" onClick={saveProgress}>
-            {copy.preview.saveProgress}
-          </button>
-          <button type="button" className="button button-secondary" onClick={resetProgress}>
-            {copy.preview.resetProgress}
-          </button>
-          {progressText ? <span className="preview-state-message" role="status">{progressText}</span> : null}
-        </div>
-      ) : null}
-      <LocalDocumentView
-        reactConfig={demoReactConfig}
-        {...imageProps}
-        document={instance.document}
-        runtime={instance.runtime}
-        onDiagnostics={onDiagnostics}
-        locale={language}
-        onSourceNavigate={onSourceNavigate}
-      />
-    </>
+    <LocalDocumentView
+      reactConfig={demoReactConfig}
+      {...imageProps}
+      document={instance.document}
+      runtime={instance.runtime}
+      onDiagnostics={onDiagnostics}
+      locale={language}
+      onSourceNavigate={onSourceNavigate}
+    />
   );
 });
 

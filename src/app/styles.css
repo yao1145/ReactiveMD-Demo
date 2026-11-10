@@ -754,29 +754,6 @@ textarea {
   animation: document-enter var(--motion-base) var(--ease-standard);
 }
 
-.preview-state-bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
-  margin-bottom: var(--space-3);
-  padding: var(--space-2) var(--space-3);
-  background: var(--surface-subtle);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-control);
-  font-size: var(--text-sm);
-}
-
-.preview-state-hint {
-  margin-right: auto;
-  color: var(--ink-muted);
-}
-
-.preview-state-message {
-  flex-basis: 100%;
-  color: var(--ink-muted);
-}
-
 @keyframes document-enter {
   from { opacity: 0.5; }
   to { opacity: 1; }

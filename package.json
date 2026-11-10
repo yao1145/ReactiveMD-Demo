@@ -28,7 +28,7 @@
   "dependencies": {
     "react": "19.3.1",
     "react-dom": "19.3.1",
-    "reactive-md": "file:vendor/reactive-md-0.8.0-next.0-1b88ea0e91bd.tgz",
+    "reactive-md": "file:vendor/reactive-md-0.8.0-next.0-775ff53261dd.tgz",
     "reactive-md-editor": "file:vendor/reactive-md-editor-0.1.0-next.0-4a47efdf9d2e.tgz"
   },
   "devDependencies": {
