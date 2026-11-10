@@ -6,7 +6,6 @@ import { HtmlCompatibilityControls } from '../src/settings/html-compatibility';
 import {
   DEFAULT_HTML_OPTIONS,
   compileOptionsKey,
-  freshHtmlOptions,
   isHtmlOptionsActive,
   toCompileOptions,
   type DemoHtmlOptions,
