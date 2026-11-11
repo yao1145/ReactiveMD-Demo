@@ -50,7 +50,7 @@ export class PreviewStateSession {
 
   open(
     document: LocalDocument,
-    runtimeOptions: Pick<LocalRuntimeOptions, 'documentId' | 'componentState' | 'componentStateStorage'> = {},
+    runtimeOptions: Pick<LocalRuntimeOptions, 'documentId' | 'componentState' | 'componentStateStorage' | 'componentStateWriteDelayMs'> = {},
   ) {
     let currentDocument = document;
     const runtime = createLocalRuntime(document, runtimeOptions);

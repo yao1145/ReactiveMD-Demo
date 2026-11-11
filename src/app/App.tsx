@@ -11,6 +11,7 @@ import {
 } from 'react';
 import { formatLocalDiagnostic, notifyLocalRuntime, type Diagnostic, type LocalRuntime, type SourceRange } from 'reactive-md';
 import { LocalDocumentView } from 'reactive-md/react';
+import { flushComponentStateOnPageHide } from 'reactive-md/runtime/browser';
 import { config as demoConfig, reactConfig as demoReactConfig } from 'virtual:reactive-md/host';
 import type { LocalSourceTarget } from 'reactive-md/react';
 import {
@@ -62,6 +63,7 @@ import {
 import { useLocalCompilation, type LocalCompiledDocument } from '../compilation/use-local-compilation';
 import { PreviewStateSession } from '../compilation/preview-state';
 import {
+  COMPONENT_STATE_WRITE_DELAY,
   createSavedComponentStateStorage,
   hasSavableComponents,
 } from '../compilation/component-state-storage';
@@ -249,12 +251,19 @@ export const LocalPreview = memo(function LocalPreview({ document, session, stat
     try {
       let active = activeRef.current;
       if (!active || active.session !== session || !active.lease.update(document)) {
+        // The replacement runtime reads stored progress while it is created;
+        // write any coalesced save first so it does not restore stale state.
+        active?.lease.runtime.services?.state.flush();
         // Component progress is restored only while creating a runtime; later
         // document updates keep the existing registry.
         const lease = session.open(
           document,
           hasSavableComponents(document)
-            ? { documentId: stateId, componentStateStorage: createSavedComponentStateStorage(stateId) }
+            ? {
+                documentId: stateId,
+                componentStateStorage: createSavedComponentStateStorage(stateId),
+                componentStateWriteDelayMs: COMPONENT_STATE_WRITE_DELAY,
+              }
             : {},
         );
         const previous = active;
@@ -274,6 +283,12 @@ export const LocalPreview = memo(function LocalPreview({ document, session, stat
   useLayoutEffect(() => {
     if (instance?.document === document) notifyLocalRuntime(instance.runtime);
   }, [instance, document]);
+
+  // Coalesced game saves stop with the page; flush the newest snapshot before
+  // the browser discards it.
+  useEffect(() => flushComponentStateOnPageHide({
+    flush: () => activeRef.current?.lease.runtime.services?.state.flush(),
+  }), []);
 
   if (initError) {
     return <div className="preview-error" role="alert">

@@ -9,6 +9,13 @@ const STORAGE_PREFIX = 'reactive-md:component-state:';
 /** Components that expose saveable progress through `useComponentState`. */
 const SAVABLE_COMPONENTS = new Set(['game-2048', 'tetris']);
 
+/**
+ * Game saves arrive on every tick or move. Memory stays current; browser
+ * writes are coalesced so JSON serialization and `localStorage` stay off the
+ * hot path.
+ */
+export const COMPONENT_STATE_WRITE_DELAY = 200;
+
 export function componentStateStorageKey(documentId: string): string {
   return `${STORAGE_PREFIX}${documentId}`;
 }
