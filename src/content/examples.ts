@@ -26,6 +26,8 @@ import blogSource from '../../content/examples/local/scenarios/blog.reactive.md?
 import blogZhSource from '../../content/examples/local/scenarios/blog-zh.reactive.md?raw';
 import featuresSource from '../../content/examples/local/showcase/features.reactive.md?raw';
 import featuresZhSource from '../../content/examples/local/showcase/zh/features.reactive.md?raw';
+import diagramGallerySource from '../../content/examples/local/showcase/diagram-gallery.reactive.md?raw';
+import diagramGalleryZhSource from '../../content/examples/local/showcase/zh/diagram-gallery.reactive.md?raw';
 
 /** One standalone document, its navigation section and both translations. */
 export interface PlaygroundExample {
@@ -137,6 +139,13 @@ export const EXAMPLES: PlaygroundExample[] = [
     hint: 'Check off preparation, build a reflection table and time a focus session.',
     hintZh: '勾选准备事项，生成回顾表，并为专注环节计时。',
     source: tasksSource, sourceZh: tasksZhSource,
+  },
+  {
+    id: 'diagram-gallery', section: 'reference',
+    title: 'Diagrams & galleries', titleZh: '图解与画廊',
+    hint: 'Inspect node notes and browse images, cards and long text with native snapping.',
+    hintZh: '悬浮查看节点说明，用原生停靠浏览图片、卡片与长文本。',
+    source: diagramGallerySource, sourceZh: diagramGalleryZhSource,
   },
   {
     id: 'diagnostics',

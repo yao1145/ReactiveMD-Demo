@@ -1,5 +1,6 @@
 import type { LocalDocument, LocalNode } from 'reactive-md';
 import type { LocalUrlPolicy } from 'reactive-md/react';
+import { EXAMPLE_IMAGES } from './example-images';
 
 export const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 export const MAX_IMAGE_TOTAL_BYTES = 24 * 1024 * 1024;
@@ -107,7 +108,7 @@ export function documentImageUrls(document: LocalDocument): string[] {
 export function resolveDocumentImages(document: LocalDocument, manifest: readonly ImageAsset[]) {
   // Import, storage and export boundaries validate bytes once. Rebuilding the
   // reference summary while typing must not decode every stored image again.
-  const byUrl = new Map(manifest.map(a => [a.url, a.dataUrl]));
+  const byUrl = new Map([...Object.entries(EXAMPLE_IMAGES), ...manifest.map(a => [a.url, a.dataUrl] as const)]);
   const references = documentImageUrls(document);
   const missing = references.filter(url => !byUrl.has(url));
   const images: Record<string, string> = Object.create(null);
@@ -119,8 +120,9 @@ export function imagePolicy(images: Readonly<Record<string, string>>): {
   urlPolicy: LocalUrlPolicy;
   imageResolver: (url: string) => string | null;
 } {
+  const resolved = { ...EXAMPLE_IMAGES, ...images };
   return {
-    urlPolicy: (url, kind) => kind === 'link' || Object.hasOwn(images, url),
-    imageResolver: url => Object.hasOwn(images, url) ? images[url] : null,
+    urlPolicy: (url, kind) => kind === 'link' || Object.hasOwn(resolved, url),
+    imageResolver: url => Object.hasOwn(resolved, url) ? resolved[url] : null,
   };
 }

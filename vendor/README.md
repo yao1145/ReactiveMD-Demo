@@ -28,3 +28,5 @@ on a checkout without a lockfile). The committed game tarballs still declare a
 engine. The game runtime API used by the Demo is unchanged.
 
 Candidate tarball filenames include a SHA256 prefix. Use the exact vendor filenames in package.json; update those paths and lockfile integrity whenever package contents change.
+
+The current engine candidate is `reactive-md-0.8.0-next.0-901e8385a0e0.tgz`, built from engine commit `a16b112` with default diagram inspection and Gallery. SHA256: `901e8385a0e02c7afea685c1563dd6d095e49b74c9930b1b58de2acdfa71051d`. Installation uses the built package without sibling source imports.

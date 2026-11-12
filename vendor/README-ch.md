@@ -17,3 +17,5 @@ Demo 从本目录中已提交的 npm tarball 安装 Tetris 和 2048。文件名�
 使用 `npm ci --legacy-peer-deps` 安装（在没有 lockfile 的检出中使用 `npm install --legacy-peer-deps`）。已提交的游戏 tarball 仍声明 `reactive-md` 的 peer 范围为 `^0.7.0`，而此 Demo 运行 `0.8.0-next.0` 引擎。Demo 使用的游戏运行时 API 没有变化。
 
 候选 tarball 文件名包含 SHA256 前缀。在 package.json 中使用确切的 vendor 文件名；每当包内容变化时，更新这些路径和 lockfile integrity。
+
+当前引擎候选为 `reactive-md-0.8.0-next.0-901e8385a0e0.tgz`，来自引擎提交 `a16b112`，包含默认图解说明浮层与 Gallery。SHA256 为 `901e8385a0e02c7afea685c1563dd6d095e49b74c9930b1b58de2acdfa71051d`；安装使用已构建包，不引用同级源码。
