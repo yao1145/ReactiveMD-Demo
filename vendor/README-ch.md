@@ -8,9 +8,11 @@ Demo 从本目录中已提交的 npm tarball 安装 Tetris 和 2048。文件名�
 
 | 文件 | 包 | 版本 |
 | --- | --- | --- |
-| `reactive-md-0.8.0-next.0.tgz` | `reactive-md` | `0.8.0-next.0` |
-| `reactive-md-editor-0.1.0-next.0.tgz` | `reactive-md-editor` | `0.1.0-next.0` |
-| `reactive-md-sci-fi-theme-1.0.0.tgz` | `reactive-md-sci-fi-theme` | `1.0.0` |
+| `reactive-md-0.8.0-next.0-259f70cbf559.tgz` | `reactive-md` | `0.8.0-next.0` |
+| `reactive-md-editor-0.1.0-next.0-4a47efdf9d2e.tgz` | `reactive-md-editor` | `0.1.0-next.0` |
+| `reactive-md-sci-fi-theme-1.0.0-166308613327.tgz` | `reactive-md-sci-fi-theme` | `1.0.0` |
+
+旧构建归档在本地 `archive/` 目录。该目录被 `.gitignore` 忽略，不会提交，也不会上传。
 
 在各自仓库中构建新的引擎、编辑器或主题 tarball，使用带版本号的文件名复制到这里，更新 `package.json` 并重新生成 lockfile。游戏包保留各自的源码仓库；发布新游戏构建时，以同样方式替换其 tarball。
 

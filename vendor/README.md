@@ -13,9 +13,11 @@ Demo builds against:
 
 | File | Package | Version |
 | --- | --- | --- |
-| `reactive-md-0.8.0-next.0.tgz` | `reactive-md` | `0.8.0-next.0` |
-| `reactive-md-editor-0.1.0-next.0.tgz` | `reactive-md-editor` | `0.1.0-next.0` |
-| `reactive-md-sci-fi-theme-1.0.0.tgz` | `reactive-md-sci-fi-theme` | `1.0.0` |
+| `reactive-md-0.8.0-next.0-259f70cbf559.tgz` | `reactive-md` | `0.8.0-next.0` |
+| `reactive-md-editor-0.1.0-next.0-4a47efdf9d2e.tgz` | `reactive-md-editor` | `0.1.0-next.0` |
+| `reactive-md-sci-fi-theme-1.0.0-166308613327.tgz` | `reactive-md-sci-fi-theme` | `1.0.0` |
+
+Older builds are archived locally under `archive/`. That directory is git-ignored, so it is neither committed nor uploaded.
 
 Build a new engine, editor or theme tarball in its own repository, copy it here
 with the versioned filename, update `package.json` and regenerate the lockfile.

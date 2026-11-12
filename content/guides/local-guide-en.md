@@ -267,6 +267,32 @@ Annual billing costs 80 USD per person per month; otherwise 100 USD.
 
 `card` is a content card with an optional `title`. Its body continues to use Markdown.
 
+### gallery and gallery-item
+
+```markdown
+<number bind="people" label="People" initial="4" min="1" max="12">
+
+<gallery label="Plan comparison" item-width="280">
+<gallery-item label="Basic">
+For individuals, **{{ people * 80 }} USD per month**.
+</gallery-item>
+<gallery-item label="Pro">
+Includes team collaboration, **{{ people * 120 }} USD per month**.
+</gallery-item>
+<gallery-item label="Custom">
+<card title="Build your own">
+Choose the modules you need and price them separately.
+</card>
+</gallery-item>
+</gallery>
+```
+
+`gallery` lays content out as a horizontal gallery. `label` is required and becomes the gallery title. `item-width` sets the width of each item from 180 to 480, defaulting to 280; when the container narrows, items keep their width and the gallery scrolls horizontally.
+
+`gallery-item` is one gallery entry. `label` is optional and appears as the item caption. The body continues to use Markdown and can hold images, cards and other components; bindings and expressions inside update as usual. Direct children of `gallery` must be `gallery-item`.
+
+The gallery header shows the visible range and previous/next buttons, with a scrollbar underneath. Drag the scrollbar, scroll the mouse wheel over the gallery, or focus it and use the arrow keys, `Home` or `End`. Static exports arrange every item in a grid and omit the browsing buttons.
+
 ### panel
 
 ```markdown
@@ -451,6 +477,8 @@ Most interactive controls support `label`, optional `bind`, optional `initial` a
 | `panel` | Container | `title`, `reset=true` | Groups controls; resets their state |
 | `card` | Container | `title` | Content card; body uses Markdown |
 | `grid` | Container | `columns=2` (1–4) | Card grid; direct children must be `card` |
+| `gallery` | Container | `label` required, `item-width=280` (180–480) | Horizontal gallery; direct children must be `gallery-item` |
+| `gallery-item` | Child | `label` optional | Gallery entry; body supports Markdown, images and components |
 | `tabs` | Container | `label`, `bind`, `initial`; child `tab` | Tabs; first tab by default |
 | `tab` | Child | `label` required, `value` optional | Tab child; `value` is generated in order when omitted |
 | `accordion` | Container | `label`; child `disclosure` | Accordion group |

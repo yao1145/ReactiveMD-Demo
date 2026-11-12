@@ -17,7 +17,7 @@ describe('user guide live examples', () => {
       if (!result.ok) return;
       const nodes = result.document.nodes;
       const code = flatten(nodes).filter(node => node.type === 'code');
-      expect(code).toHaveLength(20);
+      expect(code).toHaveLength(21);
       expect(Object.values(guide.examples)).toEqual(code.map(node => node.value));
       for (const node of code) {
         const next = nodes[nodes.indexOf(node) + 1];
@@ -27,7 +27,7 @@ describe('user guide live examples', () => {
         expect(example.diagnostics).toEqual([]);
       }
       const html = renderToStaticMarkup(<GuideDocument source={source} language={language} />);
-      expect((html.match(/class="guide-example"/g) ?? [])).toHaveLength(20);
+      expect((html.match(/class="guide-example"/g) ?? [])).toHaveLength(21);
       expect(html).not.toContain('local-host-unavailable');
     });
     it(`${language}: interactions in one example leave the next example unchanged`, () => {

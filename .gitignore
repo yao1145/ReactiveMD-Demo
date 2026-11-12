@@ -5,6 +5,8 @@ artifacts/
 *.log
 *.tgz
 !vendor/*.tgz
+# Older vendor builds stay local and are not published
+vendor/archive/
 .DS_Store
 
 # Agent instructions stay local

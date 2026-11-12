@@ -267,6 +267,32 @@ $$ y = a \sin x $$
 
 `card` 是一块内容卡片，`title` 可选，正文继续使用 Markdown。
 
+### gallery 与 gallery-item
+
+```markdown
+<number bind="people" label="人数" initial="4" min="1" max="12">
+
+<gallery label="方案对比" item-width="280">
+<gallery-item label="基础版">
+适合个人，**{{ people * 80 }} 元/月**。
+</gallery-item>
+<gallery-item label="专业版">
+包含团队协作，**{{ people * 120 }} 元/月**。
+</gallery-item>
+<gallery-item label="定制方案">
+<card title="按需组合">
+选择需要的模块，价格单独核算。
+</card>
+</gallery-item>
+</gallery>
+```
+
+`gallery` 把内容排成横向画廊，`label` 必填并作为画廊标题。`item-width` 控制每一项的宽度，取 180 到 480，默认 280；容器变窄时保持项目宽度，改为横向滚动。
+
+`gallery-item` 是画廊中的一项，`label` 可选，显示为该项的小标题。正文继续使用 Markdown，可以放图片、卡片和其他组件；内部的绑定和表达式照常更新。`gallery` 的直接子项只能是 `gallery-item`。
+
+画廊顶部显示当前可见范围和左右按钮，底部有滚动条。拖动滚动条、在画廊上滚动鼠标滚轮，或聚焦画廊后按方向键、`Home`、`End` 都可以浏览。静态导出会把全部项目排成网格，不显示浏览按钮。
+
 ### panel
 
 ```markdown
@@ -451,6 +477,8 @@ $$ y = a \sin x $$
 | `panel` | 容器 | `title`、`reset=true` | 控件分组；重置内部状态 |
 | `card` | 容器 | `title` | 内容卡片；正文继续使用 Markdown |
 | `grid` | 容器 | `columns=2`（1–4） | 卡片网格；直接子项必须是 `card` |
+| `gallery` | 容器 | `label` 必填、`item-width=280`（180–480） | 横向画廊；直接子项必须是 `gallery-item` |
+| `gallery-item` | 子项 | `label` 可选 | 画廊项目；正文支持 Markdown、图片与组件 |
 | `tabs` | 容器 | `label`、`bind`、`initial`；子项 `tab` | 标签页；默认第一项 |
 | `tab` | 子项 | `label` 必填、`value` 可选 | 标签页子项；省略 `value` 时按顺序生成 |
 | `accordion` | 容器 | `label`；子项 `disclosure` | 折叠条目组 |

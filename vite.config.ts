@@ -6,5 +6,5 @@ import { exportAssets } from './vite.export-assets.ts';
 export default defineConfig({
   plugins: [react(), reactiveMd(), exportAssets()],
   server: { host: '127.0.0.1', port: 5173, strictPort: true },
-  build: { rolldownOptions: { input: { main: 'index.html', embed: 'embed.html', controls: 'controls.html' } } },
+  build: { rolldownOptions: { input: { main: 'index.html', embed: 'embed.html' } } },
 });

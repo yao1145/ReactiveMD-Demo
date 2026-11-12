@@ -64,7 +64,7 @@ const options = { config };
 describe('demo authoring menu data', () => {
   it('derives defaults and registered extensions from one catalog', () => {
     const catalog = createLocalComponentCatalogForOptions(options, 'en');
-    expect(catalog).toHaveLength(36);
+    expect(catalog).toHaveLength(38);
     const groups = localComponentCatalogGroups(catalog);
     expect(groups.find((group) => group.id === 'input')?.entries.some((entry) => entry.name === 'demo-rating'))
       .toBe(true);
