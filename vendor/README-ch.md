@@ -18,4 +18,4 @@ Demo 从本目录中已提交的 npm tarball 安装 Tetris 和 2048。文件名�
 
 候选 tarball 文件名包含 SHA256 前缀。在 package.json 中使用确切的 vendor 文件名；每当包内容变化时，更新这些路径和 lockfile integrity。
 
-当前引擎候选为 `reactive-md-0.8.0-next.0-901e8385a0e0.tgz`，来自引擎提交 `a16b112`，包含默认图解说明浮层与 Gallery。SHA256 为 `901e8385a0e02c7afea685c1563dd6d095e49b74c9930b1b58de2acdfa71051d`；安装使用已构建包，不引用同级源码。
+当前引擎候选为 `reactive-md-0.8.0-next.0-259f70cbf559.tgz`，基于引擎提交 `6e6a93f` 及本轮未提交的 UI 修订，包含函数独立缩放、正方形网格、顶层 tooltip、按钮对比度、Jump 样式统一与选项动效，并移除 Jump 按钮下划线。SHA256 为 `259f70cbf5590ef8673bfdd459d8db8882e12d65c29ae1fc5f3fe1ba743bf5ce`；安装使用已构建包，不引用同级源码。

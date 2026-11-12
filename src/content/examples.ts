@@ -28,6 +28,8 @@ import featuresSource from '../../content/examples/local/showcase/features.react
 import featuresZhSource from '../../content/examples/local/showcase/zh/features.reactive.md?raw';
 import diagramGallerySource from '../../content/examples/local/showcase/diagram-gallery.reactive.md?raw';
 import diagramGalleryZhSource from '../../content/examples/local/showcase/zh/diagram-gallery.reactive.md?raw';
+import uiReviewSource from '../../content/examples/local/showcase/ui-review.reactive.md?raw';
+import uiReviewZhSource from '../../content/examples/local/showcase/zh/ui-review.reactive.md?raw';
 
 /** One standalone document, its navigation section and both translations. */
 export interface PlaygroundExample {
@@ -146,6 +148,13 @@ export const EXAMPLES: PlaygroundExample[] = [
     hint: 'Inspect node notes and browse images, cards and long text with native snapping.',
     hintZh: '悬浮查看节点说明，用原生停靠浏览图片、卡片与长文本。',
     source: diagramGallerySource, sourceZh: diagramGalleryZhSource,
+  },
+  {
+    id: 'ui-review', section: 'reference',
+    title: 'UI refinement review', titleZh: 'UI 修订验收',
+    hint: 'Review plot scaling, button contrast, nested tooltips, jump styling and option motion.',
+    hintZh: '集中检查绘图比例、按钮对比度、嵌套提示、跳转样式与选项动效。',
+    source: uiReviewSource, sourceZh: uiReviewZhSource,
   },
   {
     id: 'diagnostics',

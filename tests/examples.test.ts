@@ -15,7 +15,7 @@ function flatten<T extends { children?: T[] }>(nodes: T[]): T[] {
 
 describe('playground local documents consumed through the public package', () => {
   it('ships the built-in tours and registered plugin examples', () => {
-    expect(EXAMPLES).toHaveLength(14 + extensionExamples.length);
+    expect(EXAMPLES).toHaveLength(15 + extensionExamples.length);
     expect(new Set(EXAMPLES.map((example) => example.id)).size).toBe(EXAMPLES.length);
     const contributedIds = new Set(extensionExamples.map(example => example.id));
     const builtins = EXAMPLES.filter(example => !contributedIds.has(example.id));
@@ -23,7 +23,7 @@ describe('playground local documents consumed through the public package', () =>
     expect(builtins.filter(example => example.section === 'scenario').map(example => example.id)).toEqual(['classroom', 'proposal', 'survey', 'blog']);
     expect(builtins.filter((example) => example.section === 'feature').map((example) => example.id))
       .toEqual(['features']);
-    expect(builtins.filter((example) => example.section === 'reference').map((example) => example.id)).toEqual(['diagram-gallery']);
+    expect(builtins.filter((example) => example.section === 'reference').map((example) => example.id)).toEqual(['diagram-gallery', 'ui-review']);
     expect(builtins.filter((example) => example.section === 'debug').map((example) => example.id)).toEqual(['diagnostics']);
     expect(EXAMPLES.some((example) => example.id === DEFAULT_EXAMPLE_ID)).toBe(true);
     for (const example of EXAMPLES) {
@@ -92,7 +92,7 @@ describe('playground local documents consumed through the public package', () =>
 
 describe('localized playground examples', () => {
   it('ships English and Chinese metadata and sources for every tour', () => {
-    expect(EXAMPLES).toHaveLength(14 + extensionExamples.length);
+    expect(EXAMPLES).toHaveLength(15 + extensionExamples.length);
     for (const example of EXAMPLES) {
       expect(example.title.trim().length, example.id).toBeGreaterThan(0);
       expect(example.hint.trim().length, example.id).toBeGreaterThan(0);

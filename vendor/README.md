@@ -29,4 +29,4 @@ engine. The game runtime API used by the Demo is unchanged.
 
 Candidate tarball filenames include a SHA256 prefix. Use the exact vendor filenames in package.json; update those paths and lockfile integrity whenever package contents change.
 
-The current engine candidate is `reactive-md-0.8.0-next.0-901e8385a0e0.tgz`, built from engine commit `a16b112` with default diagram inspection and Gallery. SHA256: `901e8385a0e02c7afea685c1563dd6d095e49b74c9930b1b58de2acdfa71051d`. Installation uses the built package without sibling source imports.
+The current engine candidate is `reactive-md-0.8.0-next.0-259f70cbf559.tgz`, based on engine commit `6e6a93f` plus the uncommitted UI refinements: independent plot scales, square grids, top-layer tooltips, button contrast, shared Jump styling and option motion, with Jump button underlines removed. SHA256: `259f70cbf5590ef8673bfdd459d8db8882e12d65c29ae1fc5f3fe1ba743bf5ce`. Installation uses the built package without sibling source imports.
