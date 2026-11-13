@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import type { RefObject } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import type { ReactNode, RefObject } from 'react';
 import { MaximizeIcon, MinimizeIcon } from '../ui/icons';
 import './preview-fullscreen.css';
 
@@ -124,7 +124,30 @@ export interface PreviewFullscreenToggleProps {
   exitLabel: string;
 }
 
-/** Icon button overlaid on the preview pane, always present while live. */
+/** A transparent corner target lets touch users reveal or hide the actions. */
+export function PreviewOverlayControls({ children, showLabel, hideLabel }: {
+  children: ReactNode;
+  showLabel: string;
+  hideLabel: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const actionsId = useId();
+  return (
+    <div className="preview-overlay-controls" data-open={open}>
+      <button
+        type="button"
+        className="preview-controls-reveal"
+        aria-label={open ? hideLabel : showLabel}
+        aria-expanded={open}
+        aria-controls={actionsId}
+        onClick={() => setOpen(value => !value)}
+      />
+      <div id={actionsId} className="preview-overlay-actions">{children}</div>
+    </div>
+  );
+}
+
+/** Fullscreen action inside the preview's floating controls. */
 export function PreviewFullscreenToggle({ state, enterLabel, exitLabel }: PreviewFullscreenToggleProps) {
   const buttonRef = useRef<HTMLButtonElement | null>(null);
   const wasFallback = useRef(false);

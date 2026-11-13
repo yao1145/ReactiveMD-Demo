@@ -33,8 +33,8 @@ import {
 import { DocumentTree, TREE_COPY } from '../documents/document-tree';
 import { DeveloperTools } from '../developer/developer-tools';
 import { OutlineWorkspace, type SidebarTab } from '../documents/document-outline';
-import { DownloadIcon, FileIcon, MenuIcon, PanelLeftIcon } from '../ui/icons';
-import { PreviewFullscreenToggle, usePreviewFullscreen } from '../preview/preview-fullscreen';
+import { CompileStatusIcon, DownloadIcon, FileIcon, MenuIcon, PanelLeftIcon } from '../ui/icons';
+import { PreviewFullscreenToggle, PreviewOverlayControls, usePreviewFullscreen } from '../preview/preview-fullscreen';
 import { ExportDialog } from '../export/export-dialog';
 import { createImageAsset, imagePolicy, ImageAssetError, MAX_IMAGE_BYTES, MAX_IMAGE_TOTAL_BYTES, validateImageManifest, type ImageAsset } from '../images/image-assets';
 import { IMAGE_COPY } from '../images/image-copy';
@@ -885,13 +885,22 @@ export default function App() {
         : copy.status.compileFailed)
       : copy.status.waiting;
 
+  const previewSidebarMeta = editorView === 'preview' && editorToolbar;
+  const statusDetail = [
+    statusLabel,
+    !compiling && compiled?.ok && currentDiagnostics.length > 0 ? `${compilation.duration} ms` : null,
+    compilation.failure,
+  ].filter(Boolean).join(' · ');
   const statusChip = (
     <span
-      className={`status-chip ${compiling ? 'is-pending' : previewFailed ? 'is-error' : ''}`}
+      className={`status-chip ${previewSidebarMeta ? 'is-compact' : ''} ${compiling ? 'is-pending' : previewFailed ? 'is-error' : !compiled ? 'is-waiting' : ''}`}
       role="status"
-      title={compilation.failure ?? undefined}
+      title={previewSidebarMeta ? statusDetail : compilation.failure ?? undefined}
     >
-      {statusLabel}
+      {previewSidebarMeta ? <>
+        <CompileStatusIcon size={20} state={compiling ? 'pending' : previewFailed ? 'error' : compiled ? 'success' : 'waiting'} />
+        <span className="sr-only">{statusLabel}</span>
+      </> : statusLabel}
     </span>
   );
   const exportButton = (
@@ -914,9 +923,8 @@ export default function App() {
       <PanelLeftIcon />
     </button>
   );
-  const previewSidebarMeta = editorView === 'preview' && editorToolbar;
   const sidebarHeader = sidebarOpen ? (
-    <div className="sidebar-head">
+    <div className={`sidebar-head ${previewSidebarMeta ? 'has-preview-meta' : ''}`}>
       <span className="sidebar-head-name" title={activeDocument?.name ?? currentExample.title}>
         {activeDocument?.name ?? currentExample.title}
       </span>
@@ -1159,7 +1167,7 @@ export default function App() {
                   ref={previewFullscreen.paneRef}
                 >
                   {editorView !== 'edit' ? (
-                    <div className="preview-overlay-controls">
+                    <PreviewOverlayControls showLabel={copy.preview.showActions} hideLabel={copy.preview.hideActions}>
                       {editorView === 'preview' ? sidebarToggle(sidebarOpen, 'preview-overlay-button') : null}
                       {canFullscreenPreview ? (
                         <PreviewFullscreenToggle
@@ -1168,7 +1176,7 @@ export default function App() {
                           exitLabel={copy.preview.exitFullscreen}
                         />
                       ) : null}
-                    </div>
+                    </PreviewOverlayControls>
                   ) : null}
                   <div className="preview-stage" aria-busy={compiling}>
                     {previewFailed && compiled ? (

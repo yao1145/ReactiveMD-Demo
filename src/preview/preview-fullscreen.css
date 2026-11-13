@@ -8,25 +8,37 @@
   position: sticky;
   top: 8px;
   z-index: 5;
+  width: 100%;
+  margin-bottom: -44px;
+  pointer-events: none;
+}
+
+.preview-overlay-actions {
+  position: relative;
   display: flex;
   justify-content: flex-end;
   gap: 6px;
-  width: 100%;
-  margin-bottom: -44px;
   padding: 8px 8px 0;
   opacity: 0;
   pointer-events: none;
   transition: opacity var(--motion-fast) var(--ease-standard);
 }
 
-.pane-preview:hover .preview-overlay-controls,
-.pane-preview:focus-within .preview-overlay-controls,
-.preview-overlay-controls:focus-within {
-  opacity: 1;
-  pointer-events: auto;
+@media (min-width: 641px) and (hover: hover) and (pointer: fine) {
+  .pane-preview:hover .preview-overlay-actions,
+  .pane-preview:focus-within .preview-overlay-actions,
+  .preview-overlay-actions:focus-within {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
 }
 
-.preview-overlay-controls > button {
+.preview-controls-reveal {
+  display: none;
+}
+
+.preview-overlay-actions > button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -40,30 +52,22 @@
   box-shadow: 0 1px 3px color-mix(in srgb, var(--ink) 10%, transparent);
   cursor: pointer;
   opacity: 1;
-  pointer-events: auto;
   transition:
     background-color var(--motion-fast) var(--ease-standard),
     border-color var(--motion-fast) var(--ease-standard),
     color var(--motion-fast) var(--ease-standard);
 }
 
-.preview-overlay-controls > button:hover {
+.preview-overlay-actions > button:hover {
   background: var(--surface-hover);
   border-color: var(--line-strong);
   color: var(--ink);
 }
 
-.preview-overlay-controls > button:focus-visible {
+.preview-overlay-actions > button:focus-visible,
+.preview-controls-reveal:focus-visible {
   outline: var(--focus-outline);
   outline-offset: 2px;
-}
-
-/* Touch and other coarse pointers have no hover, so keep the group visible. */
-@media (hover: none), (pointer: coarse) {
-  .pane-preview .preview-overlay-controls {
-    opacity: 1;
-    pointer-events: auto;
-  }
 }
 
 /* Fallback overlay: the pane behaves like a fullscreen surface without the
@@ -135,17 +139,65 @@
   width: auto;
   margin: 0;
   padding: 0;
+}
+
+.pane-preview:fullscreen .preview-overlay-actions,
+.pane-preview.is-preview-fullscreen .preview-overlay-actions {
+  padding: 0;
   opacity: 1;
+  visibility: visible;
   pointer-events: auto;
 }
 
-.has-editor .editor-preview .pane-preview:fullscreen .preview-overlay-controls > button,
-.has-editor .editor-preview .pane-preview.is-preview-fullscreen .preview-overlay-controls > button {
+.has-editor .editor-preview .pane-preview:fullscreen .preview-overlay-actions > button,
+.has-editor .editor-preview .pane-preview.is-preview-fullscreen .preview-overlay-actions > button {
   width: 40px;
   height: 40px;
   background: var(--surface);
   border-color: var(--line);
   box-shadow: 0 6px 20px color-mix(in srgb, var(--ink) 16%, transparent);
+}
+
+/* On phones, only the blank corner target changes visibility. Hover and
+   focus inside the document must not leave the actions stuck open. */
+@media (max-width: 640px), (hover: none), (pointer: coarse) {
+  .preview-controls-reveal {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: block;
+    width: 104px;
+    height: 60px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: var(--radius-control);
+    cursor: pointer;
+    pointer-events: auto;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .pane-preview .preview-overlay-controls .preview-overlay-actions {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .pane-preview .preview-overlay-controls[data-open="true"] .preview-overlay-actions {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: none;
+  }
+
+  /* Empty space around the two buttons still reaches the corner target. */
+  .pane-preview .preview-overlay-controls[data-open="true"] .preview-overlay-actions > button {
+    pointer-events: auto;
+  }
+
+  .pane-preview .preview-overlay-controls[data-open="false"] .preview-overlay-actions > button {
+    pointer-events: none;
+  }
 }
 
 @keyframes preview-fullscreen-enter {
@@ -154,8 +206,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .preview-overlay-controls,
-  .preview-overlay-controls > button {
+  .preview-overlay-actions,
+  .preview-overlay-actions > button {
     transition: none;
   }
 

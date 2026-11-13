@@ -146,6 +146,15 @@ export function CheckIcon(props: IconProps) {
   </Icon>;
 }
 
+export function CompileStatusIcon({ state, ...props }: IconProps & { state: 'success' | 'error' | 'pending' | 'waiting' }) {
+  return <Icon {...props}>
+    <circle cx="12" cy="12" r="9" />
+    {state === 'success' ? <path d="m8 12 3 3 5-6" />
+      : state === 'error' ? <path d="M12 7v6M12 16.5h.01" />
+        : <path d="M12 7v5l3 2" />}
+  </Icon>;
+}
+
 export function PuzzleIcon(props: IconProps) {
   return <Icon {...props}>
     <path d="M10 4.5a2 2 0 1 1 4 0V6h3.5A1.5 1.5 0 0 1 19 7.5V11h-1.5a2 2 0 1 0 0 4H19v3.5a1.5 1.5 0 0 1-1.5 1.5H14v-1.5a2 2 0 1 0-4 0V20H6.5A1.5 1.5 0 0 1 5 18.5V15h1.5a2 2 0 1 0 0-4H5V7.5A1.5 1.5 0 0 1 6.5 6H10Z" />
