@@ -158,3 +158,15 @@ export function InfoIcon(props: IconProps) {
     <path d="M12 11v6M12 7.5h.01" />
   </Icon>;
 }
+
+export function MaximizeIcon(props: IconProps) {
+  return <Icon {...props}>
+    <path d="M9 4H4v5M15 4h5v5M9 20H4v-5M15 20h5v-5" />
+  </Icon>;
+}
+
+export function MinimizeIcon(props: IconProps) {
+  return <Icon {...props}>
+    <path d="M4 9h5V4M20 9h-5V4M4 15h5v5M20 15h-5v5" />
+  </Icon>;
+}

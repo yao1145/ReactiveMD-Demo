@@ -97,7 +97,13 @@ textarea {
   line-height: 1;
   transition:
     background-color var(--motion-fast) var(--ease-standard),
-    color var(--motion-fast) var(--ease-standard);
+    color var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-fast) var(--ease-standard),
+    transform var(--motion-fast) var(--ease-standard);
+}
+
+.language-toggle:active span {
+  transform: scale(0.96);
 }
 
 .language-toggle span.is-active {
@@ -128,7 +134,14 @@ textarea {
   cursor: pointer;
   transition:
     background-color var(--motion-fast) var(--ease-standard),
-    color var(--motion-fast) var(--ease-standard);
+    color var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-fast) var(--ease-standard),
+    transform var(--motion-fast) var(--ease-standard);
+}
+
+.theme-toggle:active,
+.github-link:active {
+  transform: translateY(1px) scale(0.98);
 }
 
 .theme-toggle:hover,
@@ -273,12 +286,18 @@ textarea {
   line-height: 1;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+  transition:
+    background-color var(--motion-base) var(--ease-standard),
+    border-color var(--motion-base) var(--ease-standard),
+    color var(--motion-base) var(--ease-standard),
+    box-shadow var(--motion-base) var(--ease-standard);
 }
 
 .status-chip.is-pending {
   background: var(--neutral-soft);
   border-color: var(--line);
   color: var(--ink-soft);
+  animation: rmd-chrome-chip-pulse 1.6s var(--ease-standard) infinite;
 }
 
 .status-chip.is-error {
@@ -434,7 +453,9 @@ textarea {
   transition:
     background-color var(--motion-fast) var(--ease-standard),
     border-color var(--motion-fast) var(--ease-standard),
-    color var(--motion-fast) var(--ease-standard);
+    color var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-fast) var(--ease-standard),
+    transform var(--motion-fast) var(--ease-standard);
 }
 
 .bar-actions .button {
@@ -461,6 +482,7 @@ textarea {
 
 .button:active:not(:disabled) {
   background: var(--surface-active);
+  transform: translateY(1px) scale(0.98);
 }
 
 .button-secondary:hover:not(:disabled) {
@@ -470,6 +492,7 @@ textarea {
 
 .button-secondary:active:not(:disabled) {
   background: var(--surface-active);
+  transform: translateY(1px) scale(0.98);
 }
 
 .button-primary:hover:not(:disabled) {
@@ -479,6 +502,7 @@ textarea {
 
 .button-primary:active:not(:disabled) {
   background: var(--blue-deep);
+  transform: translateY(1px) scale(0.98);
 }
 
 .button-quiet:hover:not(:disabled) {
@@ -489,6 +513,7 @@ textarea {
 
 .button-quiet:active:not(:disabled) {
   background: var(--surface-active);
+  transform: translateY(1px) scale(0.98);
 }
 
 .button:disabled {
@@ -524,12 +549,18 @@ textarea {
   cursor: pointer;
   transition:
     background-color var(--motion-fast) var(--ease-standard),
-    color var(--motion-fast) var(--ease-standard);
+    color var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-fast) var(--ease-standard),
+    transform var(--motion-fast) var(--ease-standard);
 }
 
 .icon-button:hover:not(:disabled) {
   background: var(--surface-hover);
   color: var(--ink);
+}
+
+.icon-button:active:not(:disabled) {
+  transform: scale(0.94);
 }
 
 .icon-button:focus-visible {
@@ -752,11 +783,22 @@ textarea {
 
 .preview-stage > .local-document {
   animation: document-enter var(--motion-base) var(--ease-standard);
+  transition: opacity var(--motion-base) var(--ease-standard);
+}
+
+.preview-stage[aria-busy="true"] > .local-document:not(.preview-inert) {
+  opacity: 0.72;
 }
 
 @keyframes document-enter {
-  from { opacity: 0.5; }
-  to { opacity: 1; }
+  from {
+    opacity: 0.5;
+    transform: translateY(4px) scale(0.996);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .preview-inert {
@@ -775,6 +817,7 @@ textarea {
   gap: var(--space-3);
   color: var(--ink-muted);
   font-size: var(--text-sm);
+  animation: rmd-chrome-fade var(--motion-base) var(--ease-standard) backwards;
 }
 
 .loading-bar {
@@ -811,6 +854,7 @@ textarea {
   background: var(--danger-soft);
   border: 1px solid var(--danger-line);
   border-radius: var(--radius-card);
+  animation: rmd-chrome-rise var(--motion-base) var(--ease-standard) backwards;
 }
 
 .preview-error h3 {
@@ -911,20 +955,33 @@ textarea {
 }
 
 .view-switch button {
+  position: relative;
   min-height: var(--control-height-lg);
   padding: 0 var(--space-3);
   background: transparent;
   border: 0;
   border-radius: 0;
-  box-shadow: inset 0 -2px 0 transparent;
   color: var(--ink-muted);
   font-size: var(--text-sm);
   font-weight: var(--weight-medium);
   cursor: pointer;
   transition:
     background-color var(--motion-fast) var(--ease-standard),
-    color var(--motion-fast) var(--ease-standard),
-    box-shadow var(--motion-base) var(--ease-standard);
+    color var(--motion-fast) var(--ease-standard);
+}
+
+.view-switch button::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background: var(--ink);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform var(--motion-base) var(--ease-standard);
+  pointer-events: none;
 }
 
 .view-switch button:hover {
@@ -935,7 +992,10 @@ textarea {
 .view-switch button[aria-pressed="true"] {
   background: transparent;
   color: var(--ink);
-  box-shadow: inset 0 -2px 0 var(--ink);
+}
+
+.view-switch button[aria-pressed="true"]::after {
+  transform: scaleX(1);
 }
 
 .view-switch button[aria-pressed="true"]:hover {
@@ -1150,6 +1210,76 @@ textarea {
   outline-offset: 2px;
 }
 
+/* Motion */
+
+.masthead-lead {
+  animation: rmd-chrome-rise var(--motion-slow) var(--ease-standard) 40ms backwards;
+}
+
+.masthead-actions {
+  animation: rmd-chrome-fade var(--motion-base) var(--ease-standard) 120ms backwards;
+}
+
+.view-switch {
+  animation: rmd-chrome-rise var(--motion-slow) var(--ease-standard) 100ms backwards;
+}
+
+.workbench {
+  animation: rmd-chrome-rise var(--motion-slow) var(--ease-standard) 120ms backwards;
+}
+
+.guide-view {
+  animation: rmd-chrome-rise var(--motion-slow) var(--ease-standard) 120ms backwards;
+}
+
+.guide-toolbar {
+  animation: rmd-chrome-fade var(--motion-base) var(--ease-standard) 160ms backwards;
+}
+
+.guide-paper {
+  animation: rmd-chrome-fade var(--motion-slow) var(--ease-standard) 120ms backwards;
+}
+
+.app-footer {
+  animation: rmd-chrome-rise var(--motion-slow) var(--ease-standard) 160ms backwards;
+}
+
+.theme-toggle svg {
+  transition: transform var(--motion-base) var(--ease-standard);
+}
+
+.theme-toggle:hover svg {
+  transform: rotate(-12deg);
+}
+
+@keyframes rmd-chrome-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes rmd-chrome-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes rmd-chrome-chip-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--ink) 8%, transparent);
+  }
+  50% {
+    opacity: 0.84;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--ink) 6%, transparent);
+  }
+}
+
 /* Responsive */
 
 @media (max-width: 980px) {
@@ -1288,9 +1418,14 @@ textarea {
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  .status-chip.is-pending {
+    animation: none;
   }
 
   .loading-bar::after {

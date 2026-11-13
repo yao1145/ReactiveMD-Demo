@@ -23,6 +23,7 @@ These three paths are stable anchors. `index.html`, `embed.html`, the `vite.conf
 | `compilation/` | `use-local-compilation.ts`, `local-compile-worker.ts`, `preview-state.ts` | Worker-backed local compilation hook, the compile worker entry and the transient preview trial session. |
 | `images/` | `image-assets.ts`, `image-assets-panel.tsx`, `image-copy.ts`, `use-document-images.ts` | Image validation and limits, IndexedDB storage, the image panel and its labels. |
 | `export/` | `export-dialog.tsx`, `export-html.ts` | Export dialog and shareable HTML generation. |
+| `preview/` | `preview-fullscreen.tsx`, `preview-fullscreen.css` | Fullscreen preview toggle, native Fullscreen API handling and the viewport fallback overlay. |
 | `content/` | `examples.ts`, `guide-examples.tsx`, `guide-code.css` | Example catalog, guide rendering and guide code styles. Markdown sources stay in the top-level `content/examples/` and `content/guides/` directories. |
 | `ui/` | `i18n.tsx`, `icons.tsx`, `use-editor-height.ts`, `use-scroll-container.ts` | Shared typed copy, the icon set and layout hooks. |
 | `settings/` | `html-options.ts`, `html-compatibility.tsx` | HTML capability model and its controls. |

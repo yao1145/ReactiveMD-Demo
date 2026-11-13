@@ -1,0 +1,154 @@
+/* Fullscreen preview ------------------------------------------------------
+   The pane element stays mounted in both paths: native fullscreen promotes
+   it to the browser top layer, while the fallback class pins that same pane
+   to the viewport. Selectors are deliberately specific enough to override
+   the compact preview rules in styles.css / author.css. */
+
+.pane-preview:has(> .preview-fullscreen-toggle) {
+  position: relative;
+}
+
+.preview-fullscreen-toggle {
+  position: absolute;
+  top: clamp(8px, 1.5vw, 14px);
+  right: clamp(8px, 1.5vw, 14px);
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  color: var(--ink-soft);
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--ink) 10%, transparent);
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity var(--motion-fast) var(--ease-standard),
+    background-color var(--motion-fast) var(--ease-standard),
+    border-color var(--motion-fast) var(--ease-standard),
+    color var(--motion-fast) var(--ease-standard);
+}
+
+/* Keep the stage clickable while the affordance is hidden, and reveal it on
+   pointer hover or when keyboard focus reaches it. */
+.pane-preview:hover .preview-fullscreen-toggle,
+.pane-preview:focus-within .preview-fullscreen-toggle,
+.preview-fullscreen-toggle:focus-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.preview-fullscreen-toggle:hover {
+  background: var(--surface-hover);
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+
+.preview-fullscreen-toggle:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: 2px;
+}
+
+/* Touch and other coarse pointers have no hover, so keep it visible. */
+@media (hover: none), (pointer: coarse) {
+  .pane-preview .preview-fullscreen-toggle {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+/* Fallback overlay: the pane behaves like a fullscreen surface without the
+   Fullscreen API. */
+.has-editor .editor-preview .pane-preview.is-preview-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: var(--paper);
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  animation: preview-fullscreen-enter var(--motion-base) var(--ease-standard);
+}
+
+/* Native fullscreen: the browser provides the top layer and the dark
+   backdrop; keep the pane itself plain. */
+.has-editor .editor-preview .pane-preview:fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: var(--paper);
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.pane-preview::backdrop {
+  background: rgb(10 20 40 / 62%);
+}
+
+/* The document gets the full stage with comfortable page margins. */
+.has-editor .editor-preview .pane-preview:fullscreen .preview-stage,
+.has-editor .editor-preview .pane-preview.is-preview-fullscreen .preview-stage {
+  min-height: 100%;
+  max-width: none;
+  margin: 0;
+  padding: clamp(24px, 4vw, 64px);
+  background: var(--document-bg, var(--paper));
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.has-editor .editor-preview .pane-preview:fullscreen .preview-stage > .local-document,
+.has-editor .editor-preview .pane-preview.is-preview-fullscreen .preview-stage > .local-document {
+  max-width: 1200px;
+  margin-inline: auto;
+}
+
+/* In fullscreen the toggle is the exit control, so it stays visible and does
+   not scroll away with the document. */
+.has-editor .editor-preview .pane-preview:fullscreen .preview-fullscreen-toggle,
+.has-editor .editor-preview .pane-preview.is-preview-fullscreen .preview-fullscreen-toggle {
+  position: fixed;
+  top: clamp(12px, 2vw, 20px);
+  right: clamp(12px, 2vw, 20px);
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  opacity: 1;
+  pointer-events: auto;
+  background: var(--surface);
+  border-color: var(--line);
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--ink) 16%, transparent);
+}
+
+@keyframes preview-fullscreen-enter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .preview-fullscreen-toggle {
+    transition: none;
+  }
+
+  .has-editor .editor-preview .pane-preview.is-preview-fullscreen {
+    animation: none;
+  }
+}

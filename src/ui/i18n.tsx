@@ -166,6 +166,8 @@ export interface DemoCopy {
     preparing: string;
     disabledTitle: string;
     disabledBody: string;
+    enterFullscreen: string;
+    exitFullscreen: string;
   };
   status: {
     compileFailed: string;
@@ -357,6 +359,8 @@ const ENGLISH: DemoCopy = {
     disabledTitle: 'Preview disabled',
     disabledBody:
       'Fix the errors marked on the left; the preview returns automatically once compilation succeeds.',
+    enterFullscreen: 'Fullscreen preview',
+    exitFullscreen: 'Exit fullscreen',
   },
   status: {
     compileFailed: 'Compile failed',
@@ -542,6 +546,8 @@ const CHINESE: DemoCopy = {
     preparing: '正在准备交互文档…',
     disabledTitle: '预览已停用',
     disabledBody: '请修正左侧标记的错误，编译成功后预览会自动恢复。',
+    enterFullscreen: '全屏预览',
+    exitFullscreen: '退出全屏',
   },
   status: {
     compileFailed: '编译失败',

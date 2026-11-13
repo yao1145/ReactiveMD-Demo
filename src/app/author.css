@@ -124,6 +124,13 @@
   margin-top: var(--space-1);
   padding: var(--space-2) var(--space-1) 0;
   border-top: 1px dashed var(--line);
+  transform-origin: top;
+  animation: rmd-ui-author-menu-in var(--motion-base) var(--ease-standard) both;
+}
+
+@keyframes rmd-ui-author-menu-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
 }
 
 .author-tools-menu-panel .html-compat {
@@ -214,6 +221,11 @@
   outline-offset: 2px;
 }
 
+@keyframes rmd-ui-showcase-links-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+
 .app-shell.is-simple .workspace {
   grid-template-columns: minmax(0, 1fr);
 }
@@ -289,6 +301,8 @@
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     margin-top: 8px;
+    transform-origin: top;
+    animation: rmd-ui-showcase-links-in var(--motion-base) var(--ease-standard) both;
   }
 
   .showcase-links button:first-child {
@@ -336,11 +350,28 @@
 .export-dialog::backdrop {
   background: rgb(10 20 40 / 45%);
   backdrop-filter: blur(2px);
+  animation: rmd-ui-export-backdrop-in var(--motion-base) var(--ease-standard) both;
 }
 
 .export-dialog[open] {
   display: flex;
   flex-direction: column;
+  transform-origin: center;
+  animation: rmd-ui-export-dialog-in var(--motion-base) var(--ease-standard) both;
+}
+
+@keyframes rmd-ui-export-dialog-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.985); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes rmd-ui-export-backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .export-dialog::backdrop { animation: none; }
 }
 
 .export-dialog-head,
@@ -653,6 +684,12 @@
   background: var(--surface);
   color: var(--ink);
   margin-block: var(--space-3);
+  animation: rmd-ui-image-assets-in var(--motion-base) var(--ease-standard) both;
+}
+
+@keyframes rmd-ui-image-assets-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
 }
 .image-assets-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .image-assets-head h3 { margin: 0; font-size: var(--text-sm); }

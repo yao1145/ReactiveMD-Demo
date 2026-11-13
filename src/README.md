@@ -12,6 +12,7 @@ src/
   compilation/           worker compilation and preview sessions
   images/                image assets, storage and panel
   export/                export dialog and shareable HTML
+  preview/               fullscreen preview surface and state
   content/               example catalog, guide renderer and code styles
   ui/                    icons, copy and shared hooks
   settings/              HTML capability options and controls

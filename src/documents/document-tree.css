@@ -51,6 +51,8 @@
 
 .tree-branch {
   min-width: 0;
+  box-shadow: inset 0 0 0 0 transparent;
+  transition: box-shadow var(--motion-base) var(--ease-standard);
 }
 
 .tree-divider {
@@ -66,7 +68,13 @@
   min-height: 34px;
   padding-right: var(--space-2);
   border-radius: 6px;
+  box-shadow: inset 0 0 0 0 transparent;
   color: var(--ink-soft);
+  transition:
+    background-color var(--motion-fast) var(--ease-standard),
+    color var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-base) var(--ease-standard),
+    transform var(--motion-fast) var(--ease-standard);
 }
 
 .tree-row:hover {
@@ -86,6 +94,10 @@
 .tree-row.is-drop-target {
   background: color-mix(in srgb, var(--blue) 14%, transparent);
   box-shadow: inset 0 0 0 2px var(--blue);
+}
+
+.tree-row:active {
+  transform: scale(0.997);
 }
 
 .tree-branch.is-drop-root {
@@ -113,7 +125,8 @@
 }
 
 .tree-disclosure svg {
-  transition: transform var(--motion-fast) var(--ease-standard);
+  transform-origin: center;
+  transition: transform var(--motion-base) var(--ease-standard);
 }
 
 .tree-disclosure.is-open svg {

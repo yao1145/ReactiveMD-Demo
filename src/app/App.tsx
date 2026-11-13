@@ -34,6 +34,7 @@ import { DocumentTree, TREE_COPY } from '../documents/document-tree';
 import { DeveloperTools } from '../developer/developer-tools';
 import { OutlineWorkspace, type SidebarTab } from '../documents/document-outline';
 import { DownloadIcon, PanelLeftIcon } from '../ui/icons';
+import { PreviewFullscreenToggle, usePreviewFullscreen } from '../preview/preview-fullscreen';
 import { ExportDialog } from '../export/export-dialog';
 import { createImageAsset, imagePolicy, ImageAssetError, MAX_IMAGE_BYTES, MAX_IMAGE_TOTAL_BYTES, validateImageManifest, type ImageAsset } from '../images/image-assets';
 import { IMAGE_COPY } from '../images/image-copy';
@@ -850,6 +851,8 @@ export default function App() {
   const exportCompileError = compiled && !compiled.ok
     ? (compiled.diagnostics[0]?.message ?? null)
     : null;
+  const canFullscreenPreview = Boolean(editorView !== 'edit' && previewDocument && !previewFailed);
+  const previewFullscreen = usePreviewFullscreen(canFullscreenPreview);
   const statusLabel = compiling
     ? (compilation.mode === 'fallback' ? copy.status.compilingMainThread : copy.status.compiling)
     : compiled
@@ -1045,7 +1048,11 @@ export default function App() {
                 onExport={openExportDialog}
                 viewMode={editorView}
                 onViewModeChange={setEditorView}
-                preview={<section className="pane-preview" aria-label={copy.preview.region}>
+                preview={<section
+                  className={`pane-preview${previewFullscreen.fallback ? ' is-preview-fullscreen' : ''}`}
+                  aria-label={copy.preview.region}
+                  ref={previewFullscreen.paneRef}
+                >
                   <div className="preview-stage" aria-busy={compiling}>
                     {previewFailed && compiled ? (
                       <div className="preview-error" role="alert">
@@ -1059,6 +1066,13 @@ export default function App() {
                       <div className="preview-loading" role="status"><p>{copy.preview.preparing}</p></div>
                     )}
                   </div>
+                  {canFullscreenPreview ? (
+                    <PreviewFullscreenToggle
+                      state={previewFullscreen}
+                      enterLabel={copy.preview.enterFullscreen}
+                      exitLabel={copy.preview.exitFullscreen}
+                    />
+                  ) : null}
                 </section>}
                 authoring={editorAuthoring}
                 toolbar={editorToolbar}
