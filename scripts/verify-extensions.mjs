@@ -115,8 +115,8 @@ try {
         } else {
           expect(html).not.toMatch(/<script\b/);
         }
-        await expect(exported.locator('[data-rmd-theme="sci-fi"]')).toBeVisible();
-        expect(await exported.locator('[data-rmd-theme="sci-fi"]').evaluate(element => getComputedStyle(element).getPropertyValue('--sf-neutral-0').trim())).toBe('#ffffff');
+        await expect(exported.locator('[data-rmd-theme="default"]')).toBeVisible();
+        expect(await exported.locator('[data-rmd-theme="default"]').evaluate(element => getComputedStyle(element).getPropertyValue('--surface').trim())).not.toBe('');
         expect(requests).toEqual([]);
       } finally { await offlineContext.close(); }
     });

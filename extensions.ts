@@ -13,9 +13,7 @@ export const examples: readonly PlaygroundExample[] = [{
 
 function gamesSource(zh: boolean): string {
   const t = (en: string, cn: string) => zh ? cn : en;
-  return `<theme name="sci-fi">
-
-# ${t('Games', '小游戏')}
+  return `# ${t('Games', '小游戏')}
 
 ${t('Two games share this page. Their controls and progress are independent; click a board before using its keyboard controls.', '两款小游戏放在同一页中，操作和进度各自独立。使用键盘前，先点击要玩的棋盘。')}
 
