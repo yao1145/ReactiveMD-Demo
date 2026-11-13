@@ -23,7 +23,7 @@ try {
   const page = await context.newPage();
   page.setDefaultTimeout(15000);
   page.on('pageerror', (error) => errors.push(error.message));
-  await page.goto(baseURL);
+  await page.goto(`${baseURL}/?example=sci-fi-theme`);
   await page.getByRole('slider', { name: 'People', exact: true }).waitFor();
   const slider = page.getByRole('slider', { name: 'People', exact: true });
   await slider.focus();
@@ -50,7 +50,7 @@ try {
   await check('downloaded state file stores only the selected public values', async () => {
     const state = JSON.parse(await readFile(statePath, 'utf8'));
     expect(state.format).toBe('reactive-md-state/v1');
-    expect(state.parameters).toEqual({ annual: false, seats: 6 });
+    expect(state.parameters).toEqual({ annual: false, people: 6 });
     expect(Object.keys(state.parameters).some((name) => name.startsWith('@'))).toBe(false);
   });
 

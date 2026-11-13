@@ -1,20 +1,8 @@
 import type { Language } from '../ui/i18n';
 import * as installedExtensions from '../../extensions';
-import functionsSource from '../../content/examples/local/showcase/functions.reactive.md?raw';
-import formsSource from '../../content/examples/local/showcase/forms.reactive.md?raw';
-import statisticsSource from '../../content/examples/local/showcase/statistics.reactive.md?raw';
-import layoutSource from '../../content/examples/local/showcase/layout.reactive.md?raw';
-import flowSource from '../../content/examples/local/showcase/flow.reactive.md?raw';
-import tasksSource from '../../content/examples/local/showcase/tasks.reactive.md?raw';
-import pricingSource from '../../content/examples/local/pricing.reactive.md?raw';
+import featuresSource from '../../content/examples/local/showcase/features.reactive.md?raw';
 import diagnosticsSource from '../../content/examples/local/diagnostics.reactive.md?raw';
-import functionsZhSource from '../../content/examples/local/showcase/zh/functions.reactive.md?raw';
-import formsZhSource from '../../content/examples/local/showcase/zh/forms.reactive.md?raw';
-import statisticsZhSource from '../../content/examples/local/showcase/zh/statistics.reactive.md?raw';
-import layoutZhSource from '../../content/examples/local/showcase/zh/layout.reactive.md?raw';
-import flowZhSource from '../../content/examples/local/showcase/zh/flow.reactive.md?raw';
-import tasksZhSource from '../../content/examples/local/showcase/zh/tasks.reactive.md?raw';
-import pricingZhSource from '../../content/examples/local/zh/pricing.reactive.md?raw';
+import featuresZhSource from '../../content/examples/local/showcase/zh/features.reactive.md?raw';
 import diagnosticsZhSource from '../../content/examples/local/zh/diagnostics.reactive.md?raw';
 import classroomSource from '../../content/examples/local/scenarios/classroom.reactive.md?raw';
 import classroomZhSource from '../../content/examples/local/scenarios/classroom-zh.reactive.md?raw';
@@ -24,17 +12,13 @@ import surveySource from '../../content/examples/local/scenarios/survey.reactive
 import surveyZhSource from '../../content/examples/local/scenarios/survey-zh.reactive.md?raw';
 import blogSource from '../../content/examples/local/scenarios/blog.reactive.md?raw';
 import blogZhSource from '../../content/examples/local/scenarios/blog-zh.reactive.md?raw';
-import featuresSource from '../../content/examples/local/showcase/features.reactive.md?raw';
-import featuresZhSource from '../../content/examples/local/showcase/zh/features.reactive.md?raw';
-import diagramGallerySource from '../../content/examples/local/showcase/diagram-gallery.reactive.md?raw';
-import diagramGalleryZhSource from '../../content/examples/local/showcase/zh/diagram-gallery.reactive.md?raw';
-import uiReviewSource from '../../content/examples/local/showcase/ui-review.reactive.md?raw';
-import uiReviewZhSource from '../../content/examples/local/showcase/zh/ui-review.reactive.md?raw';
+import sciFiThemeSource from '../../content/examples/local/showcase/sci-fi-theme.reactive.md?raw';
+import sciFiThemeZhSource from '../../content/examples/local/showcase/zh/sci-fi-theme.reactive.md?raw';
 
 /** One standalone document, its navigation section and both translations. */
 export interface PlaygroundExample {
   id: string;
-  section: 'scenario' | 'legacy' | 'feature' | 'reference' | 'debug';
+  section: 'scenario' | 'feature' | 'reference' | 'debug';
   title: string;
   hint: string;
   source: string;
@@ -91,70 +75,11 @@ export const EXAMPLES: PlaygroundExample[] = [
     source: featuresSource, sourceZh: featuresZhSource,
   },
   {
-    id: 'pricing',
-    section: 'legacy',
-    title: 'Quick start',
-    hint: 'Change the headcount, then compare annual billing.',
-    source: pricingSource,
-    titleZh: '快速体验',
-    hintZh: '调整人数，再切换年度付费，看看合计如何变化。',
-    sourceZh: pricingZhSource,
-  },
-  {
-    id: 'functions', section: 'legacy',
-    title: 'Functions & formulas', titleZh: '函数与公式',
-    hint: 'Shape a wave and read savings growth through shared calculations.',
-    hintZh: '调整波形，用共享计算读取储蓄增长与格式化结果。',
-    source: functionsSource, sourceZh: functionsZhSource,
-  },
-  {
-    id: 'forms', section: 'legacy',
-    title: 'Forms & bindings', titleZh: '表单与联动',
-    hint: 'Plan a workshop, check dates and spending, and prepare selected subjects.',
-    hintZh: '规划活动，校验日期与费用，并为所选主题生成准备清单。',
-    source: formsSource, sourceZh: formsZhSource,
-  },
-  {
-    id: 'statistics', section: 'legacy',
-    title: 'Data & charts', titleZh: '数据与统计图表',
-    hint: 'Read one expense collection through aggregates, tables and charts.',
-    hintZh: '用集合汇总、明细表和图表观察同一份预算。',
-    source: statisticsSource, sourceZh: statisticsZhSource,
-  },
-  {
-    id: 'layout', section: 'legacy',
-    title: 'Content & layout', titleZh: '内容与布局',
-    hint: 'Choose a reading date and role, compare cards and open the details.',
-    hintZh: '选择阅读日期与角色，比较卡片，再展开补充细节。',
-    source: layoutSource, sourceZh: layoutZhSource,
-  },
-  {
-    id: 'flow', section: 'legacy',
-    title: 'Diagrams & flow', titleZh: '图解与流程',
-    hint: 'Follow an input into one named calculation shared by every explanation.',
-    hintZh: '跟随输入，观察节点与正文如何共享同一个命名计算。',
-    source: flowSource, sourceZh: flowZhSource,
-  },
-  {
-    id: 'tasks', section: 'legacy',
-    title: 'Checklists & timing', titleZh: '清单与计时',
-    hint: 'Check off preparation, build a reflection table and time a focus session.',
-    hintZh: '勾选准备事项，生成回顾表，并为专注环节计时。',
-    source: tasksSource, sourceZh: tasksZhSource,
-  },
-  {
-    id: 'diagram-gallery', section: 'reference',
-    title: 'Diagrams & galleries', titleZh: '图解与画廊',
-    hint: 'Inspect node notes and browse images, cards and long text with native snapping.',
-    hintZh: '悬浮查看节点说明，用原生停靠浏览图片、卡片与长文本。',
-    source: diagramGallerySource, sourceZh: diagramGalleryZhSource,
-  },
-  {
-    id: 'ui-review', section: 'reference',
-    title: 'UI refinement review', titleZh: 'UI 修订验收',
-    hint: 'Review plot scaling, button contrast, nested tooltips, jump styling and option motion.',
-    hintZh: '集中检查绘图比例、按钮对比度、嵌套提示、跳转样式与选项动效。',
-    source: uiReviewSource, sourceZh: uiReviewZhSource,
+    id: 'sci-fi-theme', section: 'reference',
+    title: 'Sci-fi theme', titleZh: '科幻主题',
+    hint: 'Open a console-style document styled by the bundled sci-fi theme, then change its controls.',
+    hintZh: '打开一篇由内置科幻主题渲染的控制台风格文档，并操作其中的控件。',
+    source: sciFiThemeSource, sourceZh: sciFiThemeZhSource,
   },
   {
     id: 'diagnostics',
@@ -175,14 +100,14 @@ if (new Set(EXAMPLES.map(example => example.id)).size !== EXAMPLES.length) {
 
 export const DEFAULT_EXAMPLE_ID = 'classroom';
 
-/** Historical source IDs stay available for drafts and links, outside the menu. */
+/** The feature group keeps the integrated component tour. */
 export function isFeatureExample(example: Pick<PlaygroundExample, 'section'>): boolean {
-  return example.section === 'legacy' || example.section === 'feature';
+  return example.section === 'feature';
 }
 
-/** Keep old tour bookmarks useful after integrating their components. */
+/** Keep old game bookmarks useful after their packages were integrated. */
 export function resolveExampleId(id: string | null | undefined): string | undefined {
-  const resolved = id === 'tetris' || id === 'game-2048' ? 'games' : id === 'explore' ? 'functions' : id === 'gallery' ? 'forms' : id;
+  const resolved = id === 'tetris' || id === 'game-2048' ? 'games' : id;
   return EXAMPLES.some(example => example.id === resolved) ? resolved! : undefined;
 }
 

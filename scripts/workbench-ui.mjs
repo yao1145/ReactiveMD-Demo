@@ -5,7 +5,7 @@ import {installEditorProbe,readEditorSource} from './editor-probe.mjs';
 export async function openWorkbench(page,value) {
   const url=new URL(value);url.searchParams.delete('editor');
   if (!url.searchParams.has('example')) await page.addInitScript(() => {
-    if (!localStorage.getItem('reactive-md:selection')) localStorage.setItem('reactive-md:selection', 'pricing');
+    if (!localStorage.getItem('reactive-md:selection')) localStorage.setItem('reactive-md:selection', 'sci-fi-theme');
   });
   await page.goto(url.href);
   await installEditorProbe(page);

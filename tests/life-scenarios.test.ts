@@ -7,11 +7,10 @@ describe('scenario catalog', () => {
     expect(DEFAULT_EXAMPLE_ID).toBe('classroom');
     expect(EXAMPLES.filter(item => item.section === 'scenario').map(item => item.id)).toEqual(['classroom', 'proposal', 'survey', 'blog']);
     expect(EXAMPLES.filter(item => item.section === 'feature').map(item => item.id)).toEqual(['features']);
-    expect(EXAMPLES.filter(isFeatureExample)).toHaveLength(8);
+    expect(EXAMPLES.filter(isFeatureExample)).toHaveLength(1);
     expect(resolveExampleId('features')).toBe('features');
     expect(resolveExampleId('tetris')).toBe('games');
     expect(resolveExampleId('game-2048')).toBe('games');
-    expect(resolveExampleId('functions')).toBe('functions');
   });
 });
 

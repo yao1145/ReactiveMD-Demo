@@ -14,10 +14,12 @@ describe('consolidated feature document', () => {
     expect(EXAMPLES.some(example => ['explore','gallery'].includes(example.id))).toBe(false);
   });
 
-  it('routes retired tour bookmarks to the integrated scenarios', () => {
-    expect(resolveExampleId('explore')).toBe('functions');
-    expect(resolveExampleId('gallery')).toBe('forms');
-    expect(resolveExampleId('statistics')).toBe('statistics');
+  it('drops bookmarks for retired tours while keeping game aliases', () => {
+    expect(resolveExampleId('explore')).toBeUndefined();
+    expect(resolveExampleId('gallery')).toBeUndefined();
+    expect(resolveExampleId('statistics')).toBeUndefined();
+    expect(resolveExampleId('tetris')).toBe('games');
+    expect(resolveExampleId('game-2048')).toBe('games');
     expect(resolveExampleId('missing')).toBeUndefined();
   });
 

@@ -11,7 +11,7 @@ await mkdir('artifacts/source-navigation', { recursive: true });
 // Public ranges address the raw document source. CodeMirror stores its document
 // with LF endings, so tests must convert an expected raw offset to the CM view
 // position exactly as SourceCoordinates does.
-const pricingSource = readFileSync(new URL('../content/examples/local/pricing.reactive.md', import.meta.url), 'utf8');
+const exampleSource = readFileSync(new URL('../content/examples/local/showcase/sci-fi-theme.reactive.md', import.meta.url), 'utf8');
 function toViewOffset(raw, offset) {
   let view = Math.max(0, Math.min(raw.length, offset));
   for (let index = 0; index < offset; index += 1) {
@@ -42,7 +42,7 @@ try {
     page.on('pageerror', (error) => errors.push(error.message));
     // Force a clean, known example so the raw-line-ending mapping is deterministic.
     await page.addInitScript(() => { try { localStorage.clear(); } catch {} });
-    await page.goto(`${baseURL}/?example=pricing`);
+    await page.goto(`${baseURL}/?example=sci-fi-theme`);
     const preview = page.locator('.pane-preview');
     const source = page.locator('#source-editor');
     await expect(preview).toBeVisible();
@@ -72,12 +72,12 @@ try {
       expect(sourceRange.type).toBe('interpolation');
       await interpolation.click();
 
-      const expectedStart = toViewOffset(pricingSource, sourceRange.start);
-      const expectedEnd = toViewOffset(pricingSource, sourceRange.end);
+      const expectedStart = toViewOffset(exampleSource, sourceRange.start);
+      const expectedEnd = toViewOffset(exampleSource, sourceRange.end);
       await expect.poll(async () => (await selection(page)).start).toBe(expectedStart);
       const afterText = await selection(page);
       expect(afterText.end).toBe(expectedEnd);
-      expect(afterText.value).toBe(rawSlice(pricingSource, sourceRange));
+      expect(afterText.value).toBe(rawSlice(exampleSource, sourceRange));
       expect(afterText.focused).toBe(true);
 
       // Clicking a control label targets the component tag, not its input.
@@ -90,11 +90,11 @@ try {
         };
       });
       await label.click();
-      await expect.poll(async () => (await selection(page)).start).toBe(toViewOffset(pricingSource, labelRange.start));
+      await expect.poll(async () => (await selection(page)).start).toBe(toViewOffset(exampleSource, labelRange.start));
       const labelSelection = await selection(page);
-      expect(labelSelection.value).toBe(rawSlice(pricingSource, labelRange));
+      expect(labelSelection.value).toBe(rawSlice(exampleSource, labelRange));
       expect(labelSelection.value).toContain('<slider');
-      expect(labelSelection.value).toContain('bind="seats"');
+      expect(labelSelection.value).toContain('bind="people"');
 
       // Dragging/filling the slider changes only the parameter.
       const before = await selection(page);

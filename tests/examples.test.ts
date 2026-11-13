@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { compileLatex, compileLocal, createLocalRuntime, type LocalValue } from 'reactive-md';
+import { compileLocal, createLocalRuntime } from 'reactive-md';
 import { EXAMPLES, DEFAULT_EXAMPLE_ID, localizedExample, localizedExamples } from '../src/content/examples';
 import { host, examples as extensionExamples } from '../extensions';
+
+const BUILTIN_COUNT = 7;
 
 function exampleSource(id: string) {
   const example = EXAMPLES.find((item) => item.id === id);
@@ -14,16 +16,15 @@ function flatten<T extends { children?: T[] }>(nodes: T[]): T[] {
 }
 
 describe('playground local documents consumed through the public package', () => {
-  it('ships the built-in tours and registered plugin examples', () => {
-    expect(EXAMPLES).toHaveLength(15 + extensionExamples.length);
+  it('ships the built-in examples and registered plugin examples', () => {
+    expect(EXAMPLES).toHaveLength(BUILTIN_COUNT + extensionExamples.length);
     expect(new Set(EXAMPLES.map((example) => example.id)).size).toBe(EXAMPLES.length);
     const contributedIds = new Set(extensionExamples.map(example => example.id));
     const builtins = EXAMPLES.filter(example => !contributedIds.has(example.id));
-    expect(builtins.filter((example) => example.section === 'legacy').map((example) => example.id)).toEqual(['pricing', 'functions', 'forms', 'statistics', 'layout', 'flow', 'tasks']);
     expect(builtins.filter(example => example.section === 'scenario').map(example => example.id)).toEqual(['classroom', 'proposal', 'survey', 'blog']);
     expect(builtins.filter((example) => example.section === 'feature').map((example) => example.id))
       .toEqual(['features']);
-    expect(builtins.filter((example) => example.section === 'reference').map((example) => example.id)).toEqual(['diagram-gallery', 'ui-review']);
+    expect(builtins.filter((example) => example.section === 'reference').map((example) => example.id)).toEqual(['sci-fi-theme']);
     expect(builtins.filter((example) => example.section === 'debug').map((example) => example.id)).toEqual(['diagnostics']);
     expect(EXAMPLES.some((example) => example.id === DEFAULT_EXAMPLE_ID)).toBe(true);
     for (const example of EXAMPLES) {
@@ -53,46 +54,30 @@ describe('playground local documents consumed through the public package', () =>
     });
   }
 
-  it('runs the pricing panel through its public bindings', () => {
-    const result = compileLocal(exampleSource('pricing'));
+  it('runs the sci-fi theme example through its public bindings', () => {
+    const result = compileLocal(exampleSource('sci-fi-theme'), { config: host.config });
     if (!result.ok) throw new Error(JSON.stringify(result.diagnostics));
     const runtime = createLocalRuntime(result.document);
     const nodes = flatten(result.document.nodes);
-    const seats = nodes.find((node) => node.attrs?.bind === 'seats');
+    const people = nodes.find((node) => node.attrs?.bind === 'people');
     const annual = nodes.find((node) => node.attrs?.bind === 'annual');
-    expect(seats?.name).toBe('slider');
+    expect(people?.name).toBe('slider');
     expect(annual?.name).toBe('toggle');
-    expect(runtime.get(seats!)).toBe(2);
+    expect(runtime.get(people!)).toBe(2);
     expect(runtime.get(annual!)).toBe(false);
-    expect(runtime.set(seats!, 5)).toEqual([]);
+    expect(runtime.set(people!, 5)).toEqual([]);
     expect(runtime.set(annual!, true)).toEqual([]);
-    expect(runtime.evaluate('seats * (annual ? 80 : 100)')).toBe(400);
-    expect(runtime.text('Monthly total: {{ seats * (annual ? 80 : 100) }} USD.'))
-      .toBe('Monthly total: 400 USD.');
+    expect(runtime.evaluate('people * (annual ? 80 : 100)')).toBe(400);
+    expect(runtime.evaluate('crewMonthly')).toBe(400);
+    expect(runtime.evaluate('crewAnnual')).toBe(4800);
+    expect(runtime.text('Monthly total: {{ crewMonthly }} USD.')).toBe('Monthly total: 400 USD.');
     runtime.dispose();
-  });
-
-  it('runs checklist and counter bindings with independent reset scopes', () => {
-    const checklist = compileLocal(exampleSource('tasks'));
-    if (!checklist.ok) throw new Error(JSON.stringify(checklist.diagnostics));
-    const checklistRuntime = createLocalRuntime(checklist.document);
-    const done = flatten(checklist.document.nodes).find((node) => node.attrs?.bind === 'done');
-    expect(checklistRuntime.get(done!)).toEqual(['item-1']);
-    expect(checklistRuntime.set(done!, ['item-1', 'item-2', 'item-3'])).toEqual([]);
-    expect(checklistRuntime.evaluate('len(done)')).toBe(3);
-    const count = flatten(checklist.document.nodes).find((node) => node.attrs?.bind === 'count');
-    const panel = flatten(checklist.document.nodes).find((node) => node.name === 'panel');
-    checklistRuntime.set(count!, 3);
-    checklistRuntime.reset(panel!);
-    expect(checklistRuntime.get(done!)).toEqual(['item-1']);
-    expect(checklistRuntime.get(count!)).toBe(3);
-    checklistRuntime.dispose();
   });
 });
 
 describe('localized playground examples', () => {
-  it('ships English and Chinese metadata and sources for every tour', () => {
-    expect(EXAMPLES).toHaveLength(15 + extensionExamples.length);
+  it('ships English and Chinese metadata and sources for every example', () => {
+    expect(EXAMPLES).toHaveLength(BUILTIN_COUNT + extensionExamples.length);
     for (const example of EXAMPLES) {
       expect(example.title.trim().length, example.id).toBeGreaterThan(0);
       expect(example.hint.trim().length, example.id).toBeGreaterThan(0);
@@ -176,143 +161,6 @@ describe.each(['en', 'zh'] as const)('%s feature tour outcomes', (language) => {
       try {
         expect(runtime.validate(), example.id).toEqual([]);
         for (const name of Object.keys(result.document.computations ?? {})) expect(() => runtime.evaluate(name), example.id).not.toThrow();
-      } finally { runtime.dispose(); }
-    }
-  });
-
-  function start(id: string) {
-    const source = localizedExample(EXAMPLES.find((example) => example.id === id)!, language).source;
-    const result = compileLocal(source);
-    if (!result.ok) throw new Error(JSON.stringify(result.diagnostics));
-    const runtime = createLocalRuntime(result.document);
-    const nodes = flatten(result.document.nodes);
-    return { source, runtime, nodes, set: (bind: string, value: LocalValue) => {
-      expect(runtime.set(nodes.find((node) => node.attrs?.bind === bind)!, value)).toEqual([]);
-    } };
-  }
-
-  it('matches the workshop estimate and reset described in the instructions', () => {
-    const { runtime, nodes, set } = start('forms');
-    try {
-      const cost = 'total';
-      expect(runtime.evaluate(cost)).toBe(320);
-      set('format', 'online'); set('seats', 6); set('equipment', true); set('name', 'Lin');
-      expect(runtime.evaluate(cost)).toBe(480);
-      expect(runtime.text('{{ name }}: {{ seats }}')).toBe('Lin: 6');
-      runtime.reset(nodes.find((node) => node.name === 'panel')!);
-      expect(runtime.evaluate(cost)).toBe(320);
-      expect(runtime.snapshot().state).toMatchObject({ name: 'Alex', seats: 4, format: 'onsite', equipment: false });
-    } finally { runtime.dispose(); }
-  });
-
-  it('uses the same budget parameters for each chart and reaches the documented threshold', () => {
-    const { runtime, nodes, set } = start('statistics');
-    try {
-      const sum = 'total';
-      expect(runtime.evaluate(sum)).toBe(620);
-      set('visual', 300);
-      expect(runtime.evaluate(sum)).toBe(690);
-      expect(runtime.evaluate(`${sum} > 690`)).toBe(false);
-      set('visual', 310);
-      expect(runtime.evaluate(sum)).toBe(700);
-      expect(runtime.evaluate(`${sum} > 690`)).toBe(true);
-      expect(runtime.evaluate('expenses[1]')).toBe(310);
-      expect(runtime.evaluate('average(expenses)')).toBe(175);
-      expect(runtime.evaluate('minOf(expenses)')).toBe(90);
-      expect(runtime.evaluate('maxOf(expenses)')).toBe(310);
-      expect(nodes.filter((node) => node.name === 'chart')).toHaveLength(3);
-      expect(nodes.filter((node) => node.name === 'table')).toHaveLength(1);
-    } finally { runtime.dispose(); }
-  });
-
-  it('updates flow selection and the value being explained', () => {
-    const { runtime, set } = start('flow');
-    try {
-      set('people', 6); set('selected', 'compute');
-      expect(runtime.evaluate('total')).toBe(480);
-      expect(runtime.text('{{ selected }}: {{ people }} × {{ rate }} = {{ total }}')).toBe('compute: 6 × 80 = 480');
-      expect(runtime.document.bindings.rate).toBeUndefined();
-      expect(runtime.document.bindings.total).toBeUndefined();
-    } finally { runtime.dispose(); }
-  });
-
-  it('calculates the displayed curves, including the zero-rate savings branch', () => {
-    const { source, runtime, set } = start('functions');
-    try {
-      const plots = [...source.matchAll(/<plot[^>]*>([\s\S]*?)<\/plot>/g)];
-      const formulas = plots.flatMap((plot) => [...plot[1].matchAll(/\$\$([\s\S]*?)\$\$/g)].map((match) => compileLatex(match[1])));
-      set('a', 2); set('r', 0);
-      const env = runtime.snapshot().state as Record<string, number>;
-      expect(formulas[0].evaluate(Math.PI / 2, env)).toBeCloseTo(2);
-      expect(formulas[3].evaluate(-2, env)).toBe(-4);
-      expect(formulas[3].evaluate(2, env)).toBe(8);
-      expect(formulas[4].evaluate(20, env)).toBe(130000);
-      expect(runtime.evaluate('endingBalance')).toBe(130000);
-      expect(runtime.evaluate('endingBalance - deposits')).toBe(0);
-      set('r', 5);
-      expect(formulas[4].evaluate(20, runtime.snapshot().state as Record<string, number>)).toBeCloseTo(232643.24, 2);
-      expect(runtime.evaluate('endingBalance')).toBeCloseTo(232643.24, 2);
-      const locale = language === 'zh' ? 'zh-CN' : 'en-US';
-      expect(runtime.evaluate(`formatNumber(distance, 2, '${locale}')`)).toBe('2.24');
-      expect(runtime.evaluate(`formatScientific(waveHeight, 2, '${locale}')`)).toBe('1.68E0');
-    } finally { runtime.dispose(); }
-  });
-
-  it('keeps inconsistent workshop plans editable and clears their hints after correction', () => {
-    const { runtime, set } = start('forms');
-    try {
-      set('name', '  Lin  ');
-      expect(runtime.evaluate('organizer')).toBe('Lin');
-      set('name', '   ');
-      expect(runtime.evaluate('organizer')).toBe(language === 'zh' ? '你的小组' : 'Your group');
-      expect(runtime.evaluate('registrationGap')).toBe(7);
-      set('deadline', '2026-11-02'); set('budget', 300);
-      expect(runtime.validate().map(diagnostic => diagnostic.code)).toEqual(['local.validation.failed', 'local.validation.failed']);
-      expect(runtime.evaluate('registrationGap')).toBeNull();
-      expect(runtime.evaluate('budget')).toBe(300);
-      set('deadline', '2026-11-01'); set('budget', 320);
-      expect(runtime.validate()).toEqual([]);
-      expect(runtime.evaluate('registrationGap')).toBe(0);
-      set('date', '');
-      expect(runtime.validate()).toHaveLength(1);
-    } finally { runtime.dispose(); }
-  });
-
-  it('changes reading guidance across calendar dates without consulting the system clock', () => {
-    const { runtime, set } = start('layout');
-    try {
-      expect(runtime.evaluate('daysUntil')).toBe(8);
-      expect(runtime.evaluate('readingPhase')).toBe('before');
-      set('readingDate', '2026-11-01');
-      expect(runtime.evaluate('readingPhase')).toBe('during');
-      expect(runtime.evaluate('daysUntil')).toBe(0);
-      set('readingDate', '2026-11-03');
-      expect(runtime.evaluate('readingPhase')).toBe('after');
-      expect(runtime.evaluate('daysUntil')).toBe(-2);
-      set('readingDate', '');
-      expect(runtime.evaluate('readingPhase')).toBe('undated');
-      expect(runtime.evaluate('daysUntil')).toBeNull();
-    } finally { runtime.dispose(); }
-  });
-
-  it('uses bounded, identity-keyed selections for preparation and reflection rows', () => {
-    for (const [id, binding, values, limit] of [
-      ['forms', 'subjects', ['math', 'chemistry'], '2'],
-      ['tasks', 'done', ['item-1', 'item-2', 'item-3'], '3'],
-    ] as const) {
-      const { runtime, nodes, set } = start(id);
-      try {
-        const table = nodes.find(node => node.name === 'data-table')!;
-        expect(table.attrs).toMatchObject({ rows: `{{ ${binding} }}`, key: '{{ item }}', 'max-rows': limit });
-        set(binding, [...values]);
-        expect(runtime.evaluate(binding)).toEqual(values);
-        expect(runtime.evaluate(`${binding}[0]`)).toBe(values[0]);
-        if (id === 'tasks') {
-          expect(runtime.evaluate('readyToShare')).toBe(true);
-          expect(runtime.evaluate('formatPercent(completion, 0)')).toBe('100%');
-        }
-        set(binding, []);
-        expect(runtime.evaluate(`${binding}[0]`)).toBeNull();
       } finally { runtime.dispose(); }
     }
   });

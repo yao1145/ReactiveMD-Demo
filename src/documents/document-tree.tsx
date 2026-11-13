@@ -97,7 +97,6 @@ export const TREE_COPY: Record<Language, DocumentTreeCopy> = {
     sections: {
       scenario: 'Scenarios',
       feature: 'Feature demo',
-      legacy: 'Component tours',
       reference: 'Extensions',
       debug: 'Diagnostics',
     },
@@ -136,7 +135,6 @@ export const TREE_COPY: Record<Language, DocumentTreeCopy> = {
     sections: {
       scenario: '场景',
       feature: '功能演示',
-      legacy: '组件示例',
       reference: '扩展',
       debug: '诊断',
     },
@@ -256,7 +254,7 @@ export interface DocumentTreeProps {
 const TREE_MIME = 'application/x-reactive-md-tree';
 
 const SECTION_ORDER: readonly LocalizedExample['section'][] = [
-  'scenario', 'feature', 'legacy', 'reference', 'debug',
+  'scenario', 'feature', 'reference', 'debug',
 ];
 
 export function DocumentTree(props: DocumentTreeProps) {
