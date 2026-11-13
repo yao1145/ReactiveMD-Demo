@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {mkdir} from 'node:fs/promises';
 import {chromium, expect} from '@playwright/test';
-import { openWorkbench, clickWorkbenchAction, fillEditor, expectEditorSource } from './workbench-ui.mjs';
+import { openWorkbench, clickWorkbenchAction, fillEditor, expectEditorSource, switchWorkbenchLanguage } from './workbench-ui.mjs';
 
 const browser = await chromium.launch({channel: process.env.PLAYWRIGHT_CHANNEL ?? 'msedge', headless: true});
 await mkdir('artifacts/compact-workbench', {recursive: true});
@@ -63,7 +63,7 @@ try {
     await theme.click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
     await expect(page.getByRole('button', {name: 'Light theme', exact: true})).toBeVisible();
-    await page.getByTestId('language-toggle').click();
+    await switchWorkbenchLanguage(page);
     await expect(quick.getByRole('button', {name: '添加图片', exact: true})).toBeVisible();
     await expect(page.getByRole('button', {name: '浅色主题', exact: true})).toBeVisible();
     await page.waitForTimeout(250);

@@ -45,6 +45,8 @@ export interface DemoCopy {
     themeLight: string;
     themeDark: string;
     repository: string;
+    menu: string;
+    language: string;
   };
   guide: {
     title: string;
@@ -130,6 +132,9 @@ export interface DemoCopy {
   };
   editor: {
     region: string;
+    editView: string;
+    previewView: string;
+    viewSwitch: string;
     sourceLabel: string;
     stateNote: string;
     diagnosticsRegion: string;
@@ -226,6 +231,8 @@ const ENGLISH: DemoCopy = {
     themeLight: 'Light',
     themeDark: 'Dark',
     repository: 'GitHub repository',
+    menu: 'Menu',
+    language: 'Language',
   },
   guide: {
     title: 'User Guide',
@@ -321,6 +328,9 @@ const ENGLISH: DemoCopy = {
   },
   editor: {
     region: 'Source editor',
+    editView: 'Edit',
+    previewView: 'Preview',
+    viewSwitch: 'Editor view',
     sourceLabel: 'Reactive MD source',
     stateNote:
       'Compatible values carry across edits; rerunning, switching examples, importing or refreshing resets them.',
@@ -424,6 +434,8 @@ const CHINESE: DemoCopy = {
     themeLight: '浅色',
     themeDark: '深色',
     repository: 'GitHub 仓库',
+    menu: '菜单',
+    language: '语言',
   },
   guide: {
     title: '使用指南',
@@ -510,6 +522,9 @@ const CHINESE: DemoCopy = {
   },
   editor: {
     region: '源码编辑器',
+    editView: '编辑',
+    previewView: '预览',
+    viewSwitch: '编辑视图',
     sourceLabel: 'Reactive MD 源码',
     stateNote: '编辑时沿用兼容参数；重新运行、切换示例、导入或刷新会重置。',
     diagnosticsRegion: '编译与运行诊断',

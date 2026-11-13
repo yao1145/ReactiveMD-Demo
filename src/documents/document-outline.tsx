@@ -3,7 +3,7 @@ import type { LocalDocument } from 'reactive-md';
 import type { EditorViewMode, ReactiveMarkdownEditorHandle } from 'reactive-md-editor';
 import { documentOutline, flattenOutline, outlineHeadingAt, type OutlineHeading } from './document-outline-model';
 import { useCopy } from '../ui/i18n';
-import { CloseIcon, FilesIcon, OutlineIcon, SlidersIcon } from '../ui/icons';
+import { FilesIcon, OutlineIcon, SlidersIcon } from '../ui/icons';
 import { useScrollContainer } from '../ui/use-scroll-container';
 import './document-outline.css';
 
@@ -18,6 +18,8 @@ export interface OutlineWorkspaceProps {
   editor: RefObject<ReactiveMarkdownEditorHandle | null>;
   sidebarOpen: boolean;
   onSidebarOpenChange(open: boolean): void;
+  /** Sidebar title, status and toggle shown above the tabs while open. */
+  sidebarHeader?: ReactNode;
   sidebarTab: SidebarTab;
   onSidebarTabChange(tab: SidebarTab): void;
   documentsPanel: ReactNode;
@@ -34,6 +36,7 @@ export function OutlineWorkspace({
   editor,
   sidebarOpen,
   onSidebarOpenChange,
+  sidebarHeader,
   sidebarTab,
   onSidebarTabChange,
   documentsPanel,
@@ -181,6 +184,7 @@ export function OutlineWorkspace({
           close();
         }
       }}>
+      {sidebarHeader}
       <div className="sidebar-tabs" role="tablist" aria-label={sidebarCopy.region}>
         <button type="button" role="tab" aria-selected={sidebarTab === 'documents'} title={sidebarCopy.documents}
           aria-label={sidebarCopy.documents} className="sidebar-tab"
@@ -196,10 +200,6 @@ export function OutlineWorkspace({
           aria-label={sidebarCopy.developerTools} className="sidebar-tab"
           onClick={() => onSidebarTabChange('devtools')}>
           <SlidersIcon />
-        </button>
-        <button type="button" className="icon-button sidebar-close" title={sidebarCopy.close}
-          aria-label={sidebarCopy.close} onClick={close}>
-          <CloseIcon />
         </button>
       </div>
       <div className="sidebar-body" role="tabpanel" hidden={sidebarTab !== 'documents'}>

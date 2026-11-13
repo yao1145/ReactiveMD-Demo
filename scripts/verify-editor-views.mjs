@@ -1,4 +1,4 @@
-import { openWorkbench, clickWorkbenchAction, expectEditorSource } from './workbench-ui.mjs';
+import { openWorkbench, clickWorkbenchAction, expectEditorSource, switchWorkbenchLanguage } from './workbench-ui.mjs';
 import { chromium, expect } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
 
@@ -74,7 +74,7 @@ try {
     await mode('Edit').click();
     await mode('Preview').click();
     await expect(slider).toHaveValue('7');
-    await page.getByRole('button', { name: 'Switch to Chinese', exact: true }).click();
+    await switchWorkbenchLanguage(page);
     await expect(bar.getByRole('button', { name: '编辑', exact: true })).toBeVisible();
     if (width > 600) await expect(bar.getByRole('button', { name: '并排', exact: true })).toBeVisible();
     else await expect(bar.getByRole('button', { name: '并排', exact: true })).toHaveCount(0);

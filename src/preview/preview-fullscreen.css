@@ -1,18 +1,32 @@
-/* Fullscreen preview ------------------------------------------------------
-   The pane element stays mounted in both paths: native fullscreen promotes
-   it to the browser top layer, while the fallback class pins that same pane
-   to the viewport. Selectors are deliberately specific enough to override
-   the compact preview rules in styles.css / author.css. */
+/* The sidebar toggle and fullscreen toggle share one floating group. It is
+   sticky inside the preview scroller so opening the sidebar never resets the
+   document scroll. The pane stays mounted in both fullscreen paths: native
+   fullscreen promotes it to the browser top layer, while the fallback class
+   pins that same pane to the viewport. */
 
-.pane-preview:has(> .preview-fullscreen-toggle) {
-  position: relative;
+.preview-overlay-controls {
+  position: sticky;
+  top: 8px;
+  z-index: 5;
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  width: 100%;
+  margin-bottom: -44px;
+  padding: 8px 8px 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--motion-fast) var(--ease-standard);
 }
 
-.preview-fullscreen-toggle {
-  position: absolute;
-  top: clamp(8px, 1.5vw, 14px);
-  right: clamp(8px, 1.5vw, 14px);
-  z-index: 5;
+.pane-preview:hover .preview-overlay-controls,
+.pane-preview:focus-within .preview-overlay-controls,
+.preview-overlay-controls:focus-within {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.preview-overlay-controls > button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -25,38 +39,28 @@
   color: var(--ink-soft);
   box-shadow: 0 1px 3px color-mix(in srgb, var(--ink) 10%, transparent);
   cursor: pointer;
-  opacity: 0;
-  pointer-events: none;
+  opacity: 1;
+  pointer-events: auto;
   transition:
-    opacity var(--motion-fast) var(--ease-standard),
     background-color var(--motion-fast) var(--ease-standard),
     border-color var(--motion-fast) var(--ease-standard),
     color var(--motion-fast) var(--ease-standard);
 }
 
-/* Keep the stage clickable while the affordance is hidden, and reveal it on
-   pointer hover or when keyboard focus reaches it. */
-.pane-preview:hover .preview-fullscreen-toggle,
-.pane-preview:focus-within .preview-fullscreen-toggle,
-.preview-fullscreen-toggle:focus-visible {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.preview-fullscreen-toggle:hover {
+.preview-overlay-controls > button:hover {
   background: var(--surface-hover);
   border-color: var(--line-strong);
   color: var(--ink);
 }
 
-.preview-fullscreen-toggle:focus-visible {
+.preview-overlay-controls > button:focus-visible {
   outline: var(--focus-outline);
   outline-offset: 2px;
 }
 
-/* Touch and other coarse pointers have no hover, so keep it visible. */
+/* Touch and other coarse pointers have no hover, so keep the group visible. */
 @media (hover: none), (pointer: coarse) {
-  .pane-preview .preview-fullscreen-toggle {
+  .pane-preview .preview-overlay-controls {
     opacity: 1;
     pointer-events: auto;
   }
@@ -121,18 +125,24 @@
   margin-inline: auto;
 }
 
-/* In fullscreen the toggle is the exit control, so it stays visible and does
-   not scroll away with the document. */
-.has-editor .editor-preview .pane-preview:fullscreen .preview-fullscreen-toggle,
-.has-editor .editor-preview .pane-preview.is-preview-fullscreen .preview-fullscreen-toggle {
+/* In fullscreen the controls stay visible and do not scroll away. */
+.has-editor .editor-preview .pane-preview:fullscreen .preview-overlay-controls,
+.has-editor .editor-preview .pane-preview.is-preview-fullscreen .preview-overlay-controls {
   position: fixed;
   top: clamp(12px, 2vw, 20px);
   right: clamp(12px, 2vw, 20px);
   z-index: 2;
-  width: 40px;
-  height: 40px;
+  width: auto;
+  margin: 0;
+  padding: 0;
   opacity: 1;
   pointer-events: auto;
+}
+
+.has-editor .editor-preview .pane-preview:fullscreen .preview-overlay-controls > button,
+.has-editor .editor-preview .pane-preview.is-preview-fullscreen .preview-overlay-controls > button {
+  width: 40px;
+  height: 40px;
   background: var(--surface);
   border-color: var(--line);
   box-shadow: 0 6px 20px color-mix(in srgb, var(--ink) 16%, transparent);
@@ -144,7 +154,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .preview-fullscreen-toggle {
+  .preview-overlay-controls,
+  .preview-overlay-controls > button {
     transition: none;
   }
 

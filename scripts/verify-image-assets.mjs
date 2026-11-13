@@ -1,4 +1,4 @@
-import { openWorkbench, clickWorkbenchAction, replaceWorkbenchSource, readEditor, expectEditorSource } from './workbench-ui.mjs';
+import { openWorkbench, clickWorkbenchAction, replaceWorkbenchSource, readEditor, expectEditorSource, switchWorkbenchLanguage } from './workbench-ui.mjs';
 import { chromium, expect } from '@playwright/test';
 import { mkdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -150,7 +150,7 @@ try {
   await page.screenshot({ path: path.join(artifacts, 'mobile-export.png'), fullPage: false });
   await page.keyboard.press('Escape');
   await expect(dialog).toBeHidden();
-  await page.getByTestId('language-toggle').click();
+  await switchWorkbenchLanguage(page);
   // Example drafts are language-specific. Give the Chinese draft an image
   // reference so its resource panel exists before checking its translation.
   await replaceWorkbenchSource(page, '# 图片文档\n\n![图片](images/local.png)');

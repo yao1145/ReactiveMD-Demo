@@ -1,6 +1,6 @@
 import { chromium, expect } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
-import { openWorkbench, replaceWorkbenchSource } from './workbench-ui.mjs';
+import { openWorkbench, replaceWorkbenchSource, switchWorkbenchLanguage } from './workbench-ui.mjs';
 
 const channel = process.env.PLAYWRIGHT_CHANNEL ?? 'msedge';
 const browser = await chromium.launch({ ...(channel === 'chromium' ? {} : { channel }), headless: true });
@@ -35,7 +35,7 @@ try {
     const sidebarOpen = async () => (await toggle.getAttribute('aria-expanded')) === 'true';
     const closeSidebar = async () => {
       if (!(await sidebarOpen())) return;
-      if (width < 1100) await page.locator('.sidebar-close').click();
+      if (width < 1100) await page.locator('.sidebar-backdrop').click({ position: { x: width - 8, y: 40 } });
       else await toggle.click();
     };
     const openOutline = async () => {
@@ -105,7 +105,7 @@ try {
     await expect(outline.getByRole('button', { name: 'Revised release', exact: true })).toBeVisible();
     await expect(outline.getByRole('button', { name: 'npm release', exact: true })).toHaveCount(0);
 
-    await page.locator('.sidebar-close').focus();
+    await page.locator('#document-sidebar .sidebar-tab').first().focus();
     await page.keyboard.press('Escape');
     await expect(outline).toBeHidden();
     await expect(toggle).toBeFocused();
@@ -125,10 +125,10 @@ try {
 
     await replaceWorkbenchSource(page, source);
     await expect(stage).toHaveAttribute('aria-busy', 'false');
-    await page.getByRole('button', { name: 'Switch to Chinese', exact: true }).click();
+    await switchWorkbenchLanguage(page);
     await openOutline();
     await expect(page.getByRole('tab', { name: '大纲' })).toBeVisible();
-    await expect(page.locator('.sidebar-close')).toHaveAttribute('aria-label', '关闭侧栏');
+    await expect(toggle).toHaveAttribute('aria-label', '工作区侧栏');
     await closeSidebar();
     await replaceWorkbenchSource(page, source.replace('Project', 'ReactiveMD 项目约定').replace('Demo updates', 'Demo 网站更新')
       .replace('Deployment', '部署位置').replace('Validation', '构建与最小化验证').replace('npm release', 'npm 发布')

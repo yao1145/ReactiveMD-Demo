@@ -23,6 +23,17 @@ export async function selectWorkbenchExample(page, id) {
   });
 }
 
+/** Switch to Chinese from the desktop toggle or the mobile masthead menu. */
+export async function switchWorkbenchLanguage(page) {
+  const menu = page.locator('.mobile-menu-toggle');
+  if (await menu.isVisible()) {
+    await menu.click();
+    await page.locator('.mobile-menu-panel .language-toggle').click();
+    return;
+  }
+  await page.getByRole('button', { name: 'Switch to Chinese', exact: true }).click();
+}
+
 /** Click a workbench action by its accessible name. */
 export async function clickWorkbenchAction(page, name) {
   if (name === 'Show source') {

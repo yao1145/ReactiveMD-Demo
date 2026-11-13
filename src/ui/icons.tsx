@@ -170,3 +170,9 @@ export function MinimizeIcon(props: IconProps) {
     <path d="M4 9h5V4M20 9h-5V4M4 15h5v5M20 15h-5v5" />
   </Icon>;
 }
+
+export function MenuIcon(props: IconProps) {
+  return <Icon {...props}>
+    <path d="M4 7h16M4 12h16M4 17h16" />
+  </Icon>;
+}

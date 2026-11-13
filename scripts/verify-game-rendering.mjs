@@ -63,8 +63,8 @@ try {
   await expect(game).toHaveAttribute('data-moves', '0');
 
   await page.setViewportSize({ width: 390, height: 844 });
-  const closeSidebar = page.locator('.sidebar-close');
-  if (await closeSidebar.isVisible()) await closeSidebar.click();
+  const closeSidebar = page.locator('.sidebar-backdrop');
+  if (await closeSidebar.isVisible()) await closeSidebar.click({ position: { x: 380, y: 40 } });
   await page.locator('[data-editor-view-option="preview"]').click();
   await expect.poll(() => board.evaluate(node => getComputedStyle(node).display)).toBe('grid');
   const bounds = await board.boundingBox();

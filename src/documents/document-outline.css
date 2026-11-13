@@ -26,6 +26,75 @@
   display: none;
 }
 
+/* The sidebar keeps only the document identity here. Its toggle, compile
+   status and export live in the editor toolbar. */
+.sidebar-head {
+  display: grid;
+  gap: 6px;
+  padding: 10px 12px 8px;
+  border-bottom: 1px solid var(--line);
+}
+
+.sidebar-head-name {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: calc(var(--text-sm) + 2px);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-snug);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-head-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.sidebar-head-actions .status-chip {
+  margin-left: 0;
+}
+
+.sidebar-head-actions .icon-button {
+  width: 26px;
+  height: 26px;
+  margin-left: auto;
+}
+
+@media (max-width: 620px) {
+  .sidebar-head .status-chip {
+    display: none;
+  }
+}
+
+/* Host slots inside the editor toolbar. */
+.editor-toolbar-host-leading .toolbar-sidebar-toggle {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+}
+
+@media (max-width: 620px) {
+  .editor-toolbar-host-leading .toolbar-sidebar-toggle {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+.editor-toolbar-host-status .status-chip {
+  margin-left: 0;
+}
+
+.masthead-actions .status-chip {
+  margin-left: 0;
+}
+
+.masthead-actions .icon-button {
+  flex: 0 0 auto;
+}
+
 .sidebar-tabs {
   display: flex;
   align-items: center;
@@ -74,14 +143,9 @@
   transform: scale(0.98);
 }
 
-.sidebar-tab:focus-visible,
-.sidebar-close:focus-visible {
+.sidebar-tab:focus-visible {
   outline: var(--focus-outline);
   outline-offset: 1px;
-}
-
-.sidebar-close {
-  margin-left: auto;
 }
 
 .sidebar-body {

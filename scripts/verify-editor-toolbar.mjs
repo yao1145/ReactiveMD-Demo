@@ -412,7 +412,7 @@ try {
   await mobile.getByRole('button', { name: 'More', exact: true }).click();
   const moreMenu = mobile.locator('.editor-toolbar-more-menu');
   await expect(moreMenu).toBeVisible();
-  for (const name of ['Link', 'Undo', 'Redo', 'Download document']) {
+  for (const name of ['Link', 'Undo', 'Redo', 'Export']) {
     await expect(moreMenu.getByRole('menuitem', { name, exact: true })).toBeVisible();
   }
   await mobile.keyboard.press('ArrowDown');

@@ -33,7 +33,7 @@ import {
 import { DocumentTree, TREE_COPY } from '../documents/document-tree';
 import { DeveloperTools } from '../developer/developer-tools';
 import { OutlineWorkspace, type SidebarTab } from '../documents/document-outline';
-import { DownloadIcon, PanelLeftIcon } from '../ui/icons';
+import { DownloadIcon, FileIcon, MenuIcon, PanelLeftIcon } from '../ui/icons';
 import { PreviewFullscreenToggle, usePreviewFullscreen } from '../preview/preview-fullscreen';
 import { ExportDialog } from '../export/export-dialog';
 import { createImageAsset, imagePolicy, ImageAssetError, MAX_IMAGE_BYTES, MAX_IMAGE_TOTAL_BYTES, validateImageManifest, type ImageAsset } from '../images/image-assets';
@@ -400,10 +400,12 @@ export default function App() {
   const [strict, setStrict] = useState(true);
   const [editorToolbar, setEditorToolbar] = useState(true);
   const [editorAuthoring, setEditorAuthoring] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const copy = COPY[language];
   const treeCopy = TREE_COPY[language];
   const editorHandle = useRef<ReactiveMarkdownEditorHandle|null>(null);
+  const mobileMenuRef = useRef<HTMLDivElement|null>(null);
   const imagePicker = useRef<HTMLInputElement>(null);
   const editHint=useRef<LocalCompileEditHint|undefined>(undefined);
   const onEditorTransaction=useCallback((transaction:EditorTransaction)=>{
@@ -539,6 +541,24 @@ export default function App() {
     document.documentElement.dataset.theme = dark ? 'dark' : 'light';
     try { browserStorage()?.setItem('reactive-md:theme', dark ? 'dark' : 'light'); } catch { /* optional storage */ }
   }, [dark]);
+
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const onPointerDown = (event: PointerEvent) => {
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
+        setMobileMenuOpen(false);
+      }
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMobileMenuOpen(false);
+    };
+    document.addEventListener('pointerdown', onPointerDown, true);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown, true);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [mobileMenuOpen]);
 
   useEffect(() => {
     document.documentElement.lang = copy.htmlLang;
@@ -865,12 +885,57 @@ export default function App() {
         : copy.status.compileFailed)
       : copy.status.waiting;
 
+  const statusChip = (
+    <span
+      className={`status-chip ${compiling ? 'is-pending' : previewFailed ? 'is-error' : ''}`}
+      role="status"
+      title={compilation.failure ?? undefined}
+    >
+      {statusLabel}
+    </span>
+  );
+  const exportButton = (
+    <button type="button" className="icon-button" title={copy.authorTools.exportDocument}
+      aria-label={copy.authorTools.exportDocument} onClick={openExportDialog}>
+      <DownloadIcon />
+    </button>
+  );
+  const sidebarToggle = (expanded: boolean, extraClass = 'toolbar-sidebar-toggle') => (
+    <button
+      id="sidebar-toggle"
+      type="button"
+      className={`icon-button ${extraClass}`}
+      aria-expanded={expanded}
+      aria-controls="document-sidebar"
+      title={copy.sidebar.region}
+      aria-label={copy.sidebar.region}
+      onClick={() => setSidebarOpen(open => !open)}
+    >
+      <PanelLeftIcon />
+    </button>
+  );
+  const previewSidebarMeta = editorView === 'preview' && editorToolbar;
+  const sidebarHeader = sidebarOpen ? (
+    <div className="sidebar-head">
+      <span className="sidebar-head-name" title={activeDocument?.name ?? currentExample.title}>
+        {activeDocument?.name ?? currentExample.title}
+      </span>
+      {previewSidebarMeta ? (
+        <span className="sidebar-head-actions">
+          {statusChip}
+          {exportButton}
+        </span>
+      ) : null}
+    </div>
+  ) : null;
+
   return (
     <LanguageProvider language={language}>
       <div className={`app-shell${simple ? ' is-simple' : editorView === 'edit' ? ' is-edit' : ''}`}>
         <header className="masthead">
           <div className="masthead-lead">
             <h1>Reactive MD</h1>
+            {!editorToolbar ? sidebarToggle(sidebarOpen) : null}
             <div className="masthead-actions">
               <button
                 type="button"
@@ -905,6 +970,63 @@ export default function App() {
               >
                 <GitHubIcon />
               </a>
+              {!editorToolbar ? exportButton : null}
+              {!editorToolbar ? statusChip : null}
+              <div className="mobile-menu" ref={mobileMenuRef}>
+                <button
+                  type="button"
+                  className="icon-button mobile-menu-toggle"
+                  aria-expanded={mobileMenuOpen}
+                  aria-controls="mobile-menu-panel"
+                  aria-label={copy.masthead.menu}
+                  title={copy.masthead.menu}
+                  onClick={() => setMobileMenuOpen(open => !open)}
+                >
+                  <MenuIcon />
+                </button>
+                {mobileMenuOpen ? (
+                  <div id="mobile-menu-panel" className="mobile-menu-panel" role="menu" aria-label={copy.masthead.menu}>
+                    <div className="mobile-menu-row">
+                      <span className="mobile-menu-label">{copy.masthead.language}</span>
+                      <button
+                        type="button"
+                        className="language-toggle"
+                        aria-label={copy.languageToggle.ariaLabel}
+                        title={copy.languageToggle.ariaLabel}
+                        lang={copy.languageToggle.labelLang}
+                        onClick={() => { switchLanguage(); setMobileMenuOpen(false); }}
+                      >
+                        <span className={language === 'zh' ? 'is-active' : ''} lang="zh-CN">中文</span>
+                        <span className={language === 'en' ? 'is-active' : ''} lang="en">EN</span>
+                      </button>
+                    </div>
+                    <a
+                      className="mobile-menu-item"
+                      href="https://github.com/yao1145/ReactiveMD"
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      role="menuitem"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <GitHubIcon />
+                      <span>{copy.masthead.repository}</span>
+                    </a>
+                    <button type="button" role="menuitem" className="mobile-menu-item"
+                      onClick={() => { openExportDialog(); setMobileMenuOpen(false); }}>
+                      <DownloadIcon />
+                      <span>{copy.authorTools.exportDocument}</span>
+                    </button>
+                    <button type="button" role="menuitem" className="mobile-menu-item" aria-pressed={view === 'playground'}
+                      onClick={() => { setView('playground'); setMobileMenuOpen(false); }}>
+                      {copy.masthead.playground}
+                    </button>
+                    <button type="button" role="menuitem" className="mobile-menu-item" aria-pressed={view === 'guide'}
+                      onClick={() => { setView('guide'); setMobileMenuOpen(false); }}>
+                      {copy.masthead.guide}
+                    </button>
+                  </div>
+                ) : null}
+              </div>
             </div>
           </div>
           <nav className="view-switch" aria-label={copy.masthead.viewSwitcher}>
@@ -929,41 +1051,24 @@ export default function App() {
           <GuideView onBack={() => setView('playground')} />
         ) : (
         <main className="workbench">
-          <div className="workbench-bar">
-            <button
-              id="sidebar-toggle"
-              type="button"
-              className="icon-button"
-              aria-expanded={sidebarOpen}
-              aria-controls="document-sidebar"
-              title={copy.sidebar.region}
-              aria-label={copy.sidebar.region}
-              onClick={() => setSidebarOpen(open => !open)}
-            >
-              <PanelLeftIcon />
-            </button>
-            <div className="workbench-title">
-              <span className="workbench-title-name">{activeDocument?.name ?? currentExample.title}</span>
-              <span className="workbench-title-kind">
-                {libraryMode === 'documents' ? copy.sidebar.documents : copy.showcase.navigation}
-              </span>
+          <div className="mobile-doc-bar">
+            <div className="mobile-doc-title">
+              <FileIcon size={18} />
+              <span>{activeDocument?.name ?? currentExample.title}</span>
             </div>
-            <button type="button" className="icon-button" title={copy.authorTools.exportDocument}
-              aria-label={copy.authorTools.exportDocument} onClick={openExportDialog}>
-              <DownloadIcon />
-            </button>
-            <span
-              className={`status-chip ${compiling ? 'is-pending' : previewFailed ? 'is-error' : ''}`}
-              role="status"
-              title={compilation.failure ?? undefined}
-            >
-              {statusLabel}
-            </span>
+            <div className="mobile-view-switch" role="group" aria-label={copy.editor.viewSwitch}>
+              <button type="button" aria-pressed={editorView !== 'preview'} onClick={() => setEditorView('edit')}>
+                {copy.editor.editView}
+              </button>
+              <button type="button" aria-pressed={editorView === 'preview'} onClick={() => setEditorView('preview')}>
+                {copy.editor.previewView}
+              </button>
+            </div>
           </div>
-
           <OutlineWorkspace document={previewDocument} source={source} documentKey={documentKey}
             mode={editorView} onModeChange={setEditorView} editor={editorHandle}
             sidebarOpen={sidebarOpen} onSidebarOpenChange={setSidebarOpen}
+            sidebarHeader={sidebarHeader}
             sidebarTab={sidebarTab} onSidebarTabChange={setSidebarTab}
             documentsPanel={<DocumentTree
               snapshot={libraryState}
@@ -1053,6 +1158,18 @@ export default function App() {
                   aria-label={copy.preview.region}
                   ref={previewFullscreen.paneRef}
                 >
+                  {editorView !== 'edit' ? (
+                    <div className="preview-overlay-controls">
+                      {editorView === 'preview' ? sidebarToggle(sidebarOpen, 'preview-overlay-button') : null}
+                      {canFullscreenPreview ? (
+                        <PreviewFullscreenToggle
+                          state={previewFullscreen}
+                          enterLabel={copy.preview.enterFullscreen}
+                          exitLabel={copy.preview.exitFullscreen}
+                        />
+                      ) : null}
+                    </div>
+                  ) : null}
                   <div className="preview-stage" aria-busy={compiling}>
                     {previewFailed && compiled ? (
                       <div className="preview-error" role="alert">
@@ -1066,16 +1183,11 @@ export default function App() {
                       <div className="preview-loading" role="status"><p>{copy.preview.preparing}</p></div>
                     )}
                   </div>
-                  {canFullscreenPreview ? (
-                    <PreviewFullscreenToggle
-                      state={previewFullscreen}
-                      enterLabel={copy.preview.enterFullscreen}
-                      exitLabel={copy.preview.exitFullscreen}
-                    />
-                  ) : null}
                 </section>}
                 authoring={editorAuthoring}
                 toolbar={editorToolbar}
+                toolbarLeading={editorView === 'preview' ? undefined : sidebarToggle(sidebarOpen)}
+                toolbarStatus={editorView === 'preview' ? undefined : statusChip}
               />
 
               <p className="editor-note" id="preview-state-note">
