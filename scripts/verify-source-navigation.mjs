@@ -8,21 +8,13 @@ const browser = await chromium.launch({ ...(channel === 'chromium' ? {} : { chan
 const baseURL = process.env.DEMO_URL ?? 'http://127.0.0.1:5173';
 await mkdir('artifacts/source-navigation', { recursive: true });
 
-// Public ranges address the raw document source. CodeMirror stores its document
-// with LF endings, so tests must convert an expected raw offset to the CM view
-// position exactly as SourceCoordinates does.
-const exampleSource = readFileSync(new URL('../content/examples/local/showcase/sci-fi-theme.reactive.md', import.meta.url), 'utf8');
-function toViewOffset(raw, offset) {
-  let view = Math.max(0, Math.min(raw.length, offset));
-  for (let index = 0; index < offset; index += 1) {
-    if (raw[index] !== '\r') continue;
-    view -= 1;
-    if (raw[index + 1] === '\n') index += 1;
-  }
-  return view;
-}
+// Public ranges address the raw document source. The demo normalizes imported
+// example sources to LF before compiling, and CodeMirror stores LF, so raw
+// offsets and view positions are the same number. Read the fixture the same way.
+const exampleSource = readFileSync(new URL('../content/examples/local/showcase/sci-fi-theme.reactive.md', import.meta.url), 'utf8').replace(/\r\n?/g, '\n');
+function toViewOffset(_raw, offset) { return offset; }
 function rawSlice(raw, range) {
-  return raw.slice(range.start, range.end).replace(/\r\n?/g, '\n');
+  return raw.slice(range.start, range.end);
 }
 
 async function selection(page) {
@@ -64,13 +56,16 @@ try {
     if (width > 600) {
       await page.locator('.editor-status-bar button[data-editor-view-option="split"]').click();
       await expect(source).toBeVisible();
-      const sourceRange = await interpolation.evaluate((node) => ({
+      // Read the range from a paragraph interpolation: control readouts are also
+      // `.local-interpolation` spans and map to the component tag instead.
+      const linked = preview.locator('.md-document p .local-interpolation').first();
+      const sourceRange = await linked.evaluate((node) => ({
         start: Number(node.dataset.rmdSourceStart),
         end: Number(node.dataset.rmdSourceEnd),
         type: node.dataset.rmdSourceType,
       }));
       expect(sourceRange.type).toBe('interpolation');
-      await interpolation.click();
+      await linked.click();
 
       const expectedStart = toViewOffset(exampleSource, sourceRange.start);
       const expectedEnd = toViewOffset(exampleSource, sourceRange.end);
@@ -81,7 +76,9 @@ try {
       expect(afterText.focused).toBe(true);
 
       // Clicking a control label targets the component tag, not its input.
-      const label = preview.locator('.local-slider label').first();
+      // The shipped slider renders its label as a `data-rmd-part` span, so
+      // address the part rather than the native `label` element.
+      const label = preview.locator('[data-rmd-component="slider"] [data-rmd-part="label"]').first();
       const labelRange = await label.evaluate((node) => {
         const target = node.closest('[data-rmd-source-start]');
         return {
@@ -98,7 +95,7 @@ try {
 
       // Dragging/filling the slider changes only the parameter.
       const before = await selection(page);
-      await preview.locator('input[type="range"]').first().fill('7');
+      await preview.locator('[data-rmd-component="slider"] input[type="range"]').first().fill('7');
       await page.waitForTimeout(50);
       const after = await selection(page);
       expect(after.start).toBe(before.start);

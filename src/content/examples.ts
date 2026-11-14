@@ -15,6 +15,12 @@ import blogZhSource from '../../content/examples/local/scenarios/blog-zh.reactiv
 import sciFiThemeSource from '../../content/examples/local/showcase/sci-fi-theme.reactive.md?raw';
 import sciFiThemeZhSource from '../../content/examples/local/showcase/zh/sci-fi-theme.reactive.md?raw';
 
+/** Source offsets address the exact text the editor holds. Vite's `?raw` import
+ * keeps the file's line endings, and a Windows checkout is CRLF while
+ * CodeMirror stores LF, which shifts every preview source range by one column
+ * per preceding line. Normalize once at import so both agree. */
+const lf = (text: string): string => text.replace(/\r\n?/g, '\n');
+
 /** One standalone document, its navigation section and both translations. */
 export interface PlaygroundExample {
   id: string;
@@ -44,52 +50,52 @@ export const EXAMPLES: PlaygroundExample[] = [
     title: 'Classroom', titleZh: '课堂教学',
     hint: 'Build a square wave from sine waves, derive its Fourier coefficients and inspect convergence.',
     hintZh: '用正弦波拼出方波，推导傅里叶系数，观察部分和与跳跃附近的振荡。',
-    source: classroomSource, sourceZh: classroomZhSource,
+    source: lf(classroomSource), sourceZh: lf(classroomZhSource),
   },
   {
     id: 'proposal', section: 'scenario',
     title: 'Proposal', titleZh: '方案展示',
     hint: 'Discuss a four-week trial with a shopping list, a live budget and a delivery schedule.',
     hintZh: '带着采购清单、可调整预算和实施时间表，讨论一项四周试用方案。',
-    source: proposalSource, sourceZh: proposalZhSource,
+    source: lf(proposalSource), sourceZh: lf(proposalZhSource),
   },
   {
     id: 'survey', section: 'scenario',
     title: 'Survey', titleZh: '活动调研',
     hint: 'Choose a time and topics, then prepare a personal summary for the organiser.',
     hintZh: '填写时间、兴趣与材料偏好，生成一份可发给组织者的个人摘要。',
-    source: surveySource, sourceZh: surveyZhSource,
+    source: lf(surveySource), sourceZh: lf(surveyZhSource),
   },
   {
     id: 'blog', section: 'scenario',
     title: 'Blog', titleZh: '博客长文',
     hint: 'Reread Zhu Ziqing with a personal reflection, switch reading notes and leave a thought of your own.',
     hintZh: '重读《背影》，在文学短评和生活随记之间，留一句自己的阅读旁注。',
-    source: blogSource, sourceZh: blogZhSource,
+    source: lf(blogSource), sourceZh: lf(blogZhSource),
   },
   {
     id: 'features', section: 'feature',
     title: 'Feature demo', titleZh: '功能演示',
     hint: 'Six former tours in one continuous document, with independent controls and shared navigation.',
     hintZh: '原来的六篇示例合成一篇连续文档，各节控件独立，通过大纲导航。',
-    source: featuresSource, sourceZh: featuresZhSource,
+    source: lf(featuresSource), sourceZh: lf(featuresZhSource),
   },
   {
     id: 'sci-fi-theme', section: 'reference',
     title: 'Sci-fi theme', titleZh: '科幻主题',
     hint: 'Open a console-style document styled by the bundled sci-fi theme, then change its controls.',
     hintZh: '打开一篇由内置科幻主题渲染的控制台风格文档，并操作其中的控件。',
-    source: sciFiThemeSource, sourceZh: sciFiThemeZhSource,
+    source: lf(sciFiThemeSource), sourceZh: lf(sciFiThemeZhSource),
   },
   {
     id: 'diagnostics',
     section: 'debug',
     title: 'Diagnostics',
     hint: 'Intentionally broken source',
-    source: diagnosticsSource,
+    source: lf(diagnosticsSource),
     titleZh: '调试示例',
     hintZh: '故意写错的源码',
-    sourceZh: diagnosticsZhSource,
+    sourceZh: lf(diagnosticsZhSource),
   },
   ...extensionExamples,
 ];

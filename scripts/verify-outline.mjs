@@ -1,6 +1,6 @@
 import { chromium, expect } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
-import { openWorkbench, replaceWorkbenchSource, switchWorkbenchLanguage, viewModeButton } from './workbench-ui.mjs';
+import { openWorkbench, replaceWorkbenchSource, switchWorkbenchLanguage, viewModeButton, revealPreviewControls } from './workbench-ui.mjs';
 
 const channel = process.env.PLAYWRIGHT_CHANNEL ?? 'msedge';
 const browser = await chromium.launch({ ...(channel === 'chromium' ? {} : { channel }), headless: true });
@@ -38,6 +38,9 @@ try {
       else await toggle.click();
     };
     const openOutline = async () => {
+      // Preview mode keeps the sidebar toggle inside the floating overlay,
+      // which stays collapsed until the reader asks for its controls.
+      if (!(await sidebarOpen())) await revealPreviewControls(page);
       if (!(await sidebarOpen())) await toggle.click();
       await page.getByRole('tab', { name: /^(Outline|大纲)$/ }).click();
     };

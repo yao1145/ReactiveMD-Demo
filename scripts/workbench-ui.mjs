@@ -40,6 +40,40 @@ export function viewModeButton(page, mode) {
   return page.locator(`[data-editor-view-option="${mode}"]:visible, [data-mobile-view-option="${mode}"]:visible`).first();
 }
 
+/** Reveal the floating preview controls when the sidebar toggle lives inside
+ * them, then run the callback. The preview overlay owns the toggle in preview
+ * mode on every width. */
+export async function revealPreviewControls(page) {
+  const reveal = page.locator('.preview-controls-reveal');
+  if (!(await reveal.count())) return;
+  if ((await reveal.getAttribute('aria-expanded')) === 'true') return;
+  await reveal.click();
+}
+
+/** Open the Developer tools tab and expand one card by its title.
+ * Cards start collapsed, so their actions are not in the tab order. */
+export async function openDeveloperCard(page, title) {
+  const sidebar = page.locator('#document-sidebar');
+  if (!(await sidebar.isVisible())) {
+    await revealPreviewControls(page);
+    const toggle = page.locator('#sidebar-toggle');
+    if ((await toggle.count()) && (await toggle.getAttribute('aria-expanded')) !== 'true') await toggle.click();
+  }
+  const panel = page.getByRole('tab', { name: /^(Developer tools|开发者工具)$/ });
+  if (await panel.count()) await panel.click();
+  const card = page.locator('.dev-card').filter({ has: page.locator('.dev-card-head') }).filter({ hasText: title }).first();
+  const head = card.locator('.dev-card-head').first();
+  if ((await head.getAttribute('aria-expanded')) !== 'true') await head.click();
+  return card;
+}
+
+/** Restore the active example from the Developer tools Document card.
+ * The card is collapsed by default and the action only exists for examples. */
+export async function restoreWorkbenchExample(page) {
+  const card = await openDeveloperCard(page, 'Document');
+  await card.getByRole('button', { name: /^(Restore example|恢复示例)$/ }).click();
+}
+
 /** Click a workbench action by its accessible name. */
 export async function clickWorkbenchAction(page, name) {
   if (name === 'Show source') {

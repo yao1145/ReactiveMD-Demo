@@ -20,11 +20,30 @@ try {
   const editor = page.locator('#source-editor');
   const source = '# Image document\n\n<slider bind="people" label="People" initial="2" min="1" max="10">\n\nBefore AFTER';
   await replaceWorkbenchSource(page, source);
-  // Keep the selector independent of surrounding workbench layout.
-  const mainPanel = page.locator('.workbench-options .image-assets');
-  const addPanel = page.locator('.image-assets-compact');
-  const picker = addPanel.locator('input[type=file]');
-  await expect(addPanel.getByRole('button', { name: 'Add images', exact: true })).toBeEnabled();
+
+  // The workbench no longer carries its own image panel: the editor toolbar's
+  // Image action opens the file picker, and the export dialog is the only place
+  // that lists document resources. Both surfaces are exercised through their
+  // user-facing controls.
+  const dialog = page.getByRole('dialog');
+  const exportButton = dialog.getByRole('button', { name: 'Export HTML', exact: true });
+  const openDialog = async () => {
+    await clickWorkbenchAction(page, /^Export/);
+    await expect(dialog).toBeVisible();
+  };
+  const closeDialog = async () => {
+    await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await expect(dialog).toBeHidden();
+  };
+  const resourceRows = () => dialog.locator('.image-asset-row');
+  /** Choose images through Insert > Image the way a reader does. */
+  const chooseImages = async (files) => {
+    const chooser = page.waitForEvent('filechooser');
+    await page.locator('[data-toolbar-id="insert"]').click();
+    await page.locator('.editor-toolbar-insert-menu').getByRole('menuitem', { name: 'Image', exact: true }).click();
+    await (await chooser).setFiles(files);
+  };
+
   const png = await page.evaluate(() => {
     const canvas = document.createElement('canvas');
     canvas.width = 12; canvas.height = 8;
@@ -35,11 +54,13 @@ try {
   const image = { name: 'photo.png', mimeType: 'image/png', buffer: Buffer.from(png, 'base64') };
   await editor.focus();
   await editor.evaluate((el) => window.rmdEditorProbe.select(el,window.rmdEditorProbe.read(el).indexOf('AFTER'), window.rmdEditorProbe.read(el).indexOf('AFTER') + 5));
-  await picker.setInputFiles(image);
+  await chooseImages(image);
   await expectEditorSource(editor,/Before \n\n!\[photo.png\]\(assets\/photo-[a-f\d]+\.png\)\n\n$/);
-  await expect(mainPanel.locator('.image-asset-row')).toHaveCount(1);
   await expect(page.locator('.preview-stage .md-document img')).toHaveCount(1);
   await expect.poll(() => page.locator('.preview-stage .md-document img').first().evaluate(img => img.naturalWidth)).toBe(12);
+  await openDialog();
+  await expect(resourceRows()).toHaveCount(1);
+  await closeDialog();
   const inserted = await readEditor(editor);
   await editor.press('Control+z');
   await expectEditorSource(editor,source);
@@ -47,17 +68,25 @@ try {
   await expectEditorSource(editor,inserted);
   check('file selection replaces the editor selection; preview, undo and redo work');
 
-  await picker.setInputFiles([
+  // Rejected batches leave the document resources untouched and surface the
+  // reason in the dialog that owns the resource list.
+  await chooseImages([
     { ...image, name: 'valid.png' },
     { name: 'attack.svg', mimeType: 'image/svg+xml', buffer: Buffer.from('<svg onload="alert(1)"/>') },
   ]);
-  await expect(addPanel.getByRole('alert')).toContainText('SVG');
-  await expect(mainPanel.locator('.image-asset-row')).toHaveCount(1);
+  await openDialog();
+  await expect(dialog.getByRole('alert')).toContainText('SVG');
+  await expect(resourceRows()).toHaveCount(1);
+  await closeDialog();
   await expectEditorSource(editor,inserted);
-  await picker.setInputFiles({ name: 'large.png', mimeType: 'image/png', buffer: Buffer.alloc(8 * 1024 * 1024 + 1) });
-  await expect(addPanel.getByRole('alert')).toContainText('8 MiB');
-  await picker.setInputFiles({ name: 'broken.png', mimeType: 'image/png', buffer: Buffer.from([137,80,78,71,13,10,26,10]) });
-  await expect(addPanel.getByRole('alert')).toContainText('cannot be decoded');
+  await chooseImages({ name: 'large.png', mimeType: 'image/png', buffer: Buffer.alloc(8 * 1024 * 1024 + 1) });
+  await openDialog();
+  await expect(dialog.getByRole('alert')).toContainText('8 MiB');
+  await closeDialog();
+  await chooseImages({ name: 'broken.png', mimeType: 'image/png', buffer: Buffer.from([137,80,78,71,13,10,26,10]) });
+  await openDialog();
+  await expect(dialog.getByRole('alert')).toContainText('cannot be decoded');
+  await closeDialog();
   check('invalid batches, oversized and truncated images leave source and resources unchanged');
 
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
@@ -68,14 +97,14 @@ try {
   await editor.focus();
   await editor.press('Control+End');
   await editor.press('Control+v');
-  await expect(mainPanel.locator('.image-asset-row')).toHaveCount(2);
   await expect(page.locator('.preview-stage .md-document img')).toHaveCount(2);
+  await openDialog();
+  await expect(resourceRows()).toHaveCount(2);
+  await closeDialog();
   check('native clipboard paste adds an image resource and Markdown reference');
 
   await replaceWorkbenchSource(page, `${await readEditor(editor)}\n\n![Local](images/local.png)`);
-  await clickWorkbenchAction(page, /^Export/);
-  const dialog = page.getByRole('dialog');
-  const exportButton = dialog.getByRole('button', { name: 'Export HTML', exact: true });
+  await openDialog();
   await expect(exportButton).toBeDisabled();
   const chooser = page.waitForEvent('filechooser');
   await dialog.getByRole('button', { name: 'Choose image for images/local.png', exact: true }).click();
@@ -85,7 +114,8 @@ try {
 
   for (const mode of ['interactive', 'static']) {
     if (mode === 'static') {
-      await clickWorkbenchAction(page, /^Export/);
+      await closeDialog();
+      await openDialog();
       await dialog.getByRole('radio', { name: /^Static HTML/ }).check();
     }
     const downloadEvent = page.waitForEvent('download');
@@ -110,36 +140,38 @@ try {
     await exported.close();
     check(`${mode} HTML opens from file:// with all images and zero network requests`);
   }
+  await expect(dialog).toBeHidden();
 
   await page.reload();
-  await expect(mainPanel.locator('.image-asset-row')).toHaveCount(3);
+  await clickWorkbenchAction(page, 'Show source');
   await expect(page.locator('.preview-stage .md-document img')).toHaveCount(3);
+  await openDialog();
+  await expect(resourceRows()).toHaveCount(3);
+  await closeDialog();
   check('draft image manifest and image preview survive refresh');
 
   const examples = page.locator('#example-select option');
   const selected = await page.locator('#example-select').inputValue();
   const other = await examples.evaluateAll((options, current) => options.map(option => option.value).find(value => value !== current), selected);
   await page.locator('#example-select').selectOption(other);
-  await expect(mainPanel.locator('img')).toHaveCount(0);
+  await expect(page.locator('.preview-stage .md-document img')).toHaveCount(0);
   await page.locator('#example-select').selectOption(selected);
-  await expect(mainPanel.locator('img')).toHaveCount(3);
+  await expect(page.locator('.preview-stage .md-document img')).toHaveCount(3);
   check('image manifests stay with their own document when switching examples');
 
-  await clickWorkbenchAction(page, 'Remove images/local.png');
-  await expect(mainPanel).toContainText('File needed');
-  await clickWorkbenchAction(page, /^Export/);
+  await openDialog();
+  await dialog.getByRole('button', { name: 'Remove images/local.png', exact: true }).click();
+  await expect(dialog).toContainText('File needed');
   await expect(exportButton).toBeDisabled();
-  await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
+  await closeDialog();
   check('removal keeps the reference visible and blocks an incomplete export');
 
   await page.setViewportSize({ width: 390, height: 844 });
-  await addPanel.scrollIntoViewIfNeeded();
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  await expect(addPanel.getByRole('button', { name: 'Add images', exact: true })).toBeVisible();
   await page.screenshot({ path: path.join(artifacts, 'mobile-images.png'), fullPage: false });
   const previewMode = await viewModeButton(page, 'preview').getAttribute('aria-pressed');
   if (previewMode === 'true') await clickWorkbenchAction(page, 'Show source');
-  await clickWorkbenchAction(page, /^Export/);
+  await openDialog();
   await expect(exportButton).toBeVisible();
   await expect(exportButton).toBeDisabled();
   await expect.poll(() => dialog.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
@@ -154,7 +186,9 @@ try {
   // Example drafts are language-specific. Give the Chinese draft an image
   // reference so its resource panel exists before checking its translation.
   await replaceWorkbenchSource(page, '# 图片文档\n\n![图片](images/local.png)');
-  await expect(mainPanel).toContainText('文档图片');
+  await openDialog();
+  await expect(dialog).toContainText('文档图片');
+  await closeDialog();
   check('390px layout has no page overflow and image controls are localized');
   expect(errors).toEqual([]);
   await context.close();

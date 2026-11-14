@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {mkdir} from 'node:fs/promises';
 import {chromium, expect} from '@playwright/test';
-import { openWorkbench, clickWorkbenchAction, fillEditor, expectEditorSource, switchWorkbenchLanguage } from './workbench-ui.mjs';
+import { openWorkbench, clickWorkbenchAction, fillEditor, expectEditorSource, switchWorkbenchLanguage, openDeveloperCard, revealPreviewControls } from './workbench-ui.mjs';
 
 const browser = await chromium.launch({channel: process.env.PLAYWRIGHT_CHANNEL ?? 'msedge', headless: true});
 await mkdir('artifacts/compact-workbench', {recursive: true});
@@ -11,60 +11,66 @@ try {
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
     await openWorkbench(page,process.env.DEMO_URL ?? 'http://127.0.0.1:5173');
-    const more = page.locator('.workbench-options');
-    const quick = page.locator('.workbench-quick-actions');
-    const add = quick.getByRole('button', {name: 'Add images', exact: true});
     const theme = page.locator('.masthead .theme-toggle');
-    await expect(add).toBeEnabled();
+    const sidebar = page.locator('#document-sidebar');
     await expect(theme).toBeVisible();
-    assert.equal(await page.locator('.image-assets-hint').count(), 0);
-    await expect(page.getByRole('button', {name: 'Export', exact: true})).toBeHidden();
-    const themeBox = await theme.boundingBox();
-    assert.ok(themeBox.y < (await add.boundingBox()).y, 'theme control sits above the workbench actions');
+    // The workbench header no longer carries its own action strip: document
+    // management lives in the sidebar tree and settings live in Developer tools.
+    await expect(page.locator('.workbench-quick-actions')).toHaveCount(0);
+    await expect(page.locator('.workbench-options')).toHaveCount(0);
+    await expect(page.getByRole('button', {name: 'Export', exact: true})).toBeVisible();
+
     await clickWorkbenchAction(page, 'Show source');
-    await expect(more).not.toHaveAttribute('open');
     const editor = page.locator('#source-editor');
     await expect(editor).toBeVisible();
     assert.ok((await page.locator('.reactive-md-editor').boundingBox()).height >= 720);
-    await fillEditor(editor,'# Compact toolbar\n\nImages go here.');
+
+    await fillEditor(editor,'# Compact workbench\n\nImages go here.');
     const png = await page.evaluate(() => {
       const canvas = document.createElement('canvas'); canvas.width = 12; canvas.height = 8;
       return canvas.toDataURL('image/png').split(',')[1];
     });
-    const [picker] = await Promise.all([page.waitForEvent('filechooser'), add.click()]);
-    await picker.setFiles({name: 'photo.png', mimeType: 'image/png', buffer: Buffer.from(png, 'base64')});
+    const chooser = page.waitForEvent('filechooser');
+    await page.locator('[data-toolbar-id="insert"]').click();
+    await page.locator('.editor-toolbar-insert-menu').getByRole('menuitem', {name: 'Image', exact: true}).click();
+    await (await chooser).setFiles({name: 'photo.png', mimeType: 'image/png', buffer: Buffer.from(png, 'base64')});
     await expectEditorSource(editor,/!\[photo.png\]\(assets\//);
     await expect(page.locator('.preview-stage img')).toHaveCount(1);
-    await expect(quick.locator('.image-asset-row')).toHaveCount(0);
-    await more.locator(':scope > summary').click();
-    await expect(more.locator('.image-asset-row')).toHaveCount(1);
-    await expect(more.getByRole('button', {name: 'Import', exact: true})).toBeVisible();
-    await more.press('Escape');
-    await expect(more.locator(':scope > summary')).toBeFocused();
-    await clickWorkbenchAction(page, 'Export');
+
+    await clickWorkbenchAction(page, /^Export/);
     await expect(page.getByRole('dialog')).toBeVisible();
     await page.getByRole('dialog').getByRole('button', {name: 'Cancel', exact: true}).click();
-    const [importPicker] = await Promise.all([page.waitForEvent('filechooser'), clickWorkbenchAction(page, 'Import')]);
-    await importPicker.setFiles({name: 'imported.md', mimeType: 'text/markdown', buffer: Buffer.from('# Imported document')});
+    await expect(page.getByRole('dialog')).toBeHidden();
+
+    // Import lives on the Developer tools Document card, which starts collapsed.
+    const importChooser = page.waitForEvent('filechooser');
+    const documentCard = await openDeveloperCard(page, 'Document');
+    await documentCard.getByRole('button', {name: 'Import document', exact: true}).click();
+    await (await importChooser).setFiles({name: 'imported.md', mimeType: 'text/markdown', buffer: Buffer.from('# Imported document')});
     await expectEditorSource(editor,'# Imported document');
-    await page.getByRole('button', {name: 'My documents', exact: true}).click();
-    await clickWorkbenchAction(page, 'New document');
-    await page.getByRole('textbox', {name: 'Document name', exact: true}).fill('Compact document');
-    await page.getByRole('button', {name: 'Create', exact: true}).click();
-    await expect(page.locator('.doc-select option:checked')).toHaveText('Compact document');
-    await clickWorkbenchAction(page, 'Rename');
-    await page.getByRole('textbox', {name: 'Document name', exact: true}).fill('Renamed document');
-    await page.getByRole('form', {name: 'Rename document'}).getByRole('button', {name: 'Rename', exact: true}).click();
-    await expect(page.locator('.doc-select option:checked')).toHaveText('Renamed document');
-    await clickWorkbenchAction(page, 'Duplicate');
-    await page.getByRole('textbox', {name: 'Document name', exact: true}).fill('Copied document');
-    await page.getByRole('button', {name: 'Create copy', exact: true}).click();
-    await expect(page.locator('.doc-select option:checked')).toHaveText('Copied document');
+
+    // Document management sits in the sidebar tree.
+    if (!(await sidebar.isVisible())) {
+      await revealPreviewControls(page);
+      await page.locator('#sidebar-toggle').click();
+    }
+    await expect(sidebar).toBeVisible();
+    await page.getByRole('tree').getByRole('button', {name: 'Documents', exact: true}).click().catch(() => {});
+    await page.getByRole('button', {name: 'New document', exact: true}).click();
+    const activeRow = page.locator('[role=treeitem][data-tree-kind=document][aria-selected=true]');
+    await expect(activeRow).toHaveCount(1);
+    await page.getByRole('button', {name: 'Rename', exact: true}).click();
+    const rename = activeRow.getByRole('textbox');
+    await rename.fill('Renamed document');
+    await rename.press('Enter');
+    await expect(activeRow.getByRole('button', {name: 'Renamed document', exact: true})).toBeVisible();
+    await expectEditorSource(editor,'');
+
     await theme.click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
     await expect(page.getByRole('button', {name: 'Light theme', exact: true})).toBeVisible();
     await switchWorkbenchLanguage(page);
-    await expect(quick.getByRole('button', {name: '添加图片', exact: true})).toBeVisible();
+    await expect(page.getByRole('button', {name: '新建文档', exact: true})).toBeVisible();
     await expect(page.getByRole('button', {name: '浅色主题', exact: true})).toBeVisible();
     await page.waitForTimeout(250);
     await page.screenshot({path: `artifacts/compact-workbench/${width}-dark-zh.png`});
@@ -74,6 +80,6 @@ try {
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1), false);
     assert.deepEqual(errors, []);
     await page.close();
-    console.log(`PASS ${width}px: compact actions, menu keyboard, image insertion, export, library forms, theme, locale and editor height`);
+    console.log(`PASS ${width}px: header actions, toolbar image insertion, export, import, tree forms, theme, locale and editor height`);
   }
 } finally {await browser.close();}

@@ -1,4 +1,4 @@
-import { openWorkbench, clickWorkbenchAction, expectEditorSource, switchWorkbenchLanguage } from './workbench-ui.mjs';
+import { openWorkbench, clickWorkbenchAction, expectEditorSource, switchWorkbenchLanguage, restoreWorkbenchExample } from './workbench-ui.mjs';
 import { chromium, expect } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
 
@@ -80,12 +80,23 @@ try {
       await switchBar.screenshot({ path: `artifacts/editor-views/bar-${width}-${theme}.png` });
     }
     // The rendered preview stays mounted across modes, retaining trial inputs.
-    await clickWorkbenchAction(page, 'Restore example');
-    const slider = preview.locator('input[type="range"]').first();
-    await slider.fill('7');
+    // Sliders ship as `div[role=slider]` thumbs, so drive them by keyboard
+    // rather than through a native range input.
+    await restoreWorkbenchExample(page);
+    // Restoring goes through the sidebar, which is a drawer under 1100px and
+    // covers the mobile document bar until it is closed.
+    if (compact) {
+      const backdrop = page.locator('.sidebar-backdrop');
+      if (await backdrop.isVisible()) await backdrop.click();
+      await expect(page.locator('#document-sidebar')).toBeHidden();
+    }
+    const slider = preview.locator('[data-rmd-part="thumb"]').first();
+    await slider.focus();
+    await slider.press('ArrowRight');
+    const retained = await slider.getAttribute('aria-valuenow');
     await mode('Edit').click();
     await mode('Preview').click();
-    await expect(slider).toHaveValue('7');
+    await expect(preview.locator('[data-rmd-part="thumb"]').first()).toHaveAttribute('aria-valuenow', retained);
     await switchWorkbenchLanguage(page);
     await expect(mode('编辑')).toBeVisible();
     if (width > 600) await expect(mode('并排')).toBeVisible();
