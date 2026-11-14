@@ -23,10 +23,9 @@ body {
   background: color-mix(in srgb, var(--blue) 20%, transparent);
 }
 
-button,
-input,
-select,
-textarea {
+/* Document components own their font and foreground in the rmd layers.
+   An unlayered host reset would otherwise override their themed styles. */
+:where(button, input, select, textarea):not(:where(.md-document *)) {
   font: inherit;
   color: inherit;
 }

@@ -74,7 +74,11 @@ try {
       if (/^https?:/i.test(request.url())) network.push(request.url());
     });
     await exported.goto(pathToFileURL(htmlPath).href);
-    await exported.locator('input').first().waitFor();
+    const exportedSlider = exported.getByRole('slider', { name: 'People', exact: true });
+    await expect(exportedSlider).toBeVisible();
+    await expect(exportedSlider).toHaveCSS('--rmd-slider-thumb-width', '14px');
+    await expect.poll(() => exportedSlider.evaluate(node => parseFloat(getComputedStyle(node).width))).toBeCloseTo(14, 1);
+    await expect(exportedSlider).toHaveCSS('border-radius', '0px');
     await expect(exported.locator('.local-slider .md-slider-value')).toHaveText('6');
     await expect(exported.locator('.local-document')).toContainText('Current headcount: 6');
     expect(exportedErrors).toEqual([]);

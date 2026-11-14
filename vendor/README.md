@@ -13,9 +13,9 @@ Demo builds against:
 
 | File | Package | Version |
 | --- | --- | --- |
-| `reactive-md-0.8.0-62ecc4c71032.tgz` | `reactive-md` | `0.8.0` |
-| `reactive-md-editor-0.1.0-eecb6aebf230.tgz` | `reactive-md-editor` | `0.1.0` |
-| `reactive-md-sci-fi-theme-1.0.0-166308613327.tgz` | `reactive-md-sci-fi-theme` | `1.0.0` |
+| `reactive-md-0.8.0-4a8c8a3643d4.tgz` | `reactive-md` | `0.8.0` |
+| `reactive-md-editor-0.1.0-de7842a076e7.tgz` | `reactive-md-editor` | `0.1.0` |
+| `reactive-md-sci-fi-theme-1.0.0-a2cb4b20c307.tgz` | `reactive-md-sci-fi-theme` | `1.0.0` |
 
 Older builds are archived locally under `archive/`. That directory is git-ignored, so it is neither committed nor uploaded.
 
@@ -26,9 +26,9 @@ same way when a new game build is released.
 
 Install with `npm ci --legacy-peer-deps` (or `npm install --legacy-peer-deps`
 on a checkout without a lockfile). The committed game tarballs still declare a
-`reactive-md` peer range of `^0.7.0`, while this Demo runs the `0.8.0-next.0`
+`reactive-md` peer range of `^0.7.0`, while this Demo runs the `0.8.0`
 engine. The game runtime API used by the Demo is unchanged.
 
 Candidate tarball filenames include a SHA256 prefix. Use the exact vendor filenames in package.json; update those paths and lockfile integrity whenever package contents change.
 
-The current engine candidate is `reactive-md-0.8.0-62ecc4c71032.tgz`, built from engine `main` at commit `9f4d950` (polar curves with configurable sample points, emphasis preserved around interpolated values, longer test timeout). SHA256: `62ecc4c710323e16d756d7964cd902325c8b0283447b51ca521043d6c092bca1`. Installation uses the built package without sibling source imports.
+The current engine candidate is `reactive-md-0.8.0-4a8c8a3643d4.tgz`, built from engine `main` at commit `8b3c931` (one layered theme baseline with per-component CSS, plus the table-pipe, lexical-shielding, HTML attribute, state restoration, formatting and incremental-session fixes). SHA256: `4a8c8a3643d4fd8494d6e47a38482c9accb4953ef2caf642592c69cd3d652349`. Installation uses the built package without sibling source imports.

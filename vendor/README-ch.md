@@ -8,16 +8,16 @@ Demo 从本目录中已提交的 npm tarball 安装 Tetris 和 2048。文件名�
 
 | 文件 | 包 | 版本 |
 | --- | --- | --- |
-| `reactive-md-0.8.0-62ecc4c71032.tgz` | `reactive-md` | `0.8.0` |
-| `reactive-md-editor-0.1.0-eecb6aebf230.tgz` | `reactive-md-editor` | `0.1.0` |
-| `reactive-md-sci-fi-theme-1.0.0-166308613327.tgz` | `reactive-md-sci-fi-theme` | `1.0.0` |
+| `reactive-md-0.8.0-4a8c8a3643d4.tgz` | `reactive-md` | `0.8.0` |
+| `reactive-md-editor-0.1.0-de7842a076e7.tgz` | `reactive-md-editor` | `0.1.0` |
+| `reactive-md-sci-fi-theme-1.0.0-a2cb4b20c307.tgz` | `reactive-md-sci-fi-theme` | `1.0.0` |
 
 旧构建归档在本地 `archive/` 目录。该目录被 `.gitignore` 忽略，不会提交，也不会上传。
 
 在各自仓库中构建新的引擎、编辑器或主题 tarball，使用带版本号的文件名复制到这里，更新 `package.json` 并重新生成 lockfile。游戏包保留各自的源码仓库；发布新游戏构建时，以同样方式替换其 tarball。
 
-使用 `npm ci --legacy-peer-deps` 安装（在没有 lockfile 的检出中使用 `npm install --legacy-peer-deps`）。已提交的游戏 tarball 仍声明 `reactive-md` 的 peer 范围为 `^0.7.0`，而此 Demo 运行 `0.8.0-next.0` 引擎。Demo 使用的游戏运行时 API 没有变化。
+使用 `npm ci --legacy-peer-deps` 安装（在没有 lockfile 的检出中使用 `npm install --legacy-peer-deps`）。已提交的游戏 tarball 仍声明 `reactive-md` 的 peer 范围为 `^0.7.0`，而此 Demo 运行 `0.8.0` 引擎。Demo 使用的游戏运行时 API 没有变化。
 
 候选 tarball 文件名包含 SHA256 前缀。在 package.json 中使用确切的 vendor 文件名；每当包内容变化时，更新这些路径和 lockfile integrity。
 
-当前引擎候选为 `reactive-md-0.8.0-62ecc4c71032.tgz`，由引擎 `main` 分支提交 `9f4d950` 构建（极坐标曲线与可配置采样点、插值两侧的强调保留、更长的测试超时）。SHA256 为 `62ecc4c710323e16d756d7964cd902325c8b0283447b51ca521043d6c092bca1`；安装使用已构建包，不引用同级源码。
+当前引擎候选为 `reactive-md-0.8.0-4a8c8a3643d4.tgz`，由引擎 `main` 分支提交 `8b3c931` 构建（统一的分层主题基线、组件自带 CSS，以及表格竖线、词法屏蔽、HTML 属性、状态恢复、格式化与增量会话修复）。SHA256 为 `4a8c8a3643d4fd8494d6e47a38482c9accb4953ef2caf642592c69cd3d652349`；安装使用已构建包，不引用同级源码。
