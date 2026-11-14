@@ -1,4 +1,4 @@
-import { openWorkbench, clickWorkbenchAction, replaceWorkbenchSource, readEditor, expectEditorSource, switchWorkbenchLanguage } from './workbench-ui.mjs';
+import { openWorkbench, clickWorkbenchAction, replaceWorkbenchSource, readEditor, expectEditorSource, switchWorkbenchLanguage, viewModeButton } from './workbench-ui.mjs';
 import { chromium, expect } from '@playwright/test';
 import { mkdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -137,7 +137,7 @@ try {
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await expect(addPanel.getByRole('button', { name: 'Add images', exact: true })).toBeVisible();
   await page.screenshot({ path: path.join(artifacts, 'mobile-images.png'), fullPage: false });
-  const previewMode = await page.locator('[data-editor-view-option="preview"]').getAttribute('aria-pressed');
+  const previewMode = await viewModeButton(page, 'preview').getAttribute('aria-pressed');
   if (previewMode === 'true') await clickWorkbenchAction(page, 'Show source');
   await clickWorkbenchAction(page, /^Export/);
   await expect(exportButton).toBeVisible();

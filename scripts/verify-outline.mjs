@@ -1,6 +1,6 @@
 import { chromium, expect } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
-import { openWorkbench, replaceWorkbenchSource, switchWorkbenchLanguage } from './workbench-ui.mjs';
+import { openWorkbench, replaceWorkbenchSource, switchWorkbenchLanguage, viewModeButton } from './workbench-ui.mjs';
 
 const channel = process.env.PLAYWRIGHT_CHANNEL ?? 'msedge';
 const browser = await chromium.launch({ ...(channel === 'chromium' ? {} : { channel }), headless: true });
@@ -27,8 +27,7 @@ try {
     page.on('pageerror', error => errors.push(error.message));
     await page.addInitScript(() => { localStorage.clear(); });
     await openWorkbench(page, baseURL);
-    const bar = page.locator('.editor-status-bar');
-    const mode = name => bar.getByRole('button', { name, exact: true });
+    const mode = name => viewModeButton(page, name.toLowerCase());
     const toggle = page.locator('#sidebar-toggle');
     const outline = page.locator('#document-outline');
     const stage = page.locator('.preview-stage');
@@ -134,8 +133,8 @@ try {
       .replace('Deployment', '部署位置').replace('Validation', '构建与最小化验证').replace('npm release', 'npm 发布')
       .replace('Preparation', '版本与发布准备').replace('Acceptance', '发布后验收'));
     await expect(stage).toHaveAttribute('aria-busy', 'false');
-    if (width > 600) await bar.getByRole('button', { name: '并排', exact: true }).click();
-    else await bar.getByRole('button', { name: '预览', exact: true }).click();
+    if (width > 600) await viewModeButton(page, 'split').click();
+    else await viewModeButton(page, 'preview').click();
     await openOutline();
     await outline.getByRole('button', { name: 'ReactiveMD 项目约定', exact: true }).click({ force: true });
     for (const theme of ['light', 'dark']) {

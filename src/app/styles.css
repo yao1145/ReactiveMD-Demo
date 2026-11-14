@@ -296,89 +296,6 @@ textarea {
   overflow: hidden;
 }
 
-/* Mobile document header: identity on the left, the primary view switch on
-   the right. The full toolbar sits below it. */
-.mobile-doc-bar {
-  display: none;
-}
-
-.mobile-doc-title {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  min-width: 0;
-  color: var(--ink);
-  font-size: var(--text-md);
-  font-weight: var(--weight-semibold);
-}
-
-.mobile-doc-title svg {
-  flex: 0 0 auto;
-  color: var(--ink-muted);
-}
-
-.mobile-doc-title span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.mobile-view-switch {
-  display: inline-flex;
-  flex: 0 0 auto;
-  align-items: center;
-  gap: 2px;
-  padding: 3px;
-  background: var(--neutral-soft);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-pill);
-}
-
-.mobile-view-switch button {
-  min-height: 32px;
-  padding: 0 14px;
-  background: transparent;
-  border: 0;
-  border-radius: var(--radius-pill);
-  color: var(--ink-muted);
-  font: inherit;
-  font-size: var(--text-sm);
-  font-weight: var(--weight-semibold);
-  line-height: 1;
-  cursor: pointer;
-  transition:
-    background-color var(--motion-fast) var(--ease-standard),
-    color var(--motion-fast) var(--ease-standard),
-    box-shadow var(--motion-fast) var(--ease-standard);
-}
-
-.mobile-view-switch button[aria-pressed="true"] {
-  background: var(--surface);
-  color: var(--ink);
-  box-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 12%, transparent);
-}
-
-[data-theme="dark"] .mobile-view-switch button[aria-pressed="true"] {
-  background: var(--line);
-}
-
-.mobile-view-switch button:focus-visible {
-  outline: var(--focus-outline);
-  outline-offset: 1px;
-}
-
-@media (max-width: 620px) {
-  .mobile-doc-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-3);
-    padding: 10px var(--space-3);
-    background: var(--surface);
-    border-bottom: 1px solid var(--line);
-  }
-}
-
 .bar-group {
   display: flex;
   align-items: center;
@@ -1446,6 +1363,8 @@ textarea {
 }
 
 @media (max-width: 620px) {
+  /* The demo's compile chip is too wide for the compact toolbar row, and the
+     masthead copy is redundant once the document bar is present. */
   .reactive-md-editor .editor-toolbar .editor-toolbar-host-status,
   .masthead-actions .status-chip {
     display: none;

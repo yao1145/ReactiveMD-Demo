@@ -4,7 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium, expect } from '@playwright/test';
 import { createServer, preview } from 'vite';
-import { openWorkbench, selectWorkbenchExample, replaceWorkbenchSource } from './workbench-ui.mjs';
+import { openWorkbench, selectWorkbenchExample, replaceWorkbenchSource, viewModeButton } from './workbench-ui.mjs';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const production = process.argv.includes('--preview');
@@ -65,7 +65,7 @@ try {
   await page.setViewportSize({ width: 390, height: 844 });
   const closeSidebar = page.locator('.sidebar-backdrop');
   if (await closeSidebar.isVisible()) await closeSidebar.click({ position: { x: 380, y: 40 } });
-  await page.locator('[data-editor-view-option="preview"]').click();
+  await viewModeButton(page, 'preview').click();
   await expect.poll(() => board.evaluate(node => getComputedStyle(node).display)).toBe('grid');
   const bounds = await board.boundingBox();
   assert.ok(bounds.width > 100 && bounds.height > 100, 'The mobile board must have a visible area.');

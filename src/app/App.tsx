@@ -15,6 +15,7 @@ import { flushComponentStateOnPageHide } from 'reactive-md/runtime/browser';
 import { config as demoConfig, reactConfig as demoReactConfig } from 'virtual:reactive-md/host';
 import type { LocalSourceTarget } from 'reactive-md/react';
 import {
+  MobileDocBar,
   ReactiveMarkdownEditor,
   type ReactiveMarkdownEditorHandle,
   type EditorTransaction,
@@ -33,7 +34,7 @@ import {
 import { DocumentTree, TREE_COPY } from '../documents/document-tree';
 import { DeveloperTools } from '../developer/developer-tools';
 import { OutlineWorkspace, type SidebarTab } from '../documents/document-outline';
-import { CompileStatusIcon, DownloadIcon, FileIcon, MenuIcon, PanelLeftIcon } from '../ui/icons';
+import { CompileStatusIcon, DownloadIcon, MenuIcon, PanelLeftIcon } from '../ui/icons';
 import { PreviewFullscreenToggle, PreviewOverlayControls, usePreviewFullscreen } from '../preview/preview-fullscreen';
 import { ExportDialog } from '../export/export-dialog';
 import { createImageAsset, imagePolicy, ImageAssetError, MAX_IMAGE_BYTES, MAX_IMAGE_TOTAL_BYTES, validateImageManifest, type ImageAsset } from '../images/image-assets';
@@ -1059,20 +1060,13 @@ export default function App() {
           <GuideView onBack={() => setView('playground')} />
         ) : (
         <main className="workbench">
-          <div className="mobile-doc-bar">
-            <div className="mobile-doc-title">
-              <FileIcon size={18} />
-              <span>{activeDocument?.name ?? currentExample.title}</span>
-            </div>
-            <div className="mobile-view-switch" role="group" aria-label={copy.editor.viewSwitch}>
-              <button type="button" aria-pressed={editorView !== 'preview'} onClick={() => setEditorView('edit')}>
-                {copy.editor.editView}
-              </button>
-              <button type="button" aria-pressed={editorView === 'preview'} onClick={() => setEditorView('preview')}>
-                {copy.editor.previewView}
-              </button>
-            </div>
-          </div>
+          <MobileDocBar
+            title={activeDocument?.name ?? currentExample.title}
+            view={editorView}
+            onViewChange={setEditorView}
+            labels={{ edit: copy.editor.editView, preview: copy.editor.previewView, viewSwitch: copy.editor.viewSwitch }}
+            theme={dark ? 'dark' : 'light'}
+          />
           <OutlineWorkspace document={previewDocument} source={source} documentKey={documentKey}
             mode={editorView} onModeChange={setEditorView} editor={editorHandle}
             sidebarOpen={sidebarOpen} onSidebarOpenChange={setSidebarOpen}
@@ -1194,6 +1188,7 @@ export default function App() {
                 </section>}
                 authoring={editorAuthoring}
                 toolbar={editorToolbar}
+                mobileBar
                 toolbarLeading={editorView === 'preview' ? undefined : sidebarToggle(sidebarOpen)}
                 toolbarStatus={editorView === 'preview' ? undefined : statusChip}
               />

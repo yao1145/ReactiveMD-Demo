@@ -13,8 +13,8 @@ Demo builds against:
 
 | File | Package | Version |
 | --- | --- | --- |
-| `reactive-md-0.8.0-next.0-259f70cbf559.tgz` | `reactive-md` | `0.8.0-next.0` |
-| `reactive-md-editor-0.1.0-next.0-4a47efdf9d2e.tgz` | `reactive-md-editor` | `0.1.0-next.0` |
+| `reactive-md-0.8.0-62ecc4c71032.tgz` | `reactive-md` | `0.8.0` |
+| `reactive-md-editor-0.1.0-eecb6aebf230.tgz` | `reactive-md-editor` | `0.1.0` |
 | `reactive-md-sci-fi-theme-1.0.0-166308613327.tgz` | `reactive-md-sci-fi-theme` | `1.0.0` |
 
 Older builds are archived locally under `archive/`. That directory is git-ignored, so it is neither committed nor uploaded.
@@ -31,4 +31,4 @@ engine. The game runtime API used by the Demo is unchanged.
 
 Candidate tarball filenames include a SHA256 prefix. Use the exact vendor filenames in package.json; update those paths and lockfile integrity whenever package contents change.
 
-The current engine candidate is `reactive-md-0.8.0-next.0-259f70cbf559.tgz`, based on engine commit `6e6a93f` plus the uncommitted UI refinements: independent plot scales, square grids, top-layer tooltips, button contrast, shared Jump styling and option motion, with Jump button underlines removed. SHA256: `259f70cbf5590ef8673bfdd459d8db8882e12d65c29ae1fc5f3fe1ba743bf5ce`. Installation uses the built package without sibling source imports.
+The current engine candidate is `reactive-md-0.8.0-62ecc4c71032.tgz`, built from engine `main` at commit `9f4d950` (polar curves with configurable sample points, emphasis preserved around interpolated values, longer test timeout). SHA256: `62ecc4c710323e16d756d7964cd902325c8b0283447b51ca521043d6c092bca1`. Installation uses the built package without sibling source imports.

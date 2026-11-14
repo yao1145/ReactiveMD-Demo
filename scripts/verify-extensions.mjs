@@ -3,7 +3,7 @@ import { createServer, preview } from 'vite';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import path from 'node:path';
-import { openWorkbench, selectWorkbenchExample, clickWorkbenchAction } from './workbench-ui.mjs';
+import { openWorkbench, selectWorkbenchExample, clickWorkbenchAction, viewModeButton } from './workbench-ui.mjs';
 
 const dev = process.argv.includes('--dev');
 const root = fileURLToPath(new URL('../', import.meta.url));
@@ -125,7 +125,7 @@ try {
     const sidebarToggle = page.locator('#sidebar-toggle');
     if (await sidebarToggle.getAttribute('aria-expanded') === 'true') await sidebarToggle.click();
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.locator('[data-editor-view-option="preview"]').click();
+    await viewModeButton(page, 'preview').click();
     await expect(game).toBeVisible();
     await expect(page.locator('[data-tetris-drop]')).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);

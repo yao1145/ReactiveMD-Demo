@@ -2,7 +2,7 @@ import { chromium, expect } from '@playwright/test';
 import { createServer } from 'vite';
 import { fileURLToPath } from 'node:url';
 import { mkdir } from 'node:fs/promises';
-import { openWorkbench, replaceWorkbenchSource } from './workbench-ui.mjs';
+import { openWorkbench, replaceWorkbenchSource, viewModeButton } from './workbench-ui.mjs';
 import { selectEditorRange } from './editor-probe.mjs';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
@@ -26,7 +26,7 @@ try {
     await page.route('**/favicon.ico', route => route.fulfill({ status: 204 }));
     await page.addInitScript(() => localStorage.clear());
     await openWorkbench(page, baseURL);
-    const mode = name => page.locator(`[data-editor-view-option="${name}"]`);
+    const mode = name => viewModeButton(page, name);
     const editor = page.locator('#source-editor');
     await mode('edit').click();
 

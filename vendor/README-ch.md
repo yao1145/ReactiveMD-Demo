@@ -8,8 +8,8 @@ Demo 从本目录中已提交的 npm tarball 安装 Tetris 和 2048。文件名�
 
 | 文件 | 包 | 版本 |
 | --- | --- | --- |
-| `reactive-md-0.8.0-next.0-259f70cbf559.tgz` | `reactive-md` | `0.8.0-next.0` |
-| `reactive-md-editor-0.1.0-next.0-4a47efdf9d2e.tgz` | `reactive-md-editor` | `0.1.0-next.0` |
+| `reactive-md-0.8.0-62ecc4c71032.tgz` | `reactive-md` | `0.8.0` |
+| `reactive-md-editor-0.1.0-eecb6aebf230.tgz` | `reactive-md-editor` | `0.1.0` |
 | `reactive-md-sci-fi-theme-1.0.0-166308613327.tgz` | `reactive-md-sci-fi-theme` | `1.0.0` |
 
 旧构建归档在本地 `archive/` 目录。该目录被 `.gitignore` 忽略，不会提交，也不会上传。
@@ -20,4 +20,4 @@ Demo 从本目录中已提交的 npm tarball 安装 Tetris 和 2048。文件名�
 
 候选 tarball 文件名包含 SHA256 前缀。在 package.json 中使用确切的 vendor 文件名；每当包内容变化时，更新这些路径和 lockfile integrity。
 
-当前引擎候选为 `reactive-md-0.8.0-next.0-259f70cbf559.tgz`，基于引擎提交 `6e6a93f` 及本轮未提交的 UI 修订，包含函数独立缩放、正方形网格、顶层 tooltip、按钮对比度、Jump 样式统一与选项动效，并移除 Jump 按钮下划线。SHA256 为 `259f70cbf5590ef8673bfdd459d8db8882e12d65c29ae1fc5f3fe1ba743bf5ce`；安装使用已构建包，不引用同级源码。
+当前引擎候选为 `reactive-md-0.8.0-62ecc4c71032.tgz`，由引擎 `main` 分支提交 `9f4d950` 构建（极坐标曲线与可配置采样点、插值两侧的强调保留、更长的测试超时）。SHA256 为 `62ecc4c710323e16d756d7964cd902325c8b0283447b51ca521043d6c092bca1`；安装使用已构建包，不引用同级源码。

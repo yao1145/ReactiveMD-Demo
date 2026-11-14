@@ -106,9 +106,9 @@ try {
       await expect(preview.locator('.md-slider-value')).toHaveText('7');
     } else {
       // Narrow layouts have no split mode, so source navigation stays off.
-      await page.locator('.editor-status-bar button[data-editor-view-option="edit"]').click();
+      await page.locator('[data-mobile-view-option="edit"]').click();
       await expect(source).toBeVisible();
-      await expect(page.locator('.editor-status-bar button[data-editor-view-option="split"]')).toHaveCount(0);
+      await expect(page.locator('[data-editor-view-option="split"]')).toHaveCount(0);
     }
 
     expect(errors).toEqual([]);

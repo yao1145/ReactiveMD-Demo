@@ -34,13 +34,19 @@ export async function switchWorkbenchLanguage(page) {
   await page.getByRole('button', { name: 'Switch to Chinese', exact: true }).click();
 }
 
+/** The view switch that is visible at the current width: the editor footer on
+ * desktop, the mobile document bar on narrow screens. */
+export function viewModeButton(page, mode) {
+  return page.locator(`[data-editor-view-option="${mode}"]:visible, [data-mobile-view-option="${mode}"]:visible`).first();
+}
+
 /** Click a workbench action by its accessible name. */
 export async function clickWorkbenchAction(page, name) {
   if (name === 'Show source') {
-    const edit = page.locator('[data-editor-view-option="edit"]');
-    if (await edit.count()) { await edit.first().click(); return; }
-    const split = page.locator('[data-editor-view-option="split"]');
-    if (await split.count()) await split.first().click();
+    const edit = viewModeButton(page, 'edit');
+    if (await edit.count()) { await edit.click(); return; }
+    const split = viewModeButton(page, 'split');
+    if (await split.count()) await split.click();
     return;
   }
   const button = page.getByRole('button', { name, exact: typeof name === 'string' });
