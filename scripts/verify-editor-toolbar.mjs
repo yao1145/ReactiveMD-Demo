@@ -145,9 +145,10 @@ try {
   await insertTrigger.click();
   const insertMenu = page.locator('.editor-toolbar-insert-menu');
   await expect(insertMenu).toBeVisible();
-  if (await insertMenu.getByRole('menuitem').count() !== 8) {
+  if (await insertMenu.getByRole('menuitem').count() !== 9) {
     throw new Error('Insert menu does not expose all secondary actions');
   }
+  await expect(insertMenu.getByRole('menuitem', { name: 'Link', exact: true })).toBeVisible();
   await insertMenu.getByRole('menuitem', { name: 'Emoji', exact: true }).click();
   const emojiMenu = page.locator('.editor-toolbar-emoji-menu');
   await expect(emojiMenu).toBeVisible();
@@ -372,11 +373,16 @@ try {
   await mobile.getByRole('button', { name: 'More', exact: true }).click();
   const moreMenu = mobile.locator('.editor-toolbar-more-menu');
   await expect(moreMenu).toBeVisible();
-  for (const name of ['Link', 'Undo', 'Redo', 'Export']) {
+  for (const name of ['Undo', 'Redo', 'Export']) {
     await expect(moreMenu.getByRole('menuitem', { name, exact: true })).toBeVisible();
   }
+  // Insert actions live in the Insert menu only; the compact overflow keeps
+  // history and export.
+  for (const name of ['Link', 'Image', 'Table', 'Divider', 'Code block', 'Inline code', 'Strikethrough', 'Quote']) {
+    await expect(moreMenu.getByRole('menuitem', { name, exact: true })).toHaveCount(0);
+  }
   await mobile.keyboard.press('ArrowDown');
-  await expect(moreMenu.getByRole('menuitem', { name: 'Link', exact: true })).toBeFocused();
+  await expect(moreMenu.getByRole('menuitem', { name: 'Undo', exact: true })).toBeFocused();
   await mobile.keyboard.press('Escape');
   await expect(mobile.getByRole('button', { name: 'More', exact: true })).toBeFocused();
   console.log('PASS mobile more menu and keyboard navigation');
