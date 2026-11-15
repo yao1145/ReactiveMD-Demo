@@ -20,6 +20,7 @@
     "test:toolbar": "node scripts/verify-editor-toolbar.mjs",
     "test:toolbar:compact": "node scripts/verify-toolbar-compact.mjs",
     "test:preview:actions": "node scripts/verify-preview-actions.mjs",
+    "test:preview:slider": "node scripts/verify-preview-slider-hit-target.mjs",
     "test:interactions": "node scripts/verify-editor-interactions.mjs",
     "test:export": "node scripts/verify-export.mjs && node scripts/verify-image-assets.mjs",
     "test:extensions": "node scripts/verify-extensions.mjs",
