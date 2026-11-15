@@ -19,7 +19,7 @@ try {
   const cdp = await page.context().newCDPSession(page);
   for (const language of ['en', 'zh']) {
     if (language === 'zh') await switchWorkbenchLanguage(page);
-    for (const width of [320, 390, 640]) {
+    for (const width of [320, 390, 640, 760]) {
       await page.setViewportSize({ width, height: 844 });
       const heights = [];
       // The inspector switches the emulated device's primary pointer. Exercise
@@ -87,7 +87,7 @@ try {
   }
   assert.deepEqual(errors, [], 'Browser errors');
   assert.deepEqual(failures, [], 'Compact toolbar regressions');
-  console.log('PASS compact toolbar at 320/390/640px, pointer switching, both languages and touch menus');
+  console.log('PASS compact toolbar at 320/390/640/760px, pointer switching, both languages and touch menus');
 } finally {
   await browser.close();
 }

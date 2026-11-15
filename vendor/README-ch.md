@@ -9,7 +9,7 @@ Demo 从本目录中已提交的 npm tarball 安装 Tetris 和 2048。文件名�
 | 文件 | 包 | 版本 |
 | --- | --- | --- |
 | `reactive-md-0.8.0-4a8c8a3643d4.tgz` | `reactive-md` | `0.8.0` |
-| `reactive-md-editor-0.1.0-de7842a076e7.tgz` | `reactive-md-editor` | `0.1.0` |
+| `reactive-md-editor-0.1.0-ff3c7a6f222c.tgz` | `reactive-md-editor` | `0.1.0` |
 | `reactive-md-sci-fi-theme-1.0.0-a2cb4b20c307.tgz` | `reactive-md-sci-fi-theme` | `1.0.0` |
 
 旧构建归档在本地 `archive/` 目录。该目录被 `.gitignore` 忽略，不会提交，也不会上传。

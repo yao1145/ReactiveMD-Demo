@@ -63,7 +63,7 @@
   margin-left: auto;
 }
 
-@media (min-width: 621px) {
+@media (min-width: 761px) {
   .sidebar-head.has-preview-meta {
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
@@ -87,7 +87,7 @@
   color: var(--ink-muted);
 }
 
-@media (max-width: 620px) {
+@media (max-width: 760px) {
   .sidebar-head .status-chip {
     display: none;
   }
@@ -100,7 +100,7 @@
   border-radius: 8px;
 }
 
-@media (max-width: 620px) {
+@media (max-width: 760px) {
   .editor-toolbar-host-leading .toolbar-sidebar-toggle {
     width: 28px;
     height: 28px;

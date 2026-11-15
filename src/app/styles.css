@@ -155,7 +155,7 @@ body {
   outline-offset: -2px;
 }
 
-@media (max-width: 620px) {
+@media (max-width: 760px) {
   .masthead-lead {
     flex: 1 1 100%;
   }
@@ -1361,7 +1361,7 @@ body {
   }
 }
 
-@media (max-width: 620px) {
+@media (max-width: 760px) {
   /* The demo's compile chip is too wide for the compact toolbar row, and the
      masthead copy is redundant once the document bar is present. */
   .reactive-md-editor .editor-toolbar .editor-toolbar-host-status,
@@ -1388,7 +1388,7 @@ body {
   }
 }
 
-@media (max-width: 620px) {
+@media (max-width: 760px) {
   .app-shell {
     padding: var(--space-4) var(--space-3) var(--space-5);
   }

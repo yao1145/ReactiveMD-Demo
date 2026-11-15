@@ -14,7 +14,7 @@ Demo builds against:
 | File | Package | Version |
 | --- | --- | --- |
 | `reactive-md-0.8.0-4a8c8a3643d4.tgz` | `reactive-md` | `0.8.0` |
-| `reactive-md-editor-0.1.0-de7842a076e7.tgz` | `reactive-md-editor` | `0.1.0` |
+| `reactive-md-editor-0.1.0-ff3c7a6f222c.tgz` | `reactive-md-editor` | `0.1.0` |
 | `reactive-md-sci-fi-theme-1.0.0-a2cb4b20c307.tgz` | `reactive-md-sci-fi-theme` | `1.0.0` |
 
 Older builds are archived locally under `archive/`. That directory is git-ignored, so it is neither committed nor uploaded.

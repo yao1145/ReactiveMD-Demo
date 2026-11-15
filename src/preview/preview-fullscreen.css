@@ -24,7 +24,7 @@
   transition: opacity var(--motion-fast) var(--ease-standard);
 }
 
-@media (min-width: 641px) and (hover: hover) and (pointer: fine) {
+@media (min-width: 761px) and (hover: hover) and (pointer: fine) {
   .pane-preview:hover .preview-overlay-actions,
   .pane-preview:focus-within .preview-overlay-actions,
   .preview-overlay-actions:focus-within {
@@ -160,7 +160,7 @@
 
 /* On phones, only the blank corner target changes visibility. Hover and
    focus inside the document must not leave the actions stuck open. */
-@media (max-width: 640px), (hover: none), (pointer: coarse) {
+@media (max-width: 760px), (hover: none), (pointer: coarse) {
   .preview-controls-reveal {
     position: absolute;
     top: 0;

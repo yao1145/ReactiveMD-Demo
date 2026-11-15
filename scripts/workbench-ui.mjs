@@ -42,10 +42,19 @@ export function viewModeButton(page, mode) {
 
 /** Reveal the floating preview controls when the sidebar toggle lives inside
  * them, then run the callback. The preview overlay owns the toggle in preview
- * mode on every width. */
+ * mode on every width.
+ *
+ * Above the mobile threshold a fine pointer reveals the actions on hover rather
+ * than through the corner target, and the sidebar can still be a drawer below
+ * 1100px. Hovering covers that middle band; the corner target covers touch. */
 export async function revealPreviewControls(page) {
   const reveal = page.locator('.preview-controls-reveal');
-  if (!(await reveal.count())) return;
+  const actions = page.locator('.preview-overlay-actions');
+  if (!(await reveal.isVisible())) {
+    if (await actions.isVisible()) return;
+    await page.locator('.pane-preview').hover();
+    return;
+  }
   if ((await reveal.getAttribute('aria-expanded')) === 'true') return;
   await reveal.click();
 }

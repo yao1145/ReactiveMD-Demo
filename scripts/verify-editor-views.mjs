@@ -7,14 +7,17 @@ const browser = await chromium.launch({ ...(channel === 'chromium' ? {} : { chan
 const baseURL = process.env.DEMO_URL ?? 'http://127.0.0.1:5173';
 await mkdir('artifacts/editor-views', { recursive: true });
 try {
-  for (const width of [1440, 390, 360]) {
+  for (const width of [1440, 760, 761, 390, 360]) {
     const page = await browser.newPage({ viewport: { width, height: 900 } });
     const errors = [];
     page.on('pageerror', (error) => errors.push(error.message));
     await openWorkbench(page,baseURL);
     const bar = page.locator('.editor-status-bar');
     const mobileSwitch = page.locator('.mobile-view-switch');
-    const compact = width <= 620;
+    const compact = width <= 760;
+    // Split follows the editor frame, not the viewport: the demo frame is
+    // narrower than the page, so measure it instead of guessing from `width`.
+    const splitAvailable = await page.locator('.editor-frame').evaluate((element) => element.clientWidth > 760);
     await expect(page.locator('.reactive-md-editor .editor-frame > .editor-status-bar')).toHaveCount(1);
     const source = page.locator('#source-editor');
     const preview = page.locator('.pane-preview');
@@ -29,7 +32,7 @@ try {
     } else {
       await expect(bar).toBeVisible();
       await expect(bar).toHaveAttribute('aria-label', 'Editor view');
-      await expect(bar.getByRole('button')).toHaveCount(3);
+      await expect(bar.getByRole('button')).toHaveCount(splitAvailable ? 3 : 2);
     }
     const switchBar = compact ? mobileSwitch : bar;
     const mode = (name) => switchBar.getByRole('button', { name, exact: true });
@@ -42,7 +45,7 @@ try {
     if (!compact) await expect(page.locator('.editor-status-count')).toHaveText('3 characters');
     await source.press('Control+End');
     await source.press('Tab');
-    await mode(width > 600 ? 'Split' : 'Preview').click();
+    await mode(splitAvailable ? 'Split' : 'Preview').click();
     await expect(preview).toBeVisible();
     if (width === 1440) {
       const a = await page.locator('.editor-shell').boundingBox();
@@ -61,9 +64,9 @@ try {
     await source.press('Tab');
     await expect(page.locator('.editor-toolbar [tabindex="0"]')).toBeFocused();
     await expectEditorSource(source,'中文😀');
-    await mode(width > 600 ? 'Split' : 'Preview').focus();
+    await mode(splitAvailable ? 'Split' : 'Preview').focus();
     await page.keyboard.press('Enter');
-    await expect(mode(width > 600 ? 'Split' : 'Preview')).toHaveAttribute('aria-pressed', 'true');
+    await expect(mode(splitAvailable ? 'Split' : 'Preview')).toHaveAttribute('aria-pressed', 'true');
     await expect(preview).toBeVisible();
     for (const theme of ['light', 'dark']) {
       if (theme === 'dark') await page.getByRole('button', { name: 'Dark theme', exact: true }).click();
@@ -83,12 +86,21 @@ try {
     // Sliders ship as `div[role=slider]` thumbs, so drive them by keyboard
     // rather than through a native range input.
     await restoreWorkbenchExample(page);
-    // Restoring goes through the sidebar, which is a drawer under 1100px and
-    // covers the mobile document bar until it is closed.
-    if (compact) {
+    // Below 1100px the sidebar is a drawer with a backdrop and covers the
+    // editor chrome; above it the sidebar is a permanent column. Dismiss the
+    // drawer whenever it is open, whichever breakpoint opened it.
+    {
       const backdrop = page.locator('.sidebar-backdrop');
-      if (await backdrop.isVisible()) await backdrop.click();
-      await expect(page.locator('#document-sidebar')).toBeHidden();
+      if (await backdrop.isVisible()) {
+        // The drawer covers the backdrop's centre on phones, so dismiss with a
+        // point outside the sidebar instead of the element centre.
+        const sidebar = await page.locator('#document-sidebar').boundingBox();
+        const point = sidebar
+          ? { x: sidebar.x + sidebar.width + 8, y: Math.min(120, 900 / 2) }
+          : { x: width / 2, y: 120 };
+        await page.mouse.click(Math.min(point.x, width - 4), point.y);
+        await expect(page.locator('#document-sidebar')).toBeHidden();
+      }
     }
     const slider = preview.locator('[data-rmd-part="thumb"]').first();
     await slider.focus();
@@ -99,10 +111,10 @@ try {
     await expect(preview.locator('[data-rmd-part="thumb"]').first()).toHaveAttribute('aria-valuenow', retained);
     await switchWorkbenchLanguage(page);
     await expect(mode('编辑')).toBeVisible();
-    if (width > 600) await expect(mode('并排')).toBeVisible();
+    if (splitAvailable) await expect(mode('并排')).toBeVisible();
     else await expect(mode('并排')).toHaveCount(0);
     await expect(mode('预览')).toBeVisible();
-    await mode(width > 600 ? '并排' : '预览').click();
+    await mode(splitAvailable ? '并排' : '预览').click();
     await switchBar.screenshot({ path: `artifacts/editor-views/bar-${width}-zh-dark.png` });
     await page.locator('.editor-frame').screenshot({ path: `artifacts/editor-views/frame-${width}-zh-dark.png` });
     expect(errors).toEqual([]);

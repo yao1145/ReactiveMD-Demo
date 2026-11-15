@@ -84,7 +84,7 @@ try {
   await restoreWorkbenchExample(page);
   expectSameIds(
     await visibleToolbarIds(toolbar),
-    ['heading', 'bold', 'italic', 'list', 'link', 'insert', 'components', 'undo', 'redo', 'download'],
+    ['heading', 'bold', 'italic', 'list', 'insert', 'components', 'undo', 'redo', 'download'],
     'Desktop persistent controls',
   );
   console.log('PASS reduced persistent control set');
