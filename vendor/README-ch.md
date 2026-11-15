@@ -8,8 +8,8 @@ Demo 从本目录中已提交的 npm tarball 安装 Tetris 和 2048。文件名�
 
 | 文件 | 包 | 版本 |
 | --- | --- | --- |
-| `reactive-md-0.8.0-4a8c8a3643d4.tgz` | `reactive-md` | `0.8.0` |
-| `reactive-md-editor-0.1.0-ff3c7a6f222c.tgz` | `reactive-md-editor` | `0.1.0` |
+| `reactive-md-0.8.0-2a1df8bdc715.tgz` | `reactive-md` | `0.8.0` |
+| `reactive-md-editor-0.1.0-75143347ad6e.tgz` | `reactive-md-editor` | `0.1.0` |
 | `reactive-md-sci-fi-theme-1.0.0-a2cb4b20c307.tgz` | `reactive-md-sci-fi-theme` | `1.0.0` |
 
 旧构建归档在本地 `archive/` 目录。该目录被 `.gitignore` 忽略，不会提交，也不会上传。
@@ -20,4 +20,4 @@ Demo 从本目录中已提交的 npm tarball 安装 Tetris 和 2048。文件名�
 
 候选 tarball 文件名包含 SHA256 前缀。在 package.json 中使用确切的 vendor 文件名；每当包内容变化时，更新这些路径和 lockfile integrity。
 
-当前引擎候选为 `reactive-md-0.8.0-4a8c8a3643d4.tgz`，由引擎 `main` 分支提交 `8b3c931` 构建（统一的分层主题基线、组件自带 CSS，以及表格竖线、词法屏蔽、HTML 属性、状态恢复、格式化与增量会话修复）。SHA256 为 `4a8c8a3643d4fd8494d6e47a38482c9accb4953ef2caf642592c69cd3d652349`；安装使用已构建包，不引用同级源码。
+当前引擎候选为 `reactive-md-0.8.0-2a1df8bdc715.tgz`，由引擎 `main` 分支提交 `f4452b5` 构建（分层主题基线，以及预览导航选区范围与工具栏文案修复）。SHA256 为 `2a1df8bdc715a4b93d60ed6eb1a33d75ded742504721f61f33333b86b181a5d3`。编辑器候选为 `reactive-md-editor-0.1.0-75143347ad6e.tgz`，由编辑器 `main` 分支提交 `c29f550` 构建。

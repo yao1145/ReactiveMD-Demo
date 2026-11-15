@@ -30,8 +30,8 @@
   "dependencies": {
     "react": "19.3.1",
     "react-dom": "19.3.1",
-    "reactive-md": "file:vendor/reactive-md-0.8.0-4a8c8a3643d4.tgz",
-    "reactive-md-editor": "file:vendor/reactive-md-editor-0.1.0-ff3c7a6f222c.tgz"
+    "reactive-md": "file:vendor/reactive-md-0.8.0-2a1df8bdc715.tgz",
+    "reactive-md-editor": "file:vendor/reactive-md-editor-0.1.0-75143347ad6e.tgz"
   },
   "devDependencies": {
     "@codemirror/view": "6.43.15",
