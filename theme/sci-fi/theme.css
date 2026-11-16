@@ -3,3 +3,4 @@
    This directory is the theme source; edit it in place. */
 @import './assets/tokens.css';
 @import './assets/components.css';
+@import './assets/notch.css';

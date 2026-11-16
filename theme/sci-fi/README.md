@@ -5,9 +5,10 @@ Local source for the `sci-fi` theme. Vite discovers this directory through
 
 | File | Purpose |
 | --- | --- |
-| `theme.css` | Entry stylesheet. Imports the two asset files below. |
+| `theme.css` | Entry stylesheet. Imports the three asset files below. |
 | `assets/tokens.css` | Color, type, spacing, radius and control tokens for light and dark modes. |
 | `assets/components.css` | Document, panel, table, form, navigation, code and print styles. |
+| `assets/notch.css` | 8px corner cut on panels, cards and the chart frame. |
 | `theme.json` | Discovery identity: `id`, `name` and `version`. |
 
 ## Select the theme
