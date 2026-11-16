@@ -215,7 +215,7 @@
 
 ### 函数曲线
 
-函数曲线使用 LaTeX。每个 `$$...$$` 公式块定义一条 `y = 表达式` 曲线。
+函数曲线使用 LaTeX。每个 `$$...$$` 公式块定义一条曲线，共四种写法：显式 `y = f(x)`、参数方程、极坐标与隐式方程。
 
 ```markdown
 <slider bind="a" label="振幅" initial="1" min="0" max="3" step="0.5">
@@ -225,9 +225,35 @@ $$ y = a \sin x $$
 </plot>
 ```
 
-公式中的参数直接使用数学名称，不写 `{{ }}`。单个字母对应同名 `bind`，例如 `a` 对应 `bind="a"`。多字母参数写成 `\mathrm{amplitude}`，对应 `bind="amplitude"`。
+公式中的参数直接使用数学名称，不写 `{{ }}`。单个字母对应同名 `bind`，例如 `a` 对应 `bind="a"`。多字母参数写成 `\mathrm{amplitude}`，对应 `bind="amplitude"`。`x` 和 `y` 是绘图变量，不能绑定到控件。
 
-`x` 是绘图自变量，`y` 是输出标记，两者不能绑定到控件。`plot` 的 `min` 和 `max` 控制横轴范围。
+参数方程写在 `cases` 块中，`x` 与 `y` 都是 `t` 的函数；`min`、`max` 给出 `t` 的范围，两轴按采样点自动适配：
+
+```markdown
+<plot min="0" max="12.566" label="摆线">
+$$ \begin{cases} x = t - \sin t \\ y = 1 - \cos t \end{cases} $$
+</plot>
+```
+
+极坐标写 `r = f(\theta)`，`min`、`max` 是弧度角范围；`θ` 与 `\theta` 等价，是曲线内的局部角变量：
+
+```markdown
+<plot min="0" max="{{ 2 * pi }}" points="1000" label="心形线">
+$$ r = 1 + \cos\theta $$
+</plot>
+```
+
+其余关于 `x` 和 `y` 的方程按隐式处理，在 `min` 到 `max` 的方形区域内追踪等值线，两轴按追踪结果适配：
+
+```markdown
+<slider bind="a" label="尺寸" initial="1" min="0.5" max="2" step="0.5">
+
+<plot min="-3" max="3" label="双纽线">
+$$ (x^2 + y^2)^2 = 2a^2(x^2 - y^2) $$
+</plot>
+```
+
+`points` 设置采样点数，取 2–2000 的静态整数，默认 200；旧属性 `samples` 继续有效，两者同时设置时以 `points` 为准。隐式方程把 `points` 用作每轴网格点数（32–100）。`min` 和 `max` 可以写完整插值。
 
 ## 7. 模块化布局
 
@@ -438,104 +464,104 @@ $$ y = a \sin x $$
 
 ## 组块全集
 
-下面按用途列出 `local-draft-3` 的全部 49 个标签。“形态”一列说明写法：无正文组件不写结束标签，容器必须显式闭合，行内组件可以放进句子，子项只能出现在指定父容器内，声明不渲染为界面。
+下面按用途列出 `local-draft-3` 的全部 49 个标签。无正文组件不写结束标签，容器必须显式闭合，行内组件可以放进句子，子项只能出现在指定父容器内，声明不渲染为界面。
 
 多数交互控件都支持 `label`、可选 `bind`、可选 `initial` 和动态 `disabled`。表中只列出常用的关键属性。
 
 ### 输入与选择
 
-| 标签 | 形态 | 主要属性 | 用途 |
-| --- | --- | --- | --- |
-| `input` | 无正文 | `label`、`bind`、`initial`、`type=text/email`、`placeholder`、`required`、`min-length`、`max-length` | 单行文本；值为字符串 |
-| `textarea` | 无正文 | `label`、`bind`、`initial`、`placeholder`、`rows=4`、`required`、`min-length`、`max-length` | 多行文本；正文写在 `initial` |
-| `number` | 无正文 | `label`、`bind`、`initial`、`min`、`max`、`step=1` | 数字输入；默认取范围内最接近 0 的合法值 |
-| `slider` | 无正文 | `label`、`bind`、`initial`、`min=0`、`max=100`、`step=1`、`color` | 滑动数字；默认取 `min` |
-| `range-slider` | 无正文 | `label`、`bind-start`、`bind-end`、`initial-start`、`initial-end`、`min`、`max`、`step`、`color` | 两个数字组成区间 |
-| `coordinate` | 无正文 | `label`、`bind-x`、`bind-y`、`initial-x`、`initial-y`、`x-min`、`x-max`、`y-min`、`y-max`、`step`、`color` | 二维坐标 |
-| `toggle` | 无正文 | `label`、`bind`、`initial`、`color` | 开关；布尔值，默认 `false` |
-| `checkbox` | 无正文 | `label`、`bind`、`initial`、`color` | 勾选框；布尔值，默认 `false` |
-| `date` | 无正文 | `label`、`bind`、`initial`、`min`、`max`、`required`（三者均可动态） | 日期；值为 `YYYY-MM-DD` 或空字符串 |
-| `counter` | 无正文 | `label`、`bind`、`initial`、`min=0`、`max`、`step=1` | 数字加减；自带减、加、恢复 |
-| `select` | 容器 | `label`、`bind`、`initial`、`color`；子项 `option` | 下拉单选；默认第一项 |
-| `choices` | 容器 | `label`、`bind`、`initial`、`color`；子项 `option` | 选项卡片单选 |
-| `radio-group` | 容器 | `label`、`bind`、`initial`、`color`；子项 `option` | 单选按钮组 |
-| `multi-select` | 容器 | `label`、`bind`、`initial`、`max-selected`、`color`；子项 `option` | 多选；值为字符串数组 |
-| `option` | 子项 | `value` 必填；正文为显示文字 | 用于 `select`、`choices`、`radio-group`、`multi-select` 和 `quiz` |
+| 标签 | 主要属性 | 用途 |
+| --- | --- | --- |
+| `input` | `label`、`bind`、`initial`、`type=text/email`、`placeholder`、`required`、`min-length`、`max-length` | 单行文本；值为字符串 |
+| `textarea` | `label`、`bind`、`initial`、`placeholder`、`rows=4`、`required`、`min-length`、`max-length` | 多行文本；正文写在 `initial` |
+| `number` | `label`、`bind`、`initial`、`min`、`max`、`step=1` | 数字输入；默认取范围内最接近 0 的合法值 |
+| `slider` | `label`、`bind`、`initial`、`min=0`、`max=100`、`step=1`、`color` | 滑动数字；默认取 `min` |
+| `range-slider` | `label`、`bind-start`、`bind-end`、`initial-start`、`initial-end`、`min`、`max`、`step`、`color` | 两个数字组成区间 |
+| `coordinate` | `label`、`bind-x`、`bind-y`、`initial-x`、`initial-y`、`x-min`、`x-max`、`y-min`、`y-max`、`step`、`color` | 二维坐标 |
+| `toggle` | `label`、`bind`、`initial`、`color` | 开关；布尔值，默认 `false` |
+| `checkbox` | `label`、`bind`、`initial`、`color` | 勾选框；布尔值，默认 `false` |
+| `date` | `label`、`bind`、`initial`、`min`、`max`、`required`（三者均可动态） | 日期；值为 `YYYY-MM-DD` 或空字符串 |
+| `counter` | `label`、`bind`、`initial`、`min=0`、`max`、`step=1` | 数字加减；自带减、加、恢复 |
+| `select` | `label`、`bind`、`initial`、`color`；子项 `option` | 下拉单选；默认第一项 |
+| `choices` | `label`、`bind`、`initial`、`color`；子项 `option` | 选项卡片单选 |
+| `radio-group` | `label`、`bind`、`initial`、`color`；子项 `option` | 单选按钮组 |
+| `multi-select` | `label`、`bind`、`initial`、`max-selected`、`color`；子项 `option` | 多选；值为字符串数组 |
+| `option` | `value` 必填；正文为显示文字 | 用于 `select`、`choices`、`radio-group`、`multi-select` 和 `quiz` |
 
 ### 自带操作与进度
 
-| 标签 | 形态 | 主要属性 | 用途 |
-| --- | --- | --- | --- |
-| `checklist` | 容器 | `label`、`bind`、`color`；正文为 Markdown 任务列表 | 勾选清单；值为已勾选条目 ID 数组 |
-| `timer` | 无正文 | `label`、`bind`、`duration=60` | 倒计时；自带开始、暂停、重置；值为剩余秒数 |
-| `progress` | 无正文 | `label`、`value` 必填、`max=100`、`color` | 进度条；`value` 可使用表达式 |
+| 标签 | 主要属性 | 用途 |
+| --- | --- | --- |
+| `checklist` | `label`、`bind`、`color`；正文为 Markdown 任务列表 | 勾选清单；值为已勾选条目 ID 数组 |
+| `timer` | `label`、`bind`、`duration=60` | 倒计时；自带开始、暂停、重置；值为剩余秒数 |
+| `progress` | `label`、`value` 必填、`max=100`、`color` | 进度条；`value` 可使用表达式 |
 
 ### 内容组织
 
-| 标签 | 形态 | 主要属性 | 用途 |
-| --- | --- | --- | --- |
-| `panel` | 容器 | `title`、`reset=true` | 控件分组；重置内部状态 |
-| `card` | 容器 | `title` | 内容卡片；正文继续使用 Markdown |
-| `grid` | 容器 | `columns=2`（1–4） | 卡片网格；直接子项必须是 `card` |
-| `gallery` | 容器 | `label` 必填、`item-width=280`（180–480） | 横向画廊；直接子项必须是 `gallery-item` |
-| `gallery-item` | 子项 | `label` 可选 | 画廊项目；正文支持 Markdown、图片与组件 |
-| `tabs` | 容器 | `label`、`bind`、`initial`；子项 `tab` | 标签页；默认第一项 |
-| `tab` | 子项 | `label` 必填、`value` 可选 | 标签页子项；省略 `value` 时按顺序生成 |
-| `accordion` | 容器 | `label`；子项 `disclosure` | 折叠条目组 |
-| `disclosure` | 子项 | `label` 必填、`open=false` | 可展开条目；多个可同时打开 |
-| `if` | 容器 | `when` 必填，完整布尔插值 | 条件显示；条件为假时隐藏 |
+| 标签 | 主要属性 | 用途 |
+| --- | --- | --- |
+| `panel` | `title`、`reset=true` | 控件分组；重置内部状态 |
+| `card` | `title` | 内容卡片；正文继续使用 Markdown |
+| `grid` | `columns=2`（1–4） | 卡片网格；直接子项必须是 `card` |
+| `gallery` | `label` 必填、`item-width=280`（180–480） | 横向画廊；直接子项必须是 `gallery-item` |
+| `gallery-item` | `label` 可选 | 画廊项目；正文支持 Markdown、图片与组件 |
+| `tabs` | `label`、`bind`、`initial`；子项 `tab` | 标签页；默认第一项 |
+| `tab` | `label` 必填、`value` 可选 | 标签页子项；省略 `value` 时按顺序生成 |
+| `accordion` | `label`；子项 `disclosure` | 折叠条目组 |
+| `disclosure` | `label` 必填、`open=false` | 可展开条目；多个可同时打开 |
+| `if` | `when` 必填，完整布尔插值 | 条件显示；条件为假时隐藏 |
 
 ### 跳转与文字颜色
 
-| 标签 | 形态 | 主要属性 | 用途 |
-| --- | --- | --- | --- |
-| `jump` | 行内 | `to` 必填、`appearance=link/button`、`color` | 跳转到标题锚点或显式 `anchor` |
-| `anchor` | 无正文 | `id` 必填且文档内唯一 | 显式跳转目标 |
-| `text` | 行内 | `color` 必填 | 行内文字颜色 |
-| `section` | 容器 | `color` 必填 | 整段文字颜色；内部继续解析 Markdown |
+| 标签 | 主要属性 | 用途 |
+| --- | --- | --- |
+| `jump` | `to` 必填、`appearance=link/button`、`color` | 跳转到标题锚点或显式 `anchor` |
+| `anchor` | `id` 必填且文档内唯一 | 显式跳转目标 |
+| `text` | `color` 必填 | 行内文字颜色 |
+| `section` | `color` 必填 | 整段文字颜色；内部继续解析 Markdown |
 
 ### 练习与分步
 
-| 标签 | 形态 | 主要属性 | 用途 |
-| --- | --- | --- | --- |
-| `quiz` | 容器 | `type=choice/number`、`label`、`answer`、`explanation`、`tolerance`；choice 子项 `option` | 练习题；不公开 `bind` |
-| `steps` | 容器 | `label`、`bind`、`initial`；子项 `step` | 分步阅读；默认第一步 |
-| `step` | 子项 | `label` 必填、`value` 可选 | 步骤子项；省略 `value` 时按顺序生成 |
+| 标签 | 主要属性 | 用途 |
+| --- | --- | --- |
+| `quiz` | `type=choice/number`、`label`、`answer`、`explanation`、`tolerance`；choice 子项 `option` | 练习题；不公开 `bind` |
+| `steps` | `label`、`bind`、`initial`；子项 `step` | 分步阅读；默认第一步 |
+| `step` | `label` 必填、`value` 可选 | 步骤子项；省略 `value` 时按顺序生成 |
 
 ### 提示
 
-| 标签 | 形态 | 主要属性 | 用途 |
-| --- | --- | --- | --- |
-| `alert` | 容器 | `title`、`tone=info/success/warning` | 提示块 |
-| `badge` | 行内 | `tone=neutral/success/warning`、`color` | 状态标签；`tone` 可静态或动态 |
-| `tooltip` | 行内 | `text` 必填 | 行内说明；悬停或键盘聚焦时显示 |
+| 标签 | 主要属性 | 用途 |
+| --- | --- | --- |
+| `alert` | `title`、`tone=info/success/warning` | 提示块 |
+| `badge` | `tone=neutral/success/warning`、`color` | 状态标签；`tone` 可静态或动态 |
+| `tooltip` | `text` 必填 | 行内说明；悬停或键盘聚焦时显示 |
 
 ### 声明与本地数据
 
-| 标签 | 形态 | 主要属性 | 用途 |
-| --- | --- | --- | --- |
-| `external` | 声明 | `name`、`type=string/number/boolean/string-array/number-array` 必填 | 顶层只读宿主数据；可被表达式和计算读取，阅读器不能写入 |
-| `computed` | 声明 | `name`、`value` 必填 | 顶层计算值；可读控件、常量和其他计算值；不渲染 |
-| `const` | 声明 | `name`、`value` 必填 | 顶层常量；只能读常量和内置常量；不渲染 |
-| `validation` | 声明 | `when`、`message`、`fields` 必填 | 跨字段校验；失败时显示提示 |
-| `data-table` | 容器 | `label`、`rows`、`key`、`max-rows=100`；子项 `column` | 从本地数组生成表格行；行内可用 `item`、`index` |
-| `column` | 子项 | `label`、`value` 必填 | `data-table` 的列；单元格只输出文本 |
+| 标签 | 主要属性 | 用途 |
+| --- | --- | --- |
+| `external` | `name`、`type=string/number/boolean/string-array/number-array` 必填 | 顶层只读宿主数据；可被表达式和计算读取，阅读器不能写入 |
+| `computed` | `name`、`value` 必填 | 顶层计算值；可读控件、常量和其他计算值；不渲染 |
+| `const` | `name`、`value` 必填 | 顶层常量；只能读常量和内置常量；不渲染 |
+| `validation` | `when`、`message`、`fields` 必填 | 跨字段校验；失败时显示提示 |
+| `data-table` | `label`、`rows`、`key`、`max-rows=100`；子项 `column` | 从本地数组生成表格行；行内可用 `item`、`index` |
+| `column` | `label`、`value` 必填 | `data-table` 的列；单元格只输出文本 |
 
 ### 可视化
 
-| 标签 | 形态 | 主要属性 | 用途 |
-| --- | --- | --- | --- |
-| `table` | 容器 | `label`、`searchable=true`、`sortable=true`、`page-size=10`、`key`、`bind`、`initial` | 增强表格；正文为 Markdown 表格 |
-| `chart` | 容器 | `kind=bar`、`title`、`x`、`y`、`x-label`、`y-label`、`key`、`bind`、`initial` | 图表；正文为 Markdown 表格 |
-| `plot` | 容器 | `min=-10`、`max=10`、`samples=200`、`label`、`x-label`、`y-label` | 函数曲线；正文为一个或多个 `$$...$$` 公式块 |
-| `timeline` | 容器 | `title`、`unit="分钟"` | 时间轴；正文表格使用 `事项`、`开始`、`时长`，可选 `说明` |
-| `diagram` | 容器 | `label`、`bind`、`initial`、`direction=right/down`；子项 `node`、`edge` | 交互图解 |
-| `node` | 子项 | `id` 必填且唯一、`label` 必填、`tone` 可动态 | 图解节点 |
-| `edge` | 子项 | `from`、`to` 必填、`label` | 图解连线 |
+| 标签 | 主要属性 | 用途 |
+| --- | --- | --- |
+| `table` | `label`、`searchable=true`、`sortable=true`、`page-size=10`、`key`、`bind`、`initial` | 增强表格；正文为 Markdown 表格 |
+| `chart` | `kind=bar`、`title`、`x`、`y`、`x-label`、`y-label`、`key`、`bind`、`initial` | 图表；正文为 Markdown 表格 |
+| `plot` | `min=-10`、`max=10`、`points=200`、`label`、`x-label`、`y-label` | 函数曲线；`$$...$$` 公式块支持显式、参数、极坐标与隐式四种写法 |
+| `timeline` | `title`、`unit="分钟"` | 时间轴；正文表格使用 `事项`、`开始`、`时长`，可选 `说明` |
+| `diagram` | `label`、`bind`、`initial`、`direction=right/down`；子项 `node`、`edge` | 交互图解 |
+| `node` | `id` 必填且唯一、`label` 必填、`tone` 可动态 | 图解节点 |
+| `edge` | `from`、`to` 必填、`label` | 图解连线 |
 
 以上共 49 个标签。`option`、`tab`、`disclosure`、`node`、`edge`、`step`、`column` 是结构子项，只能放在对应父容器内，不能单独使用。
 
-`table` 和 `chart` 的 `bind`、`initial` 需要同时提供 `key`，用于公开选中行的稳定标识。`plot` 的每个 `$$...$$` 块定义一条 `y = 表达式` 曲线，每个 `plot` 最多 16 条曲线。
+`table` 和 `chart` 的 `bind`、`initial` 需要同时提供 `key`，用于公开选中行的稳定标识。`plot` 的每个 `$$...$$` 块定义一条曲线，每个 `plot` 最多 16 条曲线。
 
 另有 `<theme name="default">`，写在正文之前，用于选择整份文档的主题。它是文档级元数据，不计入 49 个标签。
 

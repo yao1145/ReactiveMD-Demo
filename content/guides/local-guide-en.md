@@ -215,7 +215,7 @@ Charts update automatically. For search, sorting and paging, place the same Mark
 
 ### Function curves
 
-Function curves use LaTeX. Each `$$...$$` block defines one `y = expression` curve.
+Function curves use LaTeX. Each `$$...$$` block defines one curve in one of four forms: explicit `y = f(x)`, parametric equations, polar coordinates, or an implicit equation.
 
 ```markdown
 <slider bind="a" label="Amplitude" initial="1" min="0" max="3" step="0.5">
@@ -225,9 +225,35 @@ $$ y = a \sin x $$
 </plot>
 ```
 
-Use math parameter names directly in formulas, without `{{ }}`. A single letter maps to the same `bind`, so `a` maps to `bind="a"`. Write a multi-letter parameter as `\mathrm{amplitude}`, which maps to `bind="amplitude"`.
+Use math parameter names directly in formulas, without `{{ }}`. A single letter maps to the same `bind`, so `a` maps to `bind="a"`. Write a multi-letter parameter as `\mathrm{amplitude}`, which maps to `bind="amplitude"`. `x` and `y` are plot variables; neither can bind to a control.
 
-`x` is the plot variable and `y` is the output marker; neither can bind to a control. `plot`'s `min` and `max` set the horizontal range.
+Parametric equations go in a `cases` block, with `x` and `y` as functions of `t`; `min` and `max` give the range of `t`, and both axes fit the sampled points:
+
+```markdown
+<plot min="0" max="12.566" label="Cycloid">
+$$ \begin{cases} x = t - \sin t \\ y = 1 - \cos t \end{cases} $$
+</plot>
+```
+
+Polar curves are written `r = f(\theta)`, with `min` and `max` as the angle range in radians; `θ` and `\theta` are equivalent local angle variables:
+
+```markdown
+<plot min="0" max="{{ 2 * pi }}" points="1000" label="Cardioid">
+$$ r = 1 + \cos\theta $$
+</plot>
+```
+
+Any other equation in `x` and `y` is implicit, traced as a contour inside the square region from `min` to `max`, with both axes fitting the trace:
+
+```markdown
+<slider bind="a" label="Size" initial="1" min="0.5" max="2" step="0.5">
+
+<plot min="-3" max="3" label="Lemniscate">
+$$ (x^2 + y^2)^2 = 2a^2(x^2 - y^2) $$
+</plot>
+```
+
+`points` sets the sample count as a static integer from 2 to 2000, defaulting to 200; the legacy `samples` attribute still works, and `points` wins when both are set. Implicit equations use `points` as the per-axis grid size (32–100). `min` and `max` accept a complete interpolation.
 
 ## 7. Modular layout
 
@@ -438,104 +464,104 @@ Use inline code or code fences to show literal tags and expressions. Write `\{{ 
 
 ## Complete component reference
 
-The following tables list all 49 tags in `local-draft-3`, grouped by purpose. The "Form" column shows how each tag is written: a no-body component has no closing tag, a container must close explicitly, an inline component can sit inside a sentence, a child tag belongs inside its parent, and a declaration does not render as interface content.
+The following tables list all 49 tags in `local-draft-3`, grouped by purpose. A no-body component has no closing tag, a container must close explicitly, an inline component can sit inside a sentence, a child tag belongs inside its parent, and a declaration does not render as interface content.
 
 Most interactive controls support `label`, optional `bind`, optional `initial` and dynamic `disabled`. The tables list the key attributes only. `number`/`slider` and `date` bounds and `required` may use one interpolation, such as `max="{{ rooms * 4 }}"`; narrowing a range keeps the current value and shows a field error instead of clamping it.
 
 ### Inputs and choices
 
-| Tag | Form | Key attributes | Purpose |
-| --- | --- | --- | --- |
-| `input` | No body | `label`, `bind`, `initial`, `type=text/email`, `placeholder`, `required`, `min-length`, `max-length` | Single-line text; value is a string |
-| `textarea` | No body | `label`, `bind`, `initial`, `placeholder`, `rows=4`, `required`, `min-length`, `max-length` | Multiline text; text goes in `initial` |
-| `number` | No body | `label`, `bind`, `initial`, `min`, `max` (both dynamic), `step=1` | Numeric input; default is the closest valid value to 0 |
-| `slider` | No body | `label`, `bind`, `initial`, `min=0`, `max=100` (both dynamic), `step=1`, `color` | Slider number; default is `min` |
-| `range-slider` | No body | `label`, `bind-start`, `bind-end`, `initial-start`, `initial-end`, `min`, `max`, `step`, `color` | Two numbers forming a range |
-| `coordinate` | No body | `label`, `bind-x`, `bind-y`, `initial-x`, `initial-y`, `x-min`, `x-max`, `y-min`, `y-max`, `step`, `color` | Two-dimensional coordinate |
-| `toggle` | No body | `label`, `bind`, `initial`, `color` | Toggle; boolean, default `false` |
-| `checkbox` | No body | `label`, `bind`, `initial`, `color` | Checkbox; boolean, default `false` |
-| `date` | No body | `label`, `bind`, `initial`, `min`, `max`, `required` (all three dynamic) | Date; value is `YYYY-MM-DD` or an empty string |
-| `counter` | No body | `label`, `bind`, `initial`, `min=0`, `max`, `step=1` | Number stepper; built-in decrease, increase and reset |
-| `select` | Container | `label`, `bind`, `initial`, `color`; child `option` | Dropdown single choice; first option by default |
-| `choices` | Container | `label`, `bind`, `initial`, `color`; child `option` | Option-card single choice |
-| `radio-group` | Container | `label`, `bind`, `initial`, `color`; child `option` | Radio button group |
-| `multi-select` | Container | `label`, `bind`, `initial`, `max-selected`, `color`; child `option` | Multiple choice; value is an array of strings |
-| `option` | Child | `value` required; body is display text | Used by `select`, `choices`, `radio-group`, `multi-select` and `quiz` |
+| Tag | Key attributes | Purpose |
+| --- | --- | --- |
+| `input` | `label`, `bind`, `initial`, `type=text/email`, `placeholder`, `required`, `min-length`, `max-length` | Single-line text; value is a string |
+| `textarea` | `label`, `bind`, `initial`, `placeholder`, `rows=4`, `required`, `min-length`, `max-length` | Multiline text; text goes in `initial` |
+| `number` | `label`, `bind`, `initial`, `min`, `max` (both dynamic), `step=1` | Numeric input; default is the closest valid value to 0 |
+| `slider` | `label`, `bind`, `initial`, `min=0`, `max=100` (both dynamic), `step=1`, `color` | Slider number; default is `min` |
+| `range-slider` | `label`, `bind-start`, `bind-end`, `initial-start`, `initial-end`, `min`, `max`, `step`, `color` | Two numbers forming a range |
+| `coordinate` | `label`, `bind-x`, `bind-y`, `initial-x`, `initial-y`, `x-min`, `x-max`, `y-min`, `y-max`, `step`, `color` | Two-dimensional coordinate |
+| `toggle` | `label`, `bind`, `initial`, `color` | Toggle; boolean, default `false` |
+| `checkbox` | `label`, `bind`, `initial`, `color` | Checkbox; boolean, default `false` |
+| `date` | `label`, `bind`, `initial`, `min`, `max`, `required` (all three dynamic) | Date; value is `YYYY-MM-DD` or an empty string |
+| `counter` | `label`, `bind`, `initial`, `min=0`, `max`, `step=1` | Number stepper; built-in decrease, increase and reset |
+| `select` | `label`, `bind`, `initial`, `color`; child `option` | Dropdown single choice; first option by default |
+| `choices` | `label`, `bind`, `initial`, `color`; child `option` | Option-card single choice |
+| `radio-group` | `label`, `bind`, `initial`, `color`; child `option` | Radio button group |
+| `multi-select` | `label`, `bind`, `initial`, `max-selected`, `color`; child `option` | Multiple choice; value is an array of strings |
+| `option` | `value` required; body is display text | Used by `select`, `choices`, `radio-group`, `multi-select` and `quiz` |
 
 ### Built-in actions and progress
 
-| Tag | Form | Key attributes | Purpose |
-| --- | --- | --- | --- |
-| `checklist` | Container | `label`, `bind`, `color`; body is a Markdown task list | Checklist; value is an array of checked item IDs |
-| `timer` | No body | `label`, `bind`, `duration=60` | Countdown; built-in start, pause and reset; value is remaining seconds |
-| `progress` | No body | `label`, `value` required, `max=100`, `color` | Progress bar; `value` can use an expression |
+| Tag | Key attributes | Purpose |
+| --- | --- | --- |
+| `checklist` | `label`, `bind`, `color`; body is a Markdown task list | Checklist; value is an array of checked item IDs |
+| `timer` | `label`, `bind`, `duration=60` | Countdown; built-in start, pause and reset; value is remaining seconds |
+| `progress` | `label`, `value` required, `max=100`, `color` | Progress bar; `value` can use an expression |
 
 ### Content organization
 
-| Tag | Form | Key attributes | Purpose |
-| --- | --- | --- | --- |
-| `panel` | Container | `title`, `reset=true` | Groups controls; resets their state |
-| `card` | Container | `title` | Content card; body uses Markdown |
-| `grid` | Container | `columns=2` (1–4) | Card grid; direct children must be `card` |
-| `gallery` | Container | `label` required, `item-width=280` (180–480) | Horizontal gallery; direct children must be `gallery-item` |
-| `gallery-item` | Child | `label` optional | Gallery entry; body supports Markdown, images and components |
-| `tabs` | Container | `label`, `bind`, `initial`; child `tab` | Tabs; first tab by default |
-| `tab` | Child | `label` required, `value` optional | Tab child; `value` is generated in order when omitted |
-| `accordion` | Container | `label`; child `disclosure` | Accordion group |
-| `disclosure` | Child | `label` required, `open=false` | Expandable item; multiple items can be open at once |
-| `if` | Container | `when` required, complete boolean interpolation | Conditional display; hidden when the condition is false |
+| Tag | Key attributes | Purpose |
+| --- | --- | --- |
+| `panel` | `title`, `reset=true` | Groups controls; resets their state |
+| `card` | `title` | Content card; body uses Markdown |
+| `grid` | `columns=2` (1–4) | Card grid; direct children must be `card` |
+| `gallery` | `label` required, `item-width=280` (180–480) | Horizontal gallery; direct children must be `gallery-item` |
+| `gallery-item` | `label` optional | Gallery entry; body supports Markdown, images and components |
+| `tabs` | `label`, `bind`, `initial`; child `tab` | Tabs; first tab by default |
+| `tab` | `label` required, `value` optional | Tab child; `value` is generated in order when omitted |
+| `accordion` | `label`; child `disclosure` | Accordion group |
+| `disclosure` | `label` required, `open=false` | Expandable item; multiple items can be open at once |
+| `if` | `when` required, complete boolean interpolation | Conditional display; hidden when the condition is false |
 
 ### Jumps and text color
 
-| Tag | Form | Key attributes | Purpose |
-| --- | --- | --- | --- |
-| `jump` | Inline | `to` required, `appearance=link/button`, `color` | Scrolls to a heading anchor or explicit `anchor` |
-| `anchor` | No body | `id` required and unique in the document | Explicit jump target |
-| `text` | Inline | `color` required | Inline text color |
-| `section` | Container | `color` required | Block text color; body continues to parse Markdown |
+| Tag | Key attributes | Purpose |
+| --- | --- | --- |
+| `jump` | `to` required, `appearance=link/button`, `color` | Scrolls to a heading anchor or explicit `anchor` |
+| `anchor` | `id` required and unique in the document | Explicit jump target |
+| `text` | `color` required | Inline text color |
+| `section` | `color` required | Block text color; body continues to parse Markdown |
 
 ### Practice and steps
 
-| Tag | Form | Key attributes | Purpose |
-| --- | --- | --- | --- |
-| `quiz` | Container | `type=choice/number`, `label`, `answer`, `explanation`, `tolerance`; choice child `option` | Practice question; does not expose `bind` |
-| `steps` | Container | `label`, `bind`, `initial`; child `step` | Step-by-step reading; first step by default |
-| `step` | Child | `label` required, `value` optional | Step child; `value` is generated in order when omitted |
+| Tag | Key attributes | Purpose |
+| --- | --- | --- |
+| `quiz` | `type=choice/number`, `label`, `answer`, `explanation`, `tolerance`; choice child `option` | Practice question; does not expose `bind` |
+| `steps` | `label`, `bind`, `initial`; child `step` | Step-by-step reading; first step by default |
+| `step` | `label` required, `value` optional | Step child; `value` is generated in order when omitted |
 
 ### Callouts
 
-| Tag | Form | Key attributes | Purpose |
-| --- | --- | --- | --- |
-| `alert` | Container | `title`, `tone=info/success/warning` | Callout block |
-| `badge` | Inline | `tone=neutral/success/warning`, `color` | Status label; `tone` can be static or dynamic |
-| `tooltip` | Inline | `text` required | Inline explanation; shown on hover or keyboard focus |
+| Tag | Key attributes | Purpose |
+| --- | --- | --- |
+| `alert` | `title`, `tone=info/success/warning` | Callout block |
+| `badge` | `tone=neutral/success/warning`, `color` | Status label; `tone` can be static or dynamic |
+| `tooltip` | `text` required | Inline explanation; shown on hover or keyboard focus |
 
 ### Declarations and local data
 
-| Tag | Form | Key attributes | Purpose |
-| --- | --- | --- | --- |
-| `external` | Declaration | `name`, `type=string/number/boolean/string-array/number-array` required | Top-level read-only host value; read by expressions and computations, never written by the reader |
-| `computed` | Declaration | `name`, `value` required | Top-level computed value; can read controls, constants and other computed values; not rendered |
-| `const` | Declaration | `name`, `value` required | Top-level constant; can read only constants and built-in constants; not rendered |
-| `validation` | Declaration | `when`, `message`, `fields` required | Cross-field validation; shows a message when it fails |
-| `data-table` | Container | `label`, `rows`, `key`, `max-rows=100`; child `column` | Generates table rows from a local array; `item` and `index` are available in each row |
-| `column` | Child | `label`, `value` required | A `data-table` column; cells output text only |
+| Tag | Key attributes | Purpose |
+| --- | --- | --- |
+| `external` | `name`, `type=string/number/boolean/string-array/number-array` required | Top-level read-only host value; read by expressions and computations, never written by the reader |
+| `computed` | `name`, `value` required | Top-level computed value; can read controls, constants and other computed values; not rendered |
+| `const` | `name`, `value` required | Top-level constant; can read only constants and built-in constants; not rendered |
+| `validation` | `when`, `message`, `fields` required | Cross-field validation; shows a message when it fails |
+| `data-table` | `label`, `rows`, `key`, `max-rows=100`; child `column` | Generates table rows from a local array; `item` and `index` are available in each row |
+| `column` | `label`, `value` required | A `data-table` column; cells output text only |
 
 ### Visualizations
 
-| Tag | Form | Key attributes | Purpose |
-| --- | --- | --- | --- |
-| `table` | Container | `label`, `searchable=true`, `sortable=true`, `page-size=10`, `key`, `bind`, `initial` | Enhanced table; body is a Markdown table |
-| `chart` | Container | `kind=bar`, `title`, `x`, `y`, `x-label`, `y-label`, `key`, `bind`, `initial` | Chart; body is a Markdown table |
-| `plot` | Container | `min=-10`, `max=10`, `samples=200`, `label`, `x-label`, `y-label` | Function curve; body is one or more `$$...$$` blocks |
-| `timeline` | Container | `title`, `unit="minutes"` | Timeline; body table uses `Task`, `Start`, `Duration`, with optional `Notes` |
-| `diagram` | Container | `label`, `bind`, `initial`, `direction=right/down`; children `node` and `edge` | Interactive diagram |
-| `node` | Child | `id` required and unique, `label` required, `tone` can be dynamic | Diagram node |
-| `edge` | Child | `from`, `to` required, `label` | Diagram edge |
+| Tag | Key attributes | Purpose |
+| --- | --- | --- |
+| `table` | `label`, `searchable=true`, `sortable=true`, `page-size=10`, `key`, `bind`, `initial` | Enhanced table; body is a Markdown table |
+| `chart` | `kind=bar`, `title`, `x`, `y`, `x-label`, `y-label`, `key`, `bind`, `initial` | Chart; body is a Markdown table |
+| `plot` | `min=-10`, `max=10`, `points=200`, `label`, `x-label`, `y-label` | Function curves; `$$...$$` blocks accept explicit, parametric, polar and implicit forms |
+| `timeline` | `title`, `unit="minutes"` | Timeline; body table uses `Task`, `Start`, `Duration`, with optional `Notes` |
+| `diagram` | `label`, `bind`, `initial`, `direction=right/down`; children `node` and `edge` | Interactive diagram |
+| `node` | `id` required and unique, `label` required, `tone` can be dynamic | Diagram node |
+| `edge` | `from`, `to` required, `label` | Diagram edge |
 
 These 49 tags are the full set. `option`, `tab`, `disclosure`, `node`, `edge`, `step` and `column` are structural children; they must appear inside their matching parent and cannot be used alone.
 
-`table` and `chart` require `key` together with `bind` or `initial`; `key` identifies the selected row. Each `$$...$$` block in a `plot` defines one `y = expression` curve, with up to 16 curves per plot.
+`table` and `chart` require `key` together with `bind` or `initial`; `key` identifies the selected row. Each `$$...$$` block in a `plot` defines one curve, with up to 16 curves per plot.
 
 In addition, `<theme name="default">` before the body selects the document theme. It is document metadata and is not counted among the 49 tags.
 
