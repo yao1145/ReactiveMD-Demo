@@ -855,13 +855,6 @@ body {
   box-shadow: 0 1px 4px color-mix(in srgb, var(--ink) 5%, transparent);
 }
 
-/* The engine sizes document prose from --text-md. A demo-scoped override keeps
-   the reading size local instead of editing the engine or a theme. Headings
-   keep their own --text-* tokens unless those are scaled here too. */
-.preview-stage .local-document {
-  --text-md: 14px;
-}
-
 .preview-stage > .local-document {
   animation: document-enter var(--motion-base) var(--ease-standard);
   transition: opacity var(--motion-base) var(--ease-standard);
@@ -1472,10 +1465,6 @@ body {
 
   .pane {
     padding: var(--space-3);
-  }
-
-  .md-document h1 {
-    font-size: var(--text-xl);
   }
 
   .observer-grid {
