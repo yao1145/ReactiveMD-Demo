@@ -30,7 +30,7 @@
   "dependencies": {
     "react": "19.3.1",
     "react-dom": "19.3.1",
-    "reactive-md": "file:vendor/reactive-md-0.8.0-35535f1b598a.tgz",
+    "reactive-md": "file:vendor/reactive-md-0.8.0-63e6e77341c5.tgz",
     "reactive-md-editor": "file:vendor/reactive-md-editor-0.1.0-54d6cdc3ebf0.tgz"
   },
   "devDependencies": {
@@ -46,6 +46,6 @@
     "vitest": "5.0.5",
     "reactive-md-tetris-package": "file:vendor/reactive-md-tetris-package-0.1.0-fc1fa620038f.tgz",
     "reactive-md-game-2048-package": "file:vendor/reactive-md-game-2048-package-0.1.0-ce931218c317.tgz",
-    "reactive-md-sci-fi-theme": "file:vendor/reactive-md-sci-fi-theme-1.0.0-92241b42204c.tgz"
+    "reactive-md-sci-fi-theme": "file:vendor/reactive-md-sci-fi-theme-1.0.0-525cab7ab93f.tgz"
   }
 }

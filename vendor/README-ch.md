@@ -8,9 +8,9 @@ Demo 从本目录中已提交的 npm tarball 安装 Tetris 和 2048。文件名�
 
 | 文件 | 包 | 版本 |
 | --- | --- | --- |
-| `reactive-md-0.8.0-35535f1b598a.tgz` | `reactive-md` | `0.8.0` |
+| `reactive-md-0.8.0-63e6e77341c5.tgz` | `reactive-md` | `0.8.0` |
 | `reactive-md-editor-0.1.0-54d6cdc3ebf0.tgz` | `reactive-md-editor` | `0.1.0` |
-| `reactive-md-sci-fi-theme-1.0.0-92241b42204c.tgz` | `reactive-md-sci-fi-theme` | `1.0.0` |
+| `reactive-md-sci-fi-theme-1.0.0-525cab7ab93f.tgz` | `reactive-md-sci-fi-theme` | `1.0.0` |
 
 旧构建归档在本地 `archive/` 目录。该目录被 `.gitignore` 忽略，不会提交，也不会上传。
 
@@ -20,4 +20,4 @@ Demo 从本目录中已提交的 npm tarball 安装 Tetris 和 2048。文件名�
 
 候选 tarball 文件名包含 SHA256 前缀。在 package.json 中使用确切的 vendor 文件名；每当包内容变化时，更新这些路径和 lockfile integrity。
 
-当前引擎候选为 `reactive-md-0.8.0-35535f1b598a.tgz`，由引擎 `main` 分支提交 `4ff502a` 构建（在推荐字阶与文档根 `lang` 传播之上，标题字阶在任何视口宽度保持不变）。SHA256 为 `35535f1b598a5b2c7e329e546594137291eb8c4988150f4608651c373e5086a2`。编辑器候选为 `reactive-md-editor-0.1.0-54d6cdc3ebf0.tgz`，由编辑器 `main` 分支提交 `8b1405f` 构建（chrome 字体 reset 收窄作用域，不再泄漏进内嵌文档控件）。SHA256 为 `54d6cdc3ebf03de552d20daa1e023c0e0717ea44a444cfe2ac772a73e9f5ebc8`。主题候选为 `reactive-md-sci-fi-theme-1.0.0-92241b42204c.tgz`，由主题仓库 `master` 提交 `77fa6fa` 构建（SF-01 字阶对齐、可缩放的中英文字距系统含 :lang(zh) 收紧、宿主正文硬编码移除）。SHA256 为 `92241b42204ccc1d060b3cfcdfeae9e5d01065ce3054663d5f9bb1c6523f6c13`。
+当前引擎候选为 `reactive-md-0.8.0-63e6e77341c5.tgz`，由引擎 `main` 分支提交 `f79e30b` 构建（h5/h6 标题字阶通过 `--text-h5`/`--text-h6` 实现，未定义时回退到 0.83em/0.75em）。SHA256 为 `63e6e77341c5ffab1c5fa8e603ddc824c150d2ac2f5dffd268f22aa9ec3536b8`。编辑器候选为 `reactive-md-editor-0.1.0-54d6cdc3ebf0.tgz`，由编辑器 `main` 分支提交 `8b1405f` 构建（chrome 字体 reset 收窄作用域，不再泄漏进内嵌文档控件）。SHA256 为 `54d6cdc3ebf03de552d20daa1e023c0e0717ea44a444cfe2ac772a73e9f5ebc8`。主题候选为 `reactive-md-sci-fi-theme-1.0.0-525cab7ab93f.tgz`，由主题仓库 `master` 提交 `351b341` 构建（在 SF-01 机器文本层级之上新增 h5/h6 字阶）。SHA256 为 `525cab7ab93fda6331e8fd5260c2c85aec5935559032bc951ad0ed827f7d4277`。
