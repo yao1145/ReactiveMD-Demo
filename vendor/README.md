@@ -15,7 +15,7 @@ Demo builds against:
 | --- | --- | --- |
 | `reactive-md-0.8.0-2a1df8bdc715.tgz` | `reactive-md` | `0.8.0` |
 | `reactive-md-editor-0.1.0-75143347ad6e.tgz` | `reactive-md-editor` | `0.1.0` |
-| `reactive-md-sci-fi-theme-1.0.0-a2cb4b20c307.tgz` | `reactive-md-sci-fi-theme` | `1.0.0` |
+| `reactive-md-sci-fi-theme-1.0.0-ec6bcb4d7e33.tgz` | `reactive-md-sci-fi-theme` | `1.0.0` |
 
 Older builds are archived locally under `archive/`. That directory is git-ignored, so it is neither committed nor uploaded.
 
@@ -31,4 +31,4 @@ engine. The game runtime API used by the Demo is unchanged.
 
 Candidate tarball filenames include a SHA256 prefix. Use the exact vendor filenames in package.json; update those paths and lockfile integrity whenever package contents change.
 
-The current engine candidate is `reactive-md-0.8.0-2a1df8bdc715.tgz`, built from engine `main` at commit `f4452b5` (layered theme baseline plus the preview-navigation selection scope and toolbar-copy fixes). SHA256: `2a1df8bdc715a4b93d60ed6eb1a33d75ded742504721f61f33333b86b181a5d3`. The editor candidate is `reactive-md-editor-0.1.0-75143347ad6e.tgz`, built from editor `main` at commit `c29f550`. Installation uses the built package without sibling source imports.
+The current engine candidate is `reactive-md-0.8.0-2a1df8bdc715.tgz`, built from engine `main` at commit `f4452b5` (layered theme baseline plus the preview-navigation selection scope and toolbar-copy fixes). SHA256: `2a1df8bdc715a4b93d60ed6eb1a33d75ded742504721f61f33333b86b181a5d3`. The editor candidate is `reactive-md-editor-0.1.0-75143347ad6e.tgz`, built from editor `main` at commit `c29f550`. The theme candidate is `reactive-md-sci-fi-theme-1.0.0-ec6bcb4d7e33.tgz`, built from the theme repository `master` at commit `e3e3938` (SF-01 hierarchy, state and surface upgrade plus the tab indicator, accordion band and light tooltip ink fixes). SHA256: `ec6bcb4d7e3327170144099385c2542766fa6874848c1f356ab78680b3348e31`. Installation uses the built package without sibling source imports.

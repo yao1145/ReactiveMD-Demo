@@ -46,6 +46,6 @@
     "vitest": "5.0.5",
     "reactive-md-tetris-package": "file:vendor/reactive-md-tetris-package-0.1.0-fc1fa620038f.tgz",
     "reactive-md-game-2048-package": "file:vendor/reactive-md-game-2048-package-0.1.0-ce931218c317.tgz",
-    "reactive-md-sci-fi-theme": "file:vendor/reactive-md-sci-fi-theme-1.0.0-a2cb4b20c307.tgz"
+    "reactive-md-sci-fi-theme": "file:vendor/reactive-md-sci-fi-theme-1.0.0-ec6bcb4d7e33.tgz"
   }
 }
