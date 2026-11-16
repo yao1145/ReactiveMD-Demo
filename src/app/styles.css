@@ -128,6 +128,7 @@ body {
   font-size: var(--text-sm);
   font-weight: var(--weight-medium);
   text-align: left;
+  text-decoration: none;
   cursor: pointer;
   transition:
     background-color var(--motion-fast) var(--ease-standard),
@@ -1178,7 +1179,8 @@ body {
   color: var(--ink-soft);
 }
 
-.guide-paper .local-document a {
+/* Button-shaped jumps are <a> elements; leave them on the default button skin. */
+.guide-paper .local-document a:not(.local-jump-button) {
   color: var(--accent-text, var(--blue-deep));
   text-decoration: underline;
   text-underline-offset: 2px;
