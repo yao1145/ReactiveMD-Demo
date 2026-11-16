@@ -20,4 +20,4 @@ Demo 从本目录中已提交的 npm tarball 安装 Tetris 和 2048。文件名�
 
 候选 tarball 文件名包含 SHA256 前缀。在 package.json 中使用确切的 vendor 文件名；每当包内容变化时，更新这些路径和 lockfile integrity。
 
-当前引擎候选为 `reactive-md-0.8.0-29db211ac632.tgz`，由引擎 `main` 分支提交 `c1a923a` 加未提交的工作树改动构建（default 字阶对齐推荐表、文档根 `lang` 传播以支持按语言的主题钩子）。SHA256 为 `29db211ac632f12feed9325f59641a51e84d9a28144f172baf30257d75ed30cd`。编辑器候选为 `reactive-md-editor-0.1.0-75143347ad6e.tgz`，由编辑器 `main` 分支提交 `c29f550` 构建。主题候选为 `reactive-md-sci-fi-theme-1.0.0-92241b42204c.tgz`，由主题仓库 `master` 提交 `77fa6fa` 构建（SF-01 字阶对齐、可缩放的中英文字距系统含 :lang(zh) 收紧、宿主正文硬编码移除）。SHA256 为 `92241b42204ccc1d060b3cfcdfeae9e5d01065ce3054663d5f9bb1c6523f6c13`。
+当前引擎候选为 `reactive-md-0.8.0-29db211ac632.tgz`，由引擎 `main` 分支提交 `456f563` 构建（default 字阶对齐推荐表、文档根 `lang` 传播以支持按语言的主题钩子）。SHA256 为 `29db211ac632f12feed9325f59641a51e84d9a28144f172baf30257d75ed30cd`。编辑器候选为 `reactive-md-editor-0.1.0-75143347ad6e.tgz`，由编辑器 `main` 分支提交 `c29f550` 构建。主题候选为 `reactive-md-sci-fi-theme-1.0.0-92241b42204c.tgz`，由主题仓库 `master` 提交 `77fa6fa` 构建（SF-01 字阶对齐、可缩放的中英文字距系统含 :lang(zh) 收紧、宿主正文硬编码移除）。SHA256 为 `92241b42204ccc1d060b3cfcdfeae9e5d01065ce3054663d5f9bb1c6523f6c13`。
