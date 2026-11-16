@@ -36,6 +36,7 @@
 
 .local-document .rmd-2048-screen {
   position: relative;
+  align-self: flex-start;
   border-radius: var(--radius-card, 10px);
 }
 
