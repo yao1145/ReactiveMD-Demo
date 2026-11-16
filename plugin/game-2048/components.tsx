@@ -50,6 +50,30 @@ function cellKey(cell: Cell2048): string {
   return `${cell.row}:${cell.column}`;
 }
 
+const ICON_PATHS = {
+  left: 'M19 12H5M11 18l-6-6 6-6',
+  right: 'M5 12h14M13 6l6 6-6 6',
+  up: 'M12 19V5M6 11l6-6 6 6',
+  down: 'M12 5v14M6 13l6 6 6-6',
+} as const;
+
+function Icon(props: { readonly path: keyof typeof ICON_PATHS }) {
+  return (
+    <svg
+      className="rmd-2048-icon"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d={ICON_PATHS[props.path]} />
+    </svg>
+  );
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -244,19 +268,27 @@ export function Game2048(context: LocalComponentContext) {
         </output>
       </div>
       <div className="rmd-2048-body">
-        <BoardView
-          board={game.board}
-          interactive
-          label={`${label}: ${t(
-            'Use arrow keys, W A S D or swipe to move tiles, and R to restart.',
-            '使用方向键、W A S D 或滑动来移动方块，R 重开。',
-          )}`}
-          tabIndex={locked ? -1 : 0}
-          spawned={game.spawned}
-          merged={game.merged}
-          boardRef={boardRef}
-          onKeyDown={onKeyDown}
-        />
+        <div className="rmd-2048-screen">
+          <BoardView
+            board={game.board}
+            interactive
+            label={`${label}: ${t(
+              'Use arrow keys, W A S D or swipe to move tiles, and R to restart.',
+              '使用方向键、W A S D 或滑动来移动方块，R 重开。',
+            )}`}
+            tabIndex={locked ? -1 : 0}
+            spawned={game.spawned}
+            merged={game.merged}
+            boardRef={boardRef}
+            onKeyDown={onKeyDown}
+          />
+          {game.status === 'over' ? (
+            <div className="rmd-2048-overlay" aria-hidden="true">
+              <strong>{statusText(context, game.status)}</strong>
+              <span>{`${t('Score', '得分')} ${game.score}`}</span>
+            </div>
+          ) : null}
+        </div>
         <aside className="rmd-2048-side" aria-label={t('Game information', '游戏信息')}>
           <dl className="rmd-2048-stats">
             <div>
@@ -273,20 +305,30 @@ export function Game2048(context: LocalComponentContext) {
             </div>
           </dl>
           <div className="rmd-2048-controls">
-            <button type="button" data-game-2048-left disabled={locked} onClick={() => apply('left')} aria-label={t('Move left', '左移')}>←</button>
-            <button type="button" data-game-2048-up disabled={locked} onClick={() => apply('up')} aria-label={t('Move up', '上移')}>↑</button>
-            <button type="button" data-game-2048-right disabled={locked} onClick={() => apply('right')} aria-label={t('Move right', '右移')}>→</button>
-            <button type="button" data-game-2048-down disabled={locked} onClick={() => apply('down')} aria-label={t('Move down', '下移')}>↓</button>
-            <button type="button" className="md-button-primary" data-game-2048-new disabled={locked} onClick={() => updateGame(createGameState(options))}>
-              {t('New', '新局')}
-            </button>
-            <button type="button" data-game-2048-reset onClick={resetGame}>{t('Reset', '重置')}</button>
-            {debug ? (
-              <button type="button" data-game-2048-break onClick={() => setExploded(true)}>
-                {t('Break', '模拟错误')}
+            <div className="rmd-2048-pad">
+              <button type="button" data-game-2048-up disabled={locked} onClick={() => apply('up')} aria-label={t('Move up', '上移')}><Icon path="up" /></button>
+              <button type="button" data-game-2048-left disabled={locked} onClick={() => apply('left')} aria-label={t('Move left', '左移')}><Icon path="left" /></button>
+              <button type="button" data-game-2048-down disabled={locked} onClick={() => apply('down')} aria-label={t('Move down', '下移')}><Icon path="down" /></button>
+              <button type="button" data-game-2048-right disabled={locked} onClick={() => apply('right')} aria-label={t('Move right', '右移')}><Icon path="right" /></button>
+            </div>
+            <div className="rmd-2048-actions">
+              <button type="button" className="md-button-primary" data-game-2048-new disabled={locked} onClick={() => updateGame(createGameState(options))}>
+                {t('New', '新局')}
               </button>
-            ) : null}
+              <button type="button" data-game-2048-reset onClick={resetGame}>{t('Reset', '重置')}</button>
+              {debug ? (
+                <button type="button" data-game-2048-break onClick={() => setExploded(true)}>
+                  {t('Break', '模拟错误')}
+                </button>
+              ) : null}
+            </div>
           </div>
+          <p className="rmd-2048-hint">
+            {t(
+              'Arrows / WASD / swipe · R restart',
+              '方向键 / WASD / 滑动 · R 重开',
+            )}
+          </p>
         </aside>
       </div>
     </div>

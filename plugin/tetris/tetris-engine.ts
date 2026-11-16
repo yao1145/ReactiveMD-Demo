@@ -323,3 +323,8 @@ export function renderBoard(state: TetrisState): readonly (readonly TetrisCell[]
 export function previewCells(piece: TetrisPiece): readonly (readonly boolean[])[] {
   return ROTATIONS[piece][0].map((row) => row.map((cell) => cell === 1));
 }
+
+/** Boolean shape of a placed piece, for render overlays. */
+export function pieceMatrix(piece: ActivePiece): readonly (readonly boolean[])[] {
+  return matrixFor(piece).map((row) => row.map((cell) => cell === 1));
+}

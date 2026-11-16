@@ -8,6 +8,7 @@ import { tetris } from './manifests';
 import {
   createTetrisState,
   hardDrop,
+  pieceMatrix,
   previewCells,
   renderBoard,
   restart,
@@ -91,12 +92,66 @@ function isTetrisState(value: unknown): value is TetrisState {
   return status === 'playing' || status === 'paused' || status === 'over';
 }
 
+function pieceIndices(piece: ActivePiece, width: number, height: number): number[] {
+  const indices: number[] = [];
+  pieceMatrix(piece).forEach((row, dy) => {
+    row.forEach((filled, dx) => {
+      if (!filled) return;
+      const x = piece.x + dx;
+      const y = piece.y + dy;
+      if (x >= 0 && x < width && y >= 0 && y < height) indices.push(y * width + x);
+    });
+  });
+  return indices;
+}
+
+function trimPreview(rows: readonly (readonly boolean[])[]): readonly (readonly boolean[])[] {
+  const filledRows = rows.filter((row) => row.some(Boolean));
+  if (filledRows.length === 0) return filledRows;
+  let first = Infinity;
+  let last = -1;
+  for (const row of filledRows) {
+    row.forEach((filled, x) => {
+      if (!filled) return;
+      first = Math.min(first, x);
+      last = Math.max(last, x);
+    });
+  }
+  return filledRows.map((row) => row.slice(first, last + 1));
+}
+
+const ICON_PATHS = {
+  left: 'M19 12H5M11 18l-6-6 6-6',
+  right: 'M5 12h14M13 6l6 6-6 6',
+  rotate: 'M21 3v5h-5M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8',
+  down: 'M12 5v14M6 13l6 6 6-6',
+  drop: 'M7 6l5 5 5-5M7 13l5 5 5-5',
+} as const;
+
+function Icon(props: { readonly path: keyof typeof ICON_PATHS }) {
+  return (
+    <svg
+      className="rmd-tetris-icon"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d={ICON_PATHS[props.path]} />
+    </svg>
+  );
+}
+
 function BoardView(props: {
   readonly board: readonly (readonly TetrisCell[])[];
   readonly width: number;
   readonly interactive: boolean;
   readonly label: string;
   readonly tabIndex: number;
+  readonly active?: ReadonlySet<number>;
   readonly onKeyDown?: (event: KeyboardEvent<HTMLDivElement>) => void;
 }) {
   return (
@@ -108,20 +163,24 @@ function BoardView(props: {
       aria-readonly={props.interactive ? undefined : true}
       tabIndex={props.tabIndex}
       onKeyDown={props.onKeyDown}
-      style={{ gridTemplateColumns: `repeat(${props.width}, minmax(0, 1fr))` }}
+      style={{ gridTemplateColumns: `repeat(${props.width}, var(--rmd-tetris-cell))` }}
     >
       {props.board.map((row, y) => (
         <div className="rmd-tetris-row" role="row" key={y}>
-          {row.map((cell, x) => (
-            <span
-              key={x}
-              className="rmd-tetris-cell"
-              role="gridcell"
-              aria-label={cell === null ? '' : cell}
-              data-tetris-cell={cell ?? 'empty'}
-              data-piece={cell ?? undefined}
-            />
-          ))}
+          {row.map((cell, x) => {
+            const index = y * props.width + x;
+            return (
+              <span
+                key={x}
+                className="rmd-tetris-cell"
+                role="gridcell"
+                aria-label={cell === null ? '' : cell}
+                data-tetris-cell={cell ?? 'empty'}
+                data-piece={cell ?? undefined}
+                data-active={cell !== null && props.active?.has(index) ? 'true' : undefined}
+              />
+            );
+          })}
         </div>
       ))}
     </div>
@@ -133,7 +192,7 @@ function NextView(props: { readonly pieces: readonly TetrisPiece[] }) {
     <div className="rmd-tetris-next" aria-label="Next pieces">
       {props.pieces.map((piece, index) => (
         <span className="rmd-tetris-next-piece" data-next-piece={piece} key={`${piece}-${index}`}>
-          {previewCells(piece).map((row, y) => (
+          {trimPreview(previewCells(piece)).map((row, y) => (
             <span className="rmd-tetris-next-row" key={y}>
               {row.map((filled, x) => (
                 <span className="rmd-tetris-next-cell" data-filled={filled ? 'true' : 'false'} key={x} />
@@ -242,6 +301,9 @@ export function Tetris(context: LocalComponentContext) {
 
   const board = renderBoard(game);
   const paused = game.status === 'paused';
+  const activeCells = new Set(
+    game.active ? pieceIndices(game.active, options.width, options.height) : [],
+  );
 
   return (
     <div
@@ -259,17 +321,30 @@ export function Tetris(context: LocalComponentContext) {
         </output>
       </div>
       <div className="rmd-tetris-body">
-        <BoardView
-          board={board}
-          width={options.width}
-          interactive
-          label={`${label}: ${t(
-            'Use arrow keys, Space to drop, P to pause and R to restart.',
-            '使用方向键，空格落底，P 暂停，R 重开。',
-          )}`}
-          tabIndex={locked ? -1 : 0}
-          onKeyDown={onKeyDown}
-        />
+        <div className="rmd-tetris-screen">
+          <BoardView
+            board={board}
+            width={options.width}
+            interactive
+            label={`${label}: ${t(
+              'Use arrow keys, Space to drop, P to pause and R to restart.',
+              '使用方向键，空格落底，P 暂停，R 重开。',
+            )}`}
+            tabIndex={locked ? -1 : 0}
+            onKeyDown={onKeyDown}
+            active={activeCells}
+          />
+          {game.status !== 'playing' ? (
+            <div className="rmd-tetris-overlay" aria-hidden="true">
+              <strong>{statusText(context, game.status)}</strong>
+              <span>
+                {paused
+                  ? t('Press P or Resume to continue.', '按 P 或点击「继续」恢复。')
+                  : `${t('Score', '得分')} ${game.score}`}
+              </span>
+            </div>
+          ) : null}
+        </div>
         <aside className="rmd-tetris-side" aria-label={t('Game information', '游戏信息')}>
           <dl className="rmd-tetris-stats">
             <div>
@@ -288,24 +363,34 @@ export function Tetris(context: LocalComponentContext) {
           <div className="rmd-tetris-next-label">{t('Next', '下一个')}</div>
           <NextView pieces={game.queue.slice(0, 3)} />
           <div className="rmd-tetris-controls">
-            <button type="button" data-tetris-left disabled={locked} onClick={() => updateGame((previous) => shift(previous, -1))} aria-label={t('Move left', '左移')}>←</button>
-            <button type="button" data-tetris-rotate disabled={locked} onClick={() => updateGame((previous) => rotate(previous))} aria-label={t('Rotate', '旋转')}>↻</button>
-            <button type="button" data-tetris-right disabled={locked} onClick={() => updateGame((previous) => shift(previous, 1))} aria-label={t('Move right', '右移')}>→</button>
-            <button type="button" data-tetris-down disabled={locked} onClick={() => updateGame((previous) => softDrop(previous))} aria-label={t('Soft drop', '下移')}>↓</button>
-            <button type="button" data-tetris-drop disabled={locked} onClick={() => updateGame((previous) => hardDrop(previous))}>{t('Drop', '落底')}</button>
-            <button type="button" data-tetris-pause disabled={locked} onClick={() => updateGame((previous) => togglePause(previous))}>
-              {paused ? t('Resume', '继续') : t('Pause', '暂停')}
-            </button>
-            <button type="button" className="md-button-primary" data-tetris-new disabled={locked} onClick={() => updateGame(createTetrisState(options))}>
-              {t('New', '新局')}
-            </button>
-            <button type="button" data-tetris-reset onClick={resetGame}>{t('Reset', '重置')}</button>
-            {debug ? (
-              <button type="button" data-tetris-break onClick={() => setExploded(true)}>
-                {t('Break', '模拟错误')}
+            <div className="rmd-tetris-pad">
+              <button type="button" data-tetris-left disabled={locked} onClick={() => updateGame((previous) => shift(previous, -1))} aria-label={t('Move left', '左移')}><Icon path="left" /></button>
+              <button type="button" data-tetris-rotate disabled={locked} onClick={() => updateGame((previous) => rotate(previous))} aria-label={t('Rotate', '旋转')}><Icon path="rotate" /></button>
+              <button type="button" data-tetris-right disabled={locked} onClick={() => updateGame((previous) => shift(previous, 1))} aria-label={t('Move right', '右移')}><Icon path="right" /></button>
+              <button type="button" data-tetris-down disabled={locked} onClick={() => updateGame((previous) => softDrop(previous))} aria-label={t('Soft drop', '下移')}><Icon path="down" /></button>
+              <button type="button" className="rmd-tetris-wide" data-tetris-drop disabled={locked} onClick={() => updateGame((previous) => hardDrop(previous))}><Icon path="drop" />{t('Drop', '落底')}</button>
+            </div>
+            <div className="rmd-tetris-actions">
+              <button type="button" data-tetris-pause disabled={locked} onClick={() => updateGame((previous) => togglePause(previous))}>
+                {paused ? t('Resume', '继续') : t('Pause', '暂停')}
               </button>
-            ) : null}
+              <button type="button" className="md-button-primary" data-tetris-new disabled={locked} onClick={() => updateGame(createTetrisState(options))}>
+                {t('New', '新局')}
+              </button>
+              <button type="button" data-tetris-reset onClick={resetGame}>{t('Reset', '重置')}</button>
+              {debug ? (
+                <button type="button" data-tetris-break onClick={() => setExploded(true)}>
+                  {t('Break', '模拟错误')}
+                </button>
+              ) : null}
+            </div>
           </div>
+          <p className="rmd-tetris-hint">
+            {t(
+              'Arrows move · Space drops · P pause · R restart',
+              '方向键移动 · 空格落底 · P 暂停 · R 重开',
+            )}
+          </p>
         </aside>
       </div>
     </div>
@@ -318,6 +403,9 @@ export function TetrisStatic(context: LocalComponentContext) {
   const initial = createTetrisState(options);
   const board = renderBoard(initial);
   const t = context.locale.t;
+  const activeCells = new Set(
+    initial.active ? pieceIndices(initial.active, options.width, options.height) : [],
+  );
   return (
     <div className="rmd-tetris rmd-tetris-static md-panel" data-tetris-static>
       <div className="rmd-tetris-head">
@@ -332,6 +420,7 @@ export function TetrisStatic(context: LocalComponentContext) {
         interactive={false}
         label={`${label}: ${t('Static preview', '静态预览')}`}
         tabIndex={-1}
+        active={activeCells}
       />
       <p className="rmd-tetris-static-note" data-tetris-static-note>
         {t('Open the document in a browser to play.', '在浏览器中打开本文档即可游玩。')}
