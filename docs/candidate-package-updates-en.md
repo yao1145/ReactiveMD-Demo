@@ -21,11 +21,3 @@ The Demo builds against committed tarballs in `vendor/`: the engine, the editor,
 ## Engine export assets
 
 `vite.export-assets.ts` imports `reactive-md/export-assets`, so an engine candidate must publish that subpath with declarations. A candidate without it fails while Vite loads `vite.config.ts` and `vitest.config.ts`. The plugin maps the virtual modules `virtual:reactive-md-assets/base-css`, `print-css`, `notices`, `package-json` and `runtime` onto the manifest ids through `resolveExportAsset` and `readExportAsset`, and registers each resolved file with `addWatchFile` so edits rebuild the export.
-
-## Corrections for the README
-
-`README.md` and `README-ch.md` still carry text this change makes wrong. Task ownership for those files sits elsewhere; apply these corrections there:
-
-- The “Export assets” section says the stylesheet, print stylesheet, notices, metadata and runtime “are not public subpath exports”. They are public through `reactive-md/export-assets`, and the plugin reads them from that entry.
-- The dependency paragraph lists `reactive-md` `0.8.0-next.0` and `reactive-md-editor` `0.1.0-next.0`, while `vendor/README.md` records `0.8.0` and `0.1.0`. State the installed versions.
-- No `npm run update:demo-2048` or `npm run update:demo-tetris` command exists in this repository. Those scripts were removed with the repository split (commit `d455099`); the engine's `docs/development/component-development-reference-{en,ch}.md` still mention them. Use this document instead.

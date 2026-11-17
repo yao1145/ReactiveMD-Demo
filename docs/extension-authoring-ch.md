@@ -33,7 +33,7 @@ export default defineReactComponentPackage({
 - manifest、`render`/`renderStatic` 与引擎模板相同；把模板的 `src/extension.tsx` 拆成 `manifest.ts` 与 `components.tsx`，先在独立项目跑通 Node/SSR 检查和导出，再复制进来。
 - `component.css` 会被自动收集，选择器写在 `.local-document` 内，使用组件前缀。不要在工厂里再传 `css`，否则样式资源会出现两个身份。
 - 入口还可以导出 `notices`，离线导出会带上这些署名文本。
-- 需要复用已发布的包时，入口直接转发它的公开 React 入口，例如 `plugin/tetris/index.ts` 的 `export { tetrisPackage as default } from 'reactive-md-tetris-package/react'`。
+- 目录入口导出的是由本地文件构建的包。若要改为复用已发布的包，可转发它的公开 React 入口，例如 `export { tetrisPackage as default } from 'reactive-md-tetris-package/react'`。
 
 ## 2. 放入主题
 
@@ -79,7 +79,7 @@ npm run test:export
 npm run test:runtime-extensions
 ```
 
-`test:export` 检查 HTML 与图片导出；`test:runtime-extensions` 检查本地 `plugin/` 目录和离线导出 bundle。两者都会自行启动服务器并使用 Playwright，环境要求见 [Demo README](../README-ch.md)。已安装 tarball 夹具由 Vitest 用例覆盖。
+`test:export` 检查 HTML 与图片导出；`test:runtime-extensions` 检查本地 `plugin/` 目录和离线导出 bundle。`test:runtime-extensions` 会自行启动 Vite 服务器；`test:export` 默认连接 `http://127.0.0.1:5173`，需先运行 `npm run dev`，或把 `DEMO_URL` 设为正在运行的站点。两者都使用 Playwright，环境要求见 [Demo README](../README-ch.md)。已安装 tarball 夹具由 Vitest 用例覆盖。
 
 ## 5. 与已安装包夹具的区别
 

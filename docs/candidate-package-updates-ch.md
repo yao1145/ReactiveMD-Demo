@@ -21,11 +21,3 @@ Demo 基于 `vendor/` 中已提交的 tarball 构建：引擎、编辑器、科�
 ## 引擎导出资源
 
 `vite.export-assets.ts` 导入 `reactive-md/export-assets`，因此引擎候选包必须发布该子路径及其声明文件。缺少该入口的候选包会在 Vite 加载 `vite.config.ts` 和 `vitest.config.ts` 时失败。插件把虚拟模块 `virtual:reactive-md-assets/base-css`、`print-css`、`notices`、`package-json` 和 `runtime` 映射到清单 id，通过 `resolveExportAsset` 与 `readExportAsset` 读取文件，并用 `addWatchFile` 登记解析出的文件，使编辑后触发重新构建。
-
-## README 需要修正之处
-
-`README.md` 与 `README-ch.md` 中仍有被本次改动写旧的文字。这些文件由其他任务负责，请在那里应用以下修正：
-
-- “导出资源”一节称样式表、打印样式、notices、元数据和运行时“不是公开的子路径导出”。它们现在通过 `reactive-md/export-assets` 公开，插件从该入口读取。
-- 依赖段落写的是 `reactive-md` `0.8.0-next.0` 和 `reactive-md-editor` `0.1.0-next.0`，而 `vendor/README.md` 记录的是 `0.8.0` 和 `0.1.0`。按实际安装版本改写。
-- 本仓库没有 `npm run update:demo-2048` 或 `npm run update:demo-tetris` 命令。这些脚本随仓库拆分删除（commit `d455099`）；引擎的 `docs/development/component-development-reference-{en,ch}.md` 仍在引用它们。以本文为准。

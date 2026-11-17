@@ -33,7 +33,7 @@ Rules:
 - The manifest and `render`/`renderStatic` are the same ones from the engine template. Split its `src/extension.tsx` into `manifest.ts` and `components.tsx`, then get Node/SSR checks and export passing in a standalone project before copying them here.
 - `component.css` is collected automatically. Keep selectors inside `.local-document` and prefix them with the component name. Do not pass `css` to the factory as well; that creates a second style-resource identity.
 - The entry can also export `notices`; offline export carries those attribution texts.
-- To reuse a published package, re-export its public React entry, as `plugin/tetris/index.ts` does with `export { tetrisPackage as default } from 'reactive-md-tetris-package/react'`.
+- The directory entry exports the package built from local files. To reuse a published package instead, re-export its public React entry, for example `export { tetrisPackage as default } from 'reactive-md-tetris-package/react'`.
 
 ## 2. Add a theme
 
@@ -79,7 +79,7 @@ npm run test:export
 npm run test:runtime-extensions
 ```
 
-`test:export` checks HTML and image export; `test:runtime-extensions` checks the local `plugin/` directories and the exported offline bundle. Both start their own server and use Playwright; the [Demo README](../README.md) lists the environment requirements. Vitest covers the installed-tarball fixtures.
+`test:export` checks HTML and image export; `test:runtime-extensions` checks the local `plugin/` directories and the exported offline bundle. `test:runtime-extensions` starts its own Vite server. `test:export` targets `http://127.0.0.1:5173` by default, so start `npm run dev` first or set `DEMO_URL` to a running site. Both use Playwright; the [Demo README](../README.md) lists the environment requirements. Vitest covers the installed-tarball fixtures.
 
 ## 5. Installed-package fixtures
 
