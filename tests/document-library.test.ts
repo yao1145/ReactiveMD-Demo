@@ -4,10 +4,10 @@ import {
   LIBRARY_STORAGE_KEY,
   documentFileStem,
   normalizeDocumentName,
-  parseLibraryText,
   uniqueDocumentName,
   type LibraryStorage,
 } from '../src/documents/document-library';
+import { parseLibraryText } from '../src/documents/document-library-codec';
 
 class MemoryStorage implements LibraryStorage {
   readonly values = new Map<string, string>();

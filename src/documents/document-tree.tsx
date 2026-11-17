@@ -9,9 +9,11 @@ import {
   trashedRoots,
   type LibraryDocument,
   type LibraryFolder,
-  type LibraryMode,
-  type LibrarySaveStatus,
-  type LibrarySnapshot,
+} from './document-library-codec';
+import type {
+  LibraryMode,
+  LibrarySaveStatus,
+  LibrarySnapshot,
 } from './document-library';
 import {
   ChevronRightIcon,
