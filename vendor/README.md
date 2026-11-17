@@ -18,7 +18,7 @@ The site renders the local extension source in [plugin/](../plugin/README.md) an
 
 | File | Package | Version |
 | --- | --- | --- |
-| `reactive-md-0.8.0-44321555997d.tgz` | `reactive-md` | `0.8.0` |
+| `reactive-md-0.8.0-e4a027e971d4.tgz` | `reactive-md` | `0.8.0` |
 | `reactive-md-editor-0.1.0-54d6cdc3ebf0.tgz` | `reactive-md-editor` | `0.1.0` |
 | `reactive-md-sci-fi-theme-1.0.0-525cab7ab93f.tgz` | `reactive-md-sci-fi-theme` | `1.0.0` |
 | `reactive-md-tetris-package-0.1.0-fc1fa620038f.tgz` | `reactive-md-tetris-package` | `0.1.0` |
@@ -38,4 +38,6 @@ The game packages declare a `reactive-md` peer range of `^0.8.0-next.0` and a Re
 
 Build the package in its own repository, copy the output here with the versioned, content-addressed filename, update the `file:` path in `package.json` and regenerate the lockfile. [docs/candidate-package-updates-en.md](../docs/candidate-package-updates-en.md) records the current engine and editor procedure.
 
-The current engine candidate is `reactive-md-0.8.0-44321555997d.tgz`, packed from the `feat/extension-onboarding` worktree (adds `reactive-md/export-assets`, the minimal extension template and the entry-point guide). SHA256: `44321555997db6304c6e9139c1b2bfd3e0260ed82efd7bc8181ce3aefe816115`. Record the owning commit when the branch is merged. The editor candidate is `reactive-md-editor-0.1.0-54d6cdc3ebf0.tgz`, built from editor `main` at commit `8b1405f` (chrome font reset scoped away from embedded document controls). SHA256: `54d6cdc3ebf03de552d20daa1e023c0e0717ea44a444cfe2ac772a73e9f5ebc8`. The theme candidate is `reactive-md-sci-fi-theme-1.0.0-525cab7ab93f.tgz`, built from the theme repository `master` at commit `351b341` (h5 and h6 type scale steps on top of the SF-01 machine tier). SHA256: `525cab7ab93fda6331e8fd5260c2c85aec5935559032bc951ad0ed827f7d4277`. Installation uses the built package without sibling source imports.
+The engine candidate `reactive-md-0.8.0-e4a027e971d4.tgz` was built from engine `main` at commit `c962f5db0f96a328978b949729a57c2304ab11f2`. It includes the compiler and renderer refactor, the public `reactive-md/export-assets` entry and the minimal extension template. SHA256: `e4a027e971d42c3f5ab68de7eef54bfa011d678b16557d8604dae1c99ed10791`.
+
+The editor candidate is `reactive-md-editor-0.1.0-54d6cdc3ebf0.tgz`, built from editor `main` at commit `8b1405f` (chrome font reset scoped away from embedded document controls). SHA256: `54d6cdc3ebf03de552d20daa1e023c0e0717ea44a444cfe2ac772a73e9f5ebc8`. The theme candidate is `reactive-md-sci-fi-theme-1.0.0-525cab7ab93f.tgz`, built from the theme repository `master` at commit `351b341` (h5 and h6 type scale steps on top of the SF-01 machine tier). SHA256: `525cab7ab93fda6331e8fd5260c2c85aec5935559032bc951ad0ed827f7d4277`. Installation uses the built package without sibling source imports.

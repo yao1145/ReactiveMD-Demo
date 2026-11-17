@@ -18,7 +18,7 @@ Demo 通过 tarball 安装的依赖都放在本目录。引擎和编辑器快照
 
 | 文件 | 包 | 版本 |
 | --- | --- | --- |
-| `reactive-md-0.8.0-44321555997d.tgz` | `reactive-md` | `0.8.0` |
+| `reactive-md-0.8.0-e4a027e971d4.tgz` | `reactive-md` | `0.8.0` |
 | `reactive-md-editor-0.1.0-54d6cdc3ebf0.tgz` | `reactive-md-editor` | `0.1.0` |
 | `reactive-md-sci-fi-theme-1.0.0-525cab7ab93f.tgz` | `reactive-md-sci-fi-theme` | `1.0.0` |
 | `reactive-md-tetris-package-0.1.0-fc1fa620038f.tgz` | `reactive-md-tetris-package` | `0.1.0` |
@@ -38,4 +38,6 @@ Demo 通过 tarball 安装的依赖都放在本目录。引擎和编辑器快照
 
 在包所属仓库中构建，使用带版本号和内容哈希的文件名复制到这里，更新 `package.json` 中的 `file:` 路径并重新生成 lockfile。当前的引擎与编辑器更新流程见 [docs/candidate-package-updates-ch.md](../docs/candidate-package-updates-ch.md)。
 
-当前引擎候选为 `reactive-md-0.8.0-44321555997d.tgz`，由 `feat/extension-onboarding` worktree 打包（新增 `reactive-md/export-assets`、最小扩展模板与入口指南）。SHA256 为 `44321555997db6304c6e9139c1b2bfd3e0260ed82efd7bc8181ce3aefe816115`。分支合并后补记归属 commit。编辑器候选为 `reactive-md-editor-0.1.0-54d6cdc3ebf0.tgz`，由编辑器 `main` 分支提交 `8b1405f` 构建（chrome 字体 reset 收窄作用域，不再泄漏进内嵌文档控件）。SHA256 为 `54d6cdc3ebf03de552d20daa1e023c0e0717ea44a444cfe2ac772a73e9f5ebc8`。主题候选为 `reactive-md-sci-fi-theme-1.0.0-525cab7ab93f.tgz`，由主题仓库 `master` 提交 `351b341` 构建（在 SF-01 机器文本层级之上新增 h5/h6 字阶）。SHA256 为 `525cab7ab93fda6331e8fd5260c2c85aec5935559032bc951ad0ed827f7d4277`。安装使用已构建的包，不通过相对路径引用兄弟源码树。
+引擎候选 `reactive-md-0.8.0-e4a027e971d4.tgz` 由引擎 `main` 的提交 `c962f5db0f96a328978b949729a57c2304ab11f2` 构建，包含编译器与渲染器重构、公开入口 `reactive-md/export-assets` 和最小扩展模板。SHA256 为 `e4a027e971d42c3f5ab68de7eef54bfa011d678b16557d8604dae1c99ed10791`。
+
+编辑器候选为 `reactive-md-editor-0.1.0-54d6cdc3ebf0.tgz`，由编辑器 `main` 分支提交 `8b1405f` 构建（chrome 字体 reset 收窄作用域，不再泄漏进内嵌文档控件）。SHA256 为 `54d6cdc3ebf03de552d20daa1e023c0e0717ea44a444cfe2ac772a73e9f5ebc8`。主题候选为 `reactive-md-sci-fi-theme-1.0.0-525cab7ab93f.tgz`，由主题仓库 `master` 提交 `351b341` 构建（在 SF-01 机器文本层级之上新增 h5/h6 字阶）。SHA256 为 `525cab7ab93fda6331e8fd5260c2c85aec5935559032bc951ad0ed827f7d4277`。安装使用已构建的包，不通过相对路径引用兄弟源码树。
