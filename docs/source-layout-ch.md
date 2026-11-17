@@ -52,4 +52,4 @@
 
 ## 构建锚点
 
-`vite.config.ts` 注册 React 插件、`reactiveMd({ extensions: './extensions.ts' })` 和 `exportAssets()`，并以 `index.html`、`embed.html` 作为构建输入。`vitest.config.ts` 注册相同的 ReactiveMD 与导出资源插件。仓库根目录的 `extensions.ts` 注册 Tetris 和 2048 包。
+`vite.config.ts` 注册 React 插件、`reactiveMd()` 和 `exportAssets()`，并以 `index.html`、`embed.html` 作为构建输入。`reactiveMd()` 发现 `plugin/` 中的组件包与 `theme/` 中的主题。`vitest.config.ts` 注册相同的 ReactiveMD 与导出资源插件。仓库根目录的 `extensions.ts` 提供 Games 示例元数据和供测试使用的 host 导出。

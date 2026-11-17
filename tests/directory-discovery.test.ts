@@ -1,3 +1,4 @@
+// Installed fixtures: the temporary consumer re-exports the vendored packages; the site's plugin/ source is not involved.
 import { describe, expect, it } from 'vitest';
 import { compileLocal, createLocalRuntime } from 'reactive-md';
 import { createLocalComponentCatalog } from 'reactive-md/authoring';

@@ -52,4 +52,4 @@ These three paths are stable anchors. `index.html`, `embed.html`, the `vite.conf
 
 ## Build anchors
 
-`vite.config.ts` registers the React plugin, `reactiveMd({ extensions: './extensions.ts' })` and `exportAssets()`, with `index.html` and `embed.html` as build inputs. `vitest.config.ts` registers the same ReactiveMD and export-asset plugins. The `extensions.ts` file at the repository root registers the Tetris and 2048 packages.
+`vite.config.ts` registers the React plugin, `reactiveMd()` and `exportAssets()`, with `index.html` and `embed.html` as build inputs. `reactiveMd()` discovers the component packages in `plugin/` and the theme in `theme/`. `vitest.config.ts` registers the same ReactiveMD and export-asset plugins. The `extensions.ts` file at the repository root supplies the Games example metadata and a host export for tests.

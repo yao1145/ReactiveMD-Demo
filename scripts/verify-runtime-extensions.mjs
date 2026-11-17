@@ -1,3 +1,10 @@
+/**
+ * Browser check for the site's local game directories (`plugin/tetris/` and
+ * `plugin/game-2048/`) and the exported offline bundle. It runs the built site,
+ * so a failure points at the local extension source. The vendor tarballs are
+ * compatibility fixtures with separate Vitest coverage: `tests/installed-tetris.test.ts`,
+ * `tests/extension-host.test.tsx` and `tests/directory-discovery.test.ts`.
+ */
 import { chromium, expect } from '@playwright/test';
 import { createServer, preview } from 'vite';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';

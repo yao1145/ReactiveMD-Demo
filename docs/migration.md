@@ -17,7 +17,7 @@ Replace the workspace link with versioned tarballs:
 }
 ```
 
-The game packages keep their existing vendor tarballs. Install with `--legacy-peer-deps` because those packages still declare a `reactive-md` peer range of `^0.7.0`.
+The game packages keep their existing vendor tarballs and declare a `reactive-md` peer range of `^0.8.0-next.0`. Install with `--legacy-peer-deps`, as the README and workflows do.
 
 ## Editor imports
 
@@ -107,10 +107,10 @@ Vitest keeps the article, rendering, export, document-library and editor integra
 - `test:toolbar`: toolbar actions.
 - `test:interactions`: selection and editor interaction probes.
 - `test:export`: HTML and image export.
-- `test:extensions`: installed game packages.
+- `test:runtime-extensions`: local `plugin/` directories used by the site and the offline export bundle.
 - `test:browser:smoke`: one Chromium pass at desktop and mobile widths.
 
-Most browser scripts target a running site at `http://127.0.0.1:5173` or `DEMO_URL`; `test:browser:smoke`, `test:interactions` and `test:extensions` start their own Vite server. `PLAYWRIGHT_CHANNEL=chromium` selects the bundled browser.
+Most browser scripts target a running site at `http://127.0.0.1:5173` or `DEMO_URL`; `test:browser:smoke`, `test:interactions` and `test:runtime-extensions` start their own Vite server. `PLAYWRIGHT_CHANNEL=chromium` selects the bundled browser.
 
 ## CI and deployment
 
