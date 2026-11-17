@@ -1,3 +1,4 @@
+// Installed fixture: resolves the vendored npm tarball in node_modules, not the local plugin/tetris source.
 import { expect, it } from 'vitest';
 import { access, lstat, readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';

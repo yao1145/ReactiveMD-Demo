@@ -2,13 +2,13 @@
 
 **中文** · [English](README.md)
 
-Reactive MD 的 Playground：包含编辑器、实时预览、文档库、HTML 导出和一组双语示例文章。它从仓库内提交的 tarball 中加载候选版 `reactive-md` 引擎和 `reactive-md-editor` 包，因此本仓库无需引擎源码树即可构建。
+Reactive MD 的 Playground：包含编辑器、实时预览、文档库、HTML 导出和一组双语示例文章。站点组件与主题是 `plugin/` 和 `theme/` 下的本地源码；候选版 `reactive-md` 引擎和 `reactive-md-editor` 包以仓库内提交的 tarball 提供，因此本仓库无需引擎源码树即可构建。
 
 在线站点：[yaozi.raricy.com](https://yaozi.raricy.com/)。
 
 ## 添加主题或组件
 
-Vite 启用 `reactiveMd()`。主题放入 `theme/<名称>/theme.css`；组件在 `plugin/<名称>/index.ts` 默认导出组件包。`component.css` 与本地 CSS 资源自动收集。`plugin/tetris/` 与 `plugin/game-2048/` 已包含本地 React 实现、manifest、游戏逻辑、样式和 notices；`theme/sci-fi/` 包含主题元数据与 CSS 资源。复制或编辑这些目录即可使用，无需额外安装游戏包或主题包。`extensions.ts` 保留样例元数据与兼容 host 导出。
+Vite 启用 `reactiveMd()`。主题放入 `theme/<名称>/theme.css`；组件在 `plugin/<名称>/index.ts` 默认导出组件包。`component.css` 与本地 CSS 资源自动收集，站点直接运行这些目录。各目录的文件清单与添加步骤见 [plugin/README-ch.md](plugin/README-ch.md) 与 [theme/README-ch.md](theme/README-ch.md)。从组件定义到预览、SSR 与导出的完整路径见[扩展编写指南](docs/extension-authoring-ch.md)。`extensions.ts` 保留示例元数据与供测试使用的兼容 host 导出。
 
 独立消费者测试 `tests/directory-discovery.test.ts` 验证编译与编辑器数据、SSR 及离线资源。
 
@@ -28,14 +28,21 @@ npm run dev
 
 `npm ci` 需要 `package-lock.json`。在没有 lockfile 的全新检出中，先运行一次 `npm install --legacy-peer-deps`，然后提交结果。
 
-引擎和编辑器以 `vendor/` 下的 tarball 形式提供：
-
-- `reactive-md` 0.8.0-next.0
-- `reactive-md-editor` 0.1.0-next.0
+引擎和编辑器以 `vendor/` 下的 tarball 形式提供（`reactive-md` 0.8.0、`reactive-md-editor` 0.1.0）。完整清单、哈希与更新流程见 [vendor/README-ch.md](vendor/README-ch.md)；当前候选更新流程见 [docs/candidate-package-updates-ch.md](docs/candidate-package-updates-ch.md)。
 
 科幻主题从 `theme/sci-fi/theme.css` 自动发现，因此声明 `<theme name="sci-fi">` 的文档可以在预览、编辑器与离线导出中正常渲染。
 
-原有游戏与主题 npm 包仅保留为开发测试夹具，用于验证安装包兼容接入；页面运行使用本地 `plugin/` 和 `theme/`。
+俄罗斯方块与 2048 运行 `plugin/tetris/`、`plugin/game-2048/` 下的本地源码。仓库内提交的游戏与主题 tarball 是安装包测试使用的兼容性夹具。
+
+## 运行时与测试夹具
+
+| 路径 | 角色 | 加载方 |
+| --- | --- | --- |
+| `plugin/`、`theme/` | 产品运行时扩展源码 | `npm run dev`、`npm run build`、预览与导出 |
+| `vendor/reactive-md-<版本>-<哈希>.tgz`、`vendor/reactive-md-editor-<版本>-<哈希>.tgz` | 候选引擎与编辑器快照 | 所有构建、测试与预览 |
+| `vendor/reactive-md-tetris-package-*.tgz`、`vendor/reactive-md-game-2048-package-*.tgz`、`vendor/reactive-md-sci-fi-theme-*.tgz` | 兼容性测试夹具 | `tests/installed-tetris.test.ts`、`tests/extension-host.test.tsx`、`tests/directory-discovery.test.ts` |
+
+站点渲染的游戏与主题来自 `plugin/` 与 `theme/` 中的目录。安装的游戏与主题 tarball 用于验证 npm 消费者能发现并编译这些包，站点不导入它们。
 
 ## 脚本
 
@@ -50,11 +57,11 @@ npm run dev
 | `npm run test:toolbar` | 工具栏与组件插入检查 |
 | `npm run test:interactions` | 编辑器选区和交互检查 |
 | `npm run test:export` | HTML 和图片导出检查 |
-| `npm run test:extensions` | 已安装游戏包和离线 bundle 检查 |
+| `npm run test:runtime-extensions` | 站点本地 `plugin/` 扩展与离线导出 bundle |
 | `npm run test:outline` | 文档大纲行为 |
 | `npm run test:workbench` | 紧凑工作台布局 |
 
-大多数浏览器脚本面向 `http://127.0.0.1:5173`；请先启动 `npm run dev`，或将 `DEMO_URL` 设为另一个正在运行的站点。`test:browser:smoke`、`test:interactions` 和 `test:extensions` 会自行启动 Vite 服务器。脚本默认使用 Edge；设置 `PLAYWRIGHT_CHANNEL=chromium` 可使用内置浏览器。报告和截图输出到 `artifacts/`。
+大多数浏览器脚本面向 `http://127.0.0.1:5173`；请先启动 `npm run dev`，或将 `DEMO_URL` 设为另一个正在运行的站点。`test:browser:smoke`、`test:interactions` 和 `test:runtime-extensions` 会自行启动 Vite 服务器。脚本默认使用 Edge；设置 `PLAYWRIGHT_CHANNEL=chromium` 可使用内置浏览器。报告和截图输出到 `artifacts/`。
 
 ```sh
 npm run dev
@@ -66,13 +73,14 @@ DEMO_URL=http://127.0.0.1:5173 PLAYWRIGHT_CHANNEL=msedge npm run test:editor
 - `content/examples/local/` 存放 Playground 中展示的示例文章。
 - `content/guides/` 存放英文和中文用户指南。
 - `src/` 存放应用：编辑器外壳、预览、文档库、导出对话框和扩展注册。
-- `extensions.ts` 注册 Tetris 和 2048 包。
+- `plugin/` 存放站点运行的组件源码，`theme/` 存放主题源码。
+- `extensions.ts` 保留示例元数据与供测试使用的兼容 host 导出。
 
 示例和指南文件是通过 `?raw` 导入的普通 Markdown 源文件。就地编辑即可；导航标题和提示位于 `src/examples.ts`。
 
 ## 导出资源
 
-导出的 HTML 内嵌引擎样式表、打印样式表、法律声明、包版本和独立运行时。这些文件随 `reactive-md` tarball 一起发布，但不是公开的子路径导出。`vite.export-assets.ts` 解析已安装包的根目录，并将每个文件暴露为构建期字符串模块。请在 `vite.config.ts` 和 `vitest.config.ts` 中都保留该插件的注册。
+导出的 HTML 内嵌引擎样式表、打印样式表、法律声明、包版本和独立运行时。引擎通过 `reactive-md/export-assets` 入口公开这些文件，并将每个 manifest id 映射到对应文件。`vite.export-assets.ts` 解析该入口，将每个文件暴露为构建期字符串模块。请在 `vite.config.ts` 和 `vitest.config.ts` 中都保留该插件的注册。
 
 ## 编辑器样式
 

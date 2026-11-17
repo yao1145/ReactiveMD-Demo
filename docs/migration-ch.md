@@ -17,7 +17,7 @@
 }
 ```
 
-游戏包保留其现有的 vendor tarball。使用 `--legacy-peer-deps` 安装，因为这些包仍声明 `reactive-md` 的 peer 范围为 `^0.7.0`。
+游戏包保留其现有的 vendor tarball，并声明 `reactive-md` 的 peer 范围 `^0.8.0-next.0`。安装使用 `--legacy-peer-deps`，与 README 和工作流保持一致。
 
 ## 编辑器导入
 
@@ -107,10 +107,10 @@ Vitest 保留文章、渲染、导出、文档库和编辑器集成套件。浏�
 - `test:toolbar`：工具栏操作。
 - `test:interactions`：选区和编辑器交互探测。
 - `test:export`：HTML 和图片导出。
-- `test:extensions`：已安装的游戏包。
+- `test:runtime-extensions`：站点使用的本地 `plugin/` 目录和离线导出 bundle。
 - `test:browser:smoke`：一次桌面端和移动端宽度的 Chromium 检查。
 
-大多数浏览器脚本面向 `http://127.0.0.1:5173` 或 `DEMO_URL` 上运行的站点；`test:browser:smoke`、`test:interactions` 和 `test:extensions` 会自行启动 Vite 服务器。`PLAYWRIGHT_CHANNEL=chromium` 选择内置浏览器。
+大多数浏览器脚本面向 `http://127.0.0.1:5173` 或 `DEMO_URL` 上运行的站点；`test:browser:smoke`、`test:interactions` 和 `test:runtime-extensions` 会自行启动 Vite 服务器。`PLAYWRIGHT_CHANNEL=chromium` 选择内置浏览器。
 
 ## CI 与部署
 

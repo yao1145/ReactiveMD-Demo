@@ -23,14 +23,14 @@
     "test:preview:slider": "node scripts/verify-preview-slider-hit-target.mjs",
     "test:interactions": "node scripts/verify-editor-interactions.mjs",
     "test:export": "node scripts/verify-export.mjs && node scripts/verify-image-assets.mjs",
-    "test:extensions": "node scripts/verify-extensions.mjs",
+    "test:runtime-extensions": "node scripts/verify-runtime-extensions.mjs",
     "test:outline": "node scripts/verify-outline.mjs",
     "test:workbench": "node scripts/verify-compact-workbench.mjs"
   },
   "dependencies": {
     "react": "19.3.1",
     "react-dom": "19.3.1",
-    "reactive-md": "file:vendor/reactive-md-0.8.0-63e6e77341c5.tgz",
+    "reactive-md": "file:vendor/reactive-md-0.8.0-44321555997d.tgz",
     "reactive-md-editor": "file:vendor/reactive-md-editor-0.1.0-54d6cdc3ebf0.tgz"
   },
   "devDependencies": {
