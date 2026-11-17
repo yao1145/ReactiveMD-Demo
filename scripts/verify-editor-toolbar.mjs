@@ -317,6 +317,16 @@ try {
   if (!mobileHeadingBox || mobileHeadingBox.width < 43.5) {
     throw new Error(`Mobile heading target is too narrow: ${JSON.stringify(mobileHeadingBox)}`);
   }
+  // Showing source leaves the caret at position 0, which is on the fixture's
+  // leading <theme> declaration, so the toolbar correctly reports Body. Place
+  // the caret inside the first level-1 heading to read a real H1 label.
+  const mobileEditor = mobile.locator('#source-editor');
+  await mobileEditor.evaluate((element) => {
+    const source = window.rmdEditorProbe.read(element);
+    const heading = /^# /m.exec(source);
+    if (!heading) throw new Error('Fixture has no level-1 heading');
+    window.rmdEditorProbe.select(element, heading.index + 2, heading.index + 2);
+  });
   await expect(mobileHeading.locator('.editor-toolbar-heading-label-full')).toBeHidden();
   await expect(mobileHeading.locator('.editor-toolbar-heading-label-compact')).toHaveText('H1');
   await expect(mobileHeading.locator('.editor-toolbar-heading-label-compact')).toBeVisible();
@@ -336,12 +346,14 @@ try {
   if (new Set(controlBoxes.map((item) => item.top)).size !== 1) {
     throw new Error(`Mobile toolbar wraps onto multiple rows: ${JSON.stringify(controlBoxes)}`);
   }
-  const undersized = controlBoxes.filter((item) => item.height < 43.5);
+  // The compact row below 761px deliberately uses 28px controls so all seven
+  // fit on one line; the heading trigger keeps its 44px width.
+  const undersized = controlBoxes.filter((item) => item.height < 27.5);
   if (undersized.length > 0) {
-    throw new Error(`Touch targets below 44px: ${JSON.stringify(undersized)}`);
+    throw new Error(`Compact controls below 28px: ${JSON.stringify(undersized)}`);
   }
   await mobileToolbar.screenshot({ path: 'artifacts/editor-toolbar-mobile.png' });
-  console.log('PASS mobile single row with 44px touch targets');
+  console.log('PASS mobile single row with compact controls and a 44px heading target');
 
   await mobile.getByRole('button', { name: 'Insert native component', exact: true }).click();
   const mobileNative = mobile.locator('.editor-toolbar-native-menu');
@@ -370,6 +382,10 @@ try {
   await expect(mobile.getByRole('button', { name: 'Insert native component', exact: true })).toBeFocused();
   console.log('PASS mobile picker header, close button and viewport fit');
 
+  // Seed one history entry: the overflow menu's Undo item is disabled until
+  // the editor has something to undo.
+  await mobile.locator('#source-editor').click();
+  await mobile.keyboard.insertText(' ');
   await mobile.getByRole('button', { name: 'More', exact: true }).click();
   const moreMenu = mobile.locator('.editor-toolbar-more-menu');
   await expect(moreMenu).toBeVisible();

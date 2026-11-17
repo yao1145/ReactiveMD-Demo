@@ -27,12 +27,23 @@ try {
   // user-facing controls.
   const dialog = page.getByRole('dialog');
   const exportButton = dialog.getByRole('button', { name: 'Export HTML', exact: true });
+  // The Chinese pass below reaches the same controls, so match either locale.
+  const exportLabel = /^(Export|导出)$/;
+  const cancelLabel = /^(Cancel|取消)$/;
   const openDialog = async () => {
-    await clickWorkbenchAction(page, /^Export/);
+    // Below the mobile threshold the toolbar is replaced by the masthead menu,
+    // which is the only surface that carries the Export action there.
+    const mobileMenu = page.locator('.mobile-menu-toggle');
+    if (await mobileMenu.isVisible()) {
+      await mobileMenu.click();
+      await page.locator('.mobile-menu-panel').getByRole('menuitem', { name: exportLabel }).click();
+    } else {
+      await clickWorkbenchAction(page, exportLabel);
+    }
     await expect(dialog).toBeVisible();
   };
   const closeDialog = async () => {
-    await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await dialog.getByRole('button', { name: cancelLabel }).click();
     await expect(dialog).toBeHidden();
   };
   const resourceRows = () => dialog.locator('.image-asset-row');
@@ -114,7 +125,9 @@ try {
 
   for (const mode of ['interactive', 'static']) {
     if (mode === 'static') {
-      await closeDialog();
+      // A successful export closes the dialog itself, so only cancel it when a
+      // previous pass left it open.
+      if (await dialog.isVisible()) await closeDialog();
       await openDialog();
       await dialog.getByRole('radio', { name: /^Static HTML/ }).check();
     }
@@ -133,7 +146,15 @@ try {
     await expect(imgs).toHaveCount(3);
     await expect.poll(() => imgs.evaluateAll(images => images.every(img => img.complete && img.naturalWidth === 12))).toBe(true);
     if (mode === 'interactive') {
-      await exported.getByRole('slider', { name: 'People', exact: true }).fill('4');
+      // Reactive MD renders a custom ARIA slider (a div with role="slider"),
+      // not a native input[type=range], so Playwright's fill() cannot drive it.
+      // Focus it and step it with the keyboard the way a reader does.
+      const people = exported.getByRole('slider', { name: 'People', exact: true });
+      await people.focus();
+      for (let step = 0; step < 20 && await people.getAttribute('aria-valuenow') !== '4'; step++) {
+        await exported.keyboard.press('ArrowRight');
+      }
+      await expect(people).toHaveAttribute('aria-valuenow', '4');
       await expect(imgs).toHaveCount(3);
     }
     expect(requests).toEqual([]);
@@ -150,12 +171,20 @@ try {
   await closeDialog();
   check('draft image manifest and image preview survive refresh');
 
-  const examples = page.locator('#example-select option');
-  const selected = await page.locator('#example-select').inputValue();
-  const other = await examples.evaluateAll((options, current) => options.map(option => option.value).find(value => value !== current), selected);
-  await page.locator('#example-select').selectOption(other);
+  // Examples are picked from the document tree; the old #example-select is gone.
+  // Sections start collapsed, so open them before listing the example rows.
+  const exampleRows = page.locator('.tree-row[data-tree-kind="example"]');
+  for (let opened = 0; opened < 20; opened++) {
+    const collapsed = page.locator('.tree-row[aria-expanded="false"] .tree-disclosure');
+    if (await collapsed.count() === 0) break;
+    await collapsed.first().click();
+  }
+  const activeExample = page.locator('.tree-row[data-tree-kind="example"][aria-selected="true"]');
+  const selected = await activeExample.getAttribute('data-tree-id');
+  const other = await exampleRows.evaluateAll((rows, current) => rows.map(row => row.dataset.treeId).find(id => id !== current), selected);
+  await page.locator(`.tree-row[data-tree-id="${other}"] .tree-label`).click();
   await expect(page.locator('.preview-stage .md-document img')).toHaveCount(0);
-  await page.locator('#example-select').selectOption(selected);
+  await page.locator(`.tree-row[data-tree-id="${selected}"] .tree-label`).click();
   await expect(page.locator('.preview-stage .md-document img')).toHaveCount(3);
   check('image manifests stay with their own document when switching examples');
 
@@ -182,6 +211,14 @@ try {
   await page.screenshot({ path: path.join(artifacts, 'mobile-export.png'), fullPage: false });
   await page.keyboard.press('Escape');
   await expect(dialog).toBeHidden();
+  // The desktop sidebar is docked open; at 390px that same state is a drawer
+  // covering the editor. Dismiss it with Escape from inside the drawer.
+  const sidebar = page.locator('#document-sidebar');
+  if (await sidebar.isVisible()) {
+    await sidebar.getByRole('tab').first().focus();
+    await page.keyboard.press('Escape');
+    await expect(sidebar).toBeHidden();
+  }
   await switchWorkbenchLanguage(page);
   // Example drafts are language-specific. Give the Chinese draft an image
   // reference so its resource panel exists before checking its translation.

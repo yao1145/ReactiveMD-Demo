@@ -32,22 +32,28 @@ try {
   await openWorkbench(page,server.resolvedUrls.local[0]);
   const examples = page.getByRole('button',{name:'Try examples',exact:true});
   if(await examples.isVisible())await examples.click();
-  await selectWorkbenchExample(page, 'games');
-  await expect(page.locator('[data-tetris]')).toBeVisible();
-  await page.locator('[data-tetris-drop]').click();
-  const moves = await page.locator('[data-tetris]').getAttribute('data-tetris-moves');
+  await selectWorkbenchExample(page, 'sci-fi-theme');
+  const themeRoot = page.locator('[data-rmd-theme="sci-fi"]');
+  await expect(themeRoot).toBeVisible();
+  const slider = page.getByRole('slider', { name: 'People', exact: true });
+  await expect(slider).toBeVisible();
+  const initialValue = await slider.getAttribute('aria-valuenow');
+  await slider.focus();
+  await slider.press('ArrowRight');
+  await expect.poll(()=>slider.getAttribute('aria-valuenow')).not.toBe(initialValue);
+  const value = await slider.getAttribute('aria-valuenow');
   await page.evaluate(async()=>{window.__directoryRuntimeMarker='kept';window.__directoryBundleModule=await import('/@id/__x00__virtual:reactive-md/bundle');});
-  await check('theme CSS updates without resetting the page or game',async()=>{
+  await check('theme CSS updates without resetting the page or interactive state',async()=>{
     await writeFile(theme,original+'\n[data-rmd-theme="sci-fi"] { --directory-hmr-check: 731; }\n');
-    await expect.poll(()=>page.locator('[data-rmd-theme="sci-fi"]').evaluate(el=>getComputedStyle(el).getPropertyValue('--directory-hmr-check').trim())).toBe('731');
+    await expect.poll(()=>themeRoot.evaluate(el=>getComputedStyle(el).getPropertyValue('--directory-hmr-check').trim())).toBe('731');
     expect(await page.evaluate(()=>window.__directoryRuntimeMarker)).toBe('kept');
-    expect(await page.locator('[data-tetris]').getAttribute('data-tetris-moves')).toBe(moves);
+    expect(await slider.getAttribute('aria-valuenow')).toBe(value);
     await expect.poll(()=>page.evaluate(()=>window.__directoryBundleModule.default.css.includes('--directory-hmr-check: 731'))).toBe(true);
     const refreshed=await server.ssrLoadModule('virtual:reactive-md/host');
     expect(refreshed.host.css).toContain('--directory-hmr-check: 731');
   });
   await writeFile(theme,original);
-  await expect.poll(()=>page.locator('[data-rmd-theme="sci-fi"]').evaluate(el=>getComputedStyle(el).getPropertyValue('--directory-hmr-check').trim())).toBe('');
+  await expect.poll(()=>themeRoot.evaluate(el=>getComputedStyle(el).getPropertyValue('--directory-hmr-check').trim())).toBe('');
   await mkdir(probe,{recursive:true});
   await check('adding a convention entry registers it',async()=>{
     await writeFile(entry,`import { defineReactComponentPackage } from 'reactive-md/react';\nexport default defineReactComponentPackage({ id:'test/directory-probe',name:'directory-probe',version:'1.0.0',capabilities:{interactive:true,static:true,ssr:true,offline:true},render:()=>null });\n`);

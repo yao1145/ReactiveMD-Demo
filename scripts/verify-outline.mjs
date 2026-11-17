@@ -38,10 +38,13 @@ try {
       else await toggle.click();
     };
     const openOutline = async () => {
-      // Preview mode keeps the sidebar toggle inside the floating overlay,
-      // which stays collapsed until the reader asks for its controls.
-      if (!(await sidebarOpen())) await revealPreviewControls(page);
-      if (!(await sidebarOpen())) await toggle.click();
+      if (!(await sidebarOpen())) {
+        // Preview mode keeps the sidebar toggle inside the floating overlay,
+        // which stays collapsed until the reader asks for its controls. Edit
+        // mode has no preview pane, so the toolbar toggle is already reachable.
+        if (await page.locator('.pane-preview').isVisible()) await revealPreviewControls(page);
+        if (!(await sidebarOpen())) await toggle.click();
+      }
       await page.getByRole('tab', { name: /^(Outline|大纲)$/ }).click();
     };
     await expect(toggle).toHaveAttribute('aria-expanded', String(width >= 1100));

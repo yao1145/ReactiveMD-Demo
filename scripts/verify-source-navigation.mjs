@@ -93,9 +93,20 @@ try {
       expect(labelSelection.value).toContain('<slider');
       expect(labelSelection.value).toContain('bind="people"');
 
-      // Dragging/filling the slider changes only the parameter.
+      // Changing the slider changes only the parameter.
       const before = await selection(page);
-      await preview.locator('[data-rmd-component="slider"] input[type="range"]').first().fill('7');
+      // The shipped slider is a custom ARIA slider, not a native range input,
+      // so drive its thumb from the keyboard instead of filling a form field.
+      const thumb = preview.locator('[data-rmd-component="slider"] [data-rmd-part="thumb"]').first();
+      const thumbValue = async () => Number(await thumb.getAttribute('aria-valuenow'));
+      await thumb.focus();
+      for (let step = 0; step < 40; step += 1) {
+        const current = await thumbValue();
+        if (current === 7) break;
+        await page.keyboard.press(current < 7 ? 'ArrowRight' : 'ArrowLeft');
+        await expect.poll(thumbValue).not.toBe(current);
+      }
+      await expect(thumb).toHaveAttribute('aria-valuenow', '7');
       await page.waitForTimeout(50);
       const after = await selection(page);
       expect(after.start).toBe(before.start);

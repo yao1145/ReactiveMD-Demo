@@ -52,6 +52,10 @@ try {
       await page.waitForTimeout(100);
       return position();
     };
+    const png = await page.evaluate(() => {
+      const canvas = document.createElement('canvas'); canvas.width = 12; canvas.height = 8;
+      return canvas.toDataURL('image/png').split(',')[1];
+    });
     for (const item of ['Image', 'Table', 'Code block']) {
       const before = await prepare();
       await page.locator('[data-toolbar-id="insert"]').click();
@@ -63,7 +67,11 @@ try {
       const box = await menuItem.boundingBox();
       expect(box.y).toBeGreaterThanOrEqual(0);
       expect(box.y + box.height).toBeLessThan(900);
+      // Image insertion opens a file chooser and leaves the Markdown untouched
+      // until a file is picked, so arm the chooser before the click.
+      const chooser = item === 'Image' ? page.waitForEvent('filechooser') : null;
       await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+      if (item === 'Image') await (await chooser).setFiles({ name: 'photo.png', mimeType: 'image/png', buffer: Buffer.from(png, 'base64') });
       await expectEditorSource(editor,source,true);
       await stable(before, item);
       // The collapsed caret or placeholder selection belongs to the insertion,
