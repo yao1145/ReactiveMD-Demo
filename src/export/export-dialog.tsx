@@ -8,6 +8,8 @@ import {
   type LocalValue,
 } from 'reactive-md';
 import { useCopy, useLanguage } from '../ui/i18n';
+import type { EditorComponentMode } from 'reactive-md-editor';
+import { createDemoPdf, printStaticHtml } from './export-pdf';
 import { isHtmlOptionsActive } from '../settings/html-options';
 import { resolveDocumentImages, type ImageAsset } from '../images/image-assets';
 import { IMAGE_COPY } from '../images/image-copy';
@@ -15,6 +17,7 @@ import { ImageAssetsPanel } from '../images/image-assets-panel';
 import {
   buildShareableHtml,
   countParameterDifferences,
+  documentUsesExtensionBundle,
   formatBuildError,
   prepareShareableHtmlAssets,
   DEMO_GENERATOR_NAME,
@@ -24,9 +27,11 @@ import {
 
 type BaselineChoice = 'initial' | 'current';
 type AssetsState = 'loading' | 'ready' | 'error';
+type ExportFormat = ShareableHtmlMode | 'pdf';
 
 export interface ExportDialogProps {
   open: boolean;
+  componentMode?: EditorComponentMode;
   source: string;
   /** File name stem for downloaded documents, e.g. the selected example id. */
   baseName: string;
@@ -50,7 +55,11 @@ export interface ExportDialogProps {
 }
 
 function downloadText(name: string, text: string, type: string): void {
-  const url = URL.createObjectURL(new Blob([text], { type }));
+  downloadFile(name, new Blob([text], { type }));
+}
+
+function downloadFile(name: string, file: Blob): void {
+  const url = URL.createObjectURL(file);
   const link = globalThis.document.createElement('a');
   link.href = url;
   link.download = name;
@@ -60,6 +69,7 @@ function downloadText(name: string, text: string, type: string): void {
 
 export function ExportDialog({
   open,
+  componentMode = 'default',
   source,
   baseName,
   document: compiledDocument,
@@ -82,13 +92,18 @@ export function ExportDialog({
   const descriptionId = useId();
   const summaryId = useId();
   const htmlModeNoteId = useId();
-  const [mode, setMode] = useState<ShareableHtmlMode>('interactive');
+  const [format, setFormat] = useState<ExportFormat>('interactive');
+  const mode: ShareableHtmlMode = format === 'pdf' ? 'static' : format;
   const [baseline, setBaseline] = useState<BaselineChoice>('initial');
   const [assetsState, setAssetsState] = useState<AssetsState>('loading');
   const [assetsError, setAssetsError] = useState<string | null>(null);
   const [packageVersion, setPackageVersion] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [buildError, setBuildError] = useState<string | null>(null);
+  // Routing is a stable boolean, so recompiling the same kind of document does
+  // not restart preparation or refetch anything.
+  const extensionRoute = documentUsesExtensionBundle(compiledDocument, componentMode);
+  const documentReady = compiledDocument !== null && !pending;
 
   const requestClose = useCallback(() => {
     // Invalidate an in-flight render so closing never downloads later.
@@ -101,7 +116,7 @@ export function ExportDialog({
   useEffect(() => {
     if (open) return;
     taskRef.current += 1;
-    setMode('interactive');
+    setFormat('interactive');
     setBaseline('initial');
     setAssetsState('loading');
     setAssetsError(null);
@@ -140,8 +155,7 @@ export function ExportDialog({
     let cancelled = false;
     setAssetsState('loading');
     setAssetsError(null);
-    setPackageVersion(null);
-    prepareShareableHtmlAssets(mode)
+    prepareShareableHtmlAssets(mode, componentMode, { documentReady, usesExtensionBundle: extensionRoute })
       .then((prepared) => {
         if (cancelled) return;
         setPackageVersion(prepared.version);
@@ -155,7 +169,7 @@ export function ExportDialog({
     return () => {
       cancelled = true;
     };
-  }, [open, mode]);
+  }, [open, mode, componentMode, documentReady, extensionRoute]);
 
   useEffect(() => {
     if (!currentState && baseline === 'current') setBaseline('initial');
@@ -203,10 +217,11 @@ export function ExportDialog({
     : resolvedImages.references.length === 0
       ? copy.imageNone
       : IMAGE_COPY[language].summary(resolvedImages.references.length - resolvedImages.missing.length, resolvedImages.references.length);
+  const outputFormat = format === 'pdf' ? copy.pdf : mode === 'interactive' ? copy.outputInteractive : copy.outputStatic;
   const outputSummary = htmlMode
-    ? copy.outputHtmlMode(mode === 'interactive' ? copy.outputInteractive : copy.outputStatic)
+    ? copy.outputHtmlMode(outputFormat)
     : copy.output(
-      mode === 'interactive' ? copy.outputInteractive : copy.outputStatic,
+      outputFormat,
       effectiveBaseline === 'current' ? copy.outputCurrent : copy.outputInitial,
     );
   const htmlDisabled = !compiledDocument
@@ -236,10 +251,22 @@ export function ExportDialog({
         locale: language,
         colorScheme,
         compileOptions,
+        componentMode,
         imageAssets,
       });
       if (task !== taskRef.current) return;
-      downloadText(`${baseName}.html`, result.html, 'text/html;charset=utf-8');
+      if (format === 'pdf') {
+        if (import.meta.env.DEV) {
+          const pdf = await createDemoPdf(result.html);
+          if (task !== taskRef.current) return;
+          downloadFile(`${baseName}.pdf`, pdf);
+        } else {
+          await printStaticHtml(result.html, () => task === taskRef.current);
+          if (task !== taskRef.current) return;
+        }
+      } else {
+        downloadText(`${baseName}.html`, result.html, 'text/html;charset=utf-8');
+      }
       onClose();
     } catch (error) {
       if (task === taskRef.current) setBuildError(formatBuildError(error));
@@ -317,31 +344,39 @@ export function ExportDialog({
 
         <fieldset className="export-fieldset" disabled={busy}>
           <legend>{copy.formatLegend}</legend>
-          <label className={`export-option${mode === 'interactive' ? ' is-selected' : ''}`}>
+          <label className={`export-option${format === 'interactive' ? ' is-selected' : ''}`}>
             <input
               type="radio"
               name={`${titleId}-format`}
               value="interactive"
-              checked={mode === 'interactive'}
+              checked={format === 'interactive'}
               data-export-initial-focus
-              onChange={() => setMode('interactive')}
+              onChange={() => setFormat('interactive')}
             />
             <span className="export-option-copy">
               <strong>{copy.interactive}</strong>
               <span className="export-option-hint">{copy.interactiveHint}</span>
             </span>
           </label>
-          <label className={`export-option${mode === 'static' ? ' is-selected' : ''}`}>
+          <label className={`export-option${format === 'static' ? ' is-selected' : ''}`}>
             <input
               type="radio"
               name={`${titleId}-format`}
               value="static"
-              checked={mode === 'static'}
-              onChange={() => setMode('static')}
+              checked={format === 'static'}
+              onChange={() => setFormat('static')}
             />
             <span className="export-option-copy">
               <strong>{copy.static}</strong>
               <span className="export-option-hint">{copy.staticHint}</span>
+            </span>
+          </label>
+          <label className={`export-option${format === 'pdf' ? ' is-selected' : ''}`}>
+            <input type="radio" name={`${titleId}-format`} value="pdf"
+              checked={format === 'pdf'} onChange={() => setFormat('pdf')} />
+            <span className="export-option-copy">
+              <strong>{copy.pdf}</strong>
+              <span className="export-option-hint">{import.meta.env.DEV ? copy.pdfHint : copy.printPdfHint}</span>
             </span>
           </label>
         </fieldset>
@@ -465,7 +500,7 @@ export function ExportDialog({
             onClick={handleExport}
             disabled={htmlDisabled}
           >
-            {busy ? copy.preparing : copy.exportHtml}
+            {busy ? copy.preparing : format === 'pdf' ? (import.meta.env.DEV ? copy.exportPdf : copy.printPdf) : copy.exportHtml}
           </button>
         </div>
       </footer>

@@ -18,8 +18,8 @@ The site renders the local extension source in [plugin/](../plugin/README.md) an
 
 | File | Package | Version |
 | --- | --- | --- |
-| `reactive-md-0.8.0-e4a027e971d4.tgz` | `reactive-md` | `0.8.0` |
-| `reactive-md-editor-0.1.0-54d6cdc3ebf0.tgz` | `reactive-md-editor` | `0.1.0` |
+| `reactive-md-0.8.0-f991729cef88.tgz` | `reactive-md` | `0.8.0` |
+| `reactive-md-editor-0.1.0-76778127514a.tgz` | `reactive-md-editor` | `0.1.0` |
 | `reactive-md-sci-fi-theme-1.0.0-525cab7ab93f.tgz` | `reactive-md-sci-fi-theme` | `1.0.0` |
 | `reactive-md-tetris-package-0.1.0-fc1fa620038f.tgz` | `reactive-md-tetris-package` | `0.1.0` |
 | `reactive-md-game-2048-package-0.1.0-ce931218c317.tgz` | `reactive-md-game-2048-package` | `0.1.0` |
@@ -38,6 +38,6 @@ The game packages declare a `reactive-md` peer range of `^0.8.0-next.0` and a Re
 
 Build the package in its own repository, copy the output here with the versioned, content-addressed filename, update the `file:` path in `package.json` and regenerate the lockfile. [docs/candidate-package-updates-en.md](../docs/candidate-package-updates-en.md) records the current engine and editor procedure.
 
-The engine candidate `reactive-md-0.8.0-e4a027e971d4.tgz` was built from engine `main` at commit `c962f5db0f96a328978b949729a57c2304ab11f2`. It includes the compiler and renderer refactor, the public `reactive-md/export-assets` entry and the minimal extension template. SHA256: `e4a027e971d42c3f5ab68de7eef54bfa011d678b16557d8604dae1c99ed10791`.
+The engine candidate includes the 18-tag minimal preset and static PDF export. Its SHA256 is `f991729cef880d4d473ea6c02e1aa519bd4eacc5d81cfa5877356350ac092d66`.
 
-The editor candidate is `reactive-md-editor-0.1.0-54d6cdc3ebf0.tgz`, built from editor `main` at commit `8b1405f` (chrome font reset scoped away from embedded document controls). SHA256: `54d6cdc3ebf03de552d20daa1e023c0e0717ea44a444cfe2ac772a73e9f5ebc8`. The theme candidate is `reactive-md-sci-fi-theme-1.0.0-525cab7ab93f.tgz`, built from the theme repository `master` at commit `351b341` (h5 and h6 type scale steps on top of the SF-01 machine tier). SHA256: `525cab7ab93fda6331e8fd5260c2c85aec5935559032bc951ad0ed827f7d4277`. Installation uses the built package without sibling source imports.
+The editor candidate uses the host's export dialog and compile options for PDF and component modes. Its SHA256 is `76778127514a8ceb18c881c86d045faba2a328d5e795aba5c7b21ebf8ea34f76`. The theme fixture was built from commit `351b341` and has SHA256 `525cab7ab93fda6331e8fd5260c2c85aec5935559032bc951ad0ed827f7d4277`.

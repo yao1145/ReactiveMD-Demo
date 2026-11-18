@@ -2,9 +2,12 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { reactiveMd } from 'reactive-md/vite';
 import { exportAssets } from './vite.export-assets.ts';
+import { pdfExport } from './vite.pdf-export.ts';
 
 export default defineConfig({
-  plugins: [react(), reactiveMd(), exportAssets()],
+  plugins: [react(), reactiveMd({ includeMinimal: true }), exportAssets(), pdfExport()],
+  // Vitest and the host bundle builder use their own Vite instances.
+  cacheDir: 'node_modules/.vite-demo',
   // The export dialog imports the server renderer on demand. Pre-bundle it so
   // the first export in a dev session cannot hit a stale optimized-dependency
   // URL after Vite discovers it late.

@@ -20,6 +20,12 @@ npm run dev
 
 Open `http://127.0.0.1:5173`. The embed example is at `/embed.html`.
 
+The Workshop budget example is at `/?example=minimal-budget`. Switch component
+modes in Developer tools and select PDF in the Export dialog. PDF uses the selected starting
+values. With Playwright Chromium installed (`npx playwright install chromium`),
+the local dev server downloads the PDF. The static site opens the browser print
+dialog, where you can choose Save as PDF.
+
 `npm ci` requires `package-lock.json`. On a fresh checkout without a lockfile, run `npm install --legacy-peer-deps` once and commit the result.
 
 ## Runtime and fixtures

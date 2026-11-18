@@ -4,7 +4,7 @@ import * as editorApi from 'reactive-md-editor';
 import * as authoringApi from 'reactive-md/authoring';
 import engineManifest from 'reactive-md/package.json';
 import editorManifest from 'reactive-md-editor/package.json';
-import type { EditorViewMode } from 'reactive-md-editor';
+import type { EditorComponentMode, EditorViewMode } from 'reactive-md-editor';
 import { DEFAULT_HTML_OPTIONS, type DemoHtmlOptions } from '../settings/html-options';
 import type { Language } from '../ui/i18n';
 import { useScrollContainer } from '../ui/use-scroll-container';
@@ -32,7 +32,7 @@ export interface DeveloperToolsCopy {
   modifiedBadge: string;
   copied: string;
   cards: {
-    compiler: { title: string; subtitle: string; markdownBreaks: string; markdownBreaksHint: string; strict: string; strictHint: string };
+    compiler: { title: string; subtitle: string; markdownBreaks: string; markdownBreaksHint: string; strict: string; strictHint: string; componentMode: string; modes: Record<EditorComponentMode, string> };
     html: { title: string; subtitle: string; css: string; cssHint: string; javascript: string; javascriptHint: string; extendedHtml: string; extendedHtmlHint: string };
     editor: { title: string; subtitle: string; viewMode: string; views: Record<EditorViewMode, string>; toolbar: string; toolbarHint: string; authoring: string; authoringHint: string; trial: string; trialHint: string };
     export: { title: string; subtitle: string; open: string; markdown: string };
@@ -58,6 +58,8 @@ const COPY: Record<Language, DeveloperToolsCopy> = {
         markdownBreaksHint: 'Render ordinary soft line breaks as <br>.',
         strict: 'Strict parsing',
         strictHint: 'Recover broken structure locally instead of stopping.',
+        componentMode: 'Component mode',
+        modes: { default: 'Default', minimal: 'Minimal' },
       },
       html: {
         title: 'HTML',
@@ -83,7 +85,7 @@ const COPY: Record<Language, DeveloperToolsCopy> = {
       },
       export: {
         title: 'Export',
-        subtitle: 'HTML, static snapshot and Markdown',
+        subtitle: 'HTML, PDF and Markdown',
         open: 'Open export dialog',
         markdown: 'Download Markdown source',
       },
@@ -136,6 +138,8 @@ const COPY: Record<Language, DeveloperToolsCopy> = {
         markdownBreaksHint: '把普通软换行渲染为 <br>。',
         strict: '严格解析',
         strictHint: '结构损坏时局部恢复，而不是直接停止。',
+        componentMode: '组件模式',
+        modes: { default: '默认', minimal: '精简' },
       },
       html: {
         title: 'HTML',
@@ -161,7 +165,7 @@ const COPY: Record<Language, DeveloperToolsCopy> = {
       },
       export: {
         title: '导出',
-        subtitle: 'HTML、静态快照与 Markdown',
+        subtitle: 'HTML、PDF 与 Markdown',
         open: '打开导出对话框',
         markdown: '下载 Markdown 源码',
       },
@@ -206,6 +210,8 @@ export interface DeveloperToolsProps {
   markdownBreaks: boolean;
   onMarkdownBreaksChange(checked: boolean): void;
   strict: boolean;
+  componentMode: EditorComponentMode;
+  onComponentModeChange(mode: EditorComponentMode): void;
   onStrictChange(checked: boolean): void;
   htmlOptions: DemoHtmlOptions;
   onHtmlOptionsChange(next: DemoHtmlOptions): void;
@@ -314,6 +320,7 @@ export function DeveloperTools(props: DeveloperToolsProps) {
   const totalApis = API_GROUPS.reduce((sum, group) => sum + group.names.length, 0);
   const htmlDefault = JSON.stringify(props.htmlOptions) === JSON.stringify(DEFAULT_HTML_OPTIONS);
   const defaults = props.markdownBreaks === DEFAULT_CAPABILITIES.markdownBreaks
+    && props.componentMode === 'default'
     && props.strict === DEFAULT_CAPABILITIES.strict
     && props.editorToolbar === DEFAULT_CAPABILITIES.toolbar
     && props.editorAuthoring === DEFAULT_CAPABILITIES.authoring
@@ -360,6 +367,15 @@ export function DeveloperTools(props: DeveloperToolsProps) {
       <div className="devtools-cards">
         <DevCard title={copy.cards.compiler.title} subtitle={copy.cards.compiler.subtitle}
           icon={<CodeIcon />} tone="green" badge={badge}>
+          <div className="dev-option dev-option-static">
+            <span className="dev-option-copy"><strong>{copy.cards.compiler.componentMode}</strong></span>
+            <span className="dev-segment" role="group" aria-label={copy.cards.compiler.componentMode}>
+              {(['default', 'minimal'] as const).map(mode => <button key={mode} type="button"
+                aria-pressed={props.componentMode === mode} onClick={() => props.onComponentModeChange(mode)}>
+                {copy.cards.compiler.modes[mode]}
+              </button>)}
+            </span>
+          </div>
           <DevToggle label={copy.cards.compiler.markdownBreaks} hint={copy.cards.compiler.markdownBreaksHint}
             checked={props.markdownBreaks} onChange={props.onMarkdownBreaksChange} />
           <DevToggle label={copy.cards.compiler.strict} hint={copy.cards.compiler.strictHint}

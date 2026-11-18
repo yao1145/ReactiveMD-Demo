@@ -13,7 +13,8 @@ import {
 } from 'reactive-md';
 import { LocalDocumentView, type LocalDocumentViewProps } from 'reactive-md/react';
 import { createLocalShareableHtml, type LocalStandaloneBundle } from 'reactive-md/export';
-import { host } from 'virtual:reactive-md/host';
+import type { EditorComponentMode } from 'reactive-md-editor';
+import { getDemoHost } from '../settings/component-mode';
 import { imagePolicy, resolveDocumentImages, validateImageManifest, type ImageAsset } from '../images/image-assets';
 
 
@@ -33,6 +34,7 @@ export interface ShareableHtmlBuildOptions {
   colorScheme?: ShareableColorScheme;
   /** Routing options granted in the demo; the same policy must reach the export. */
   compileOptions?: LocalCompileOptions;
+  componentMode?: EditorComponentMode;
   /** Optional override; otherwise the first heading supplies the title. */
   title?: string;
   imageAssets?: readonly ImageAsset[];
@@ -47,6 +49,54 @@ export interface ShareableHtmlBuildResult {
 
 export interface PreparedShareableAssets {
   version: string;
+}
+
+/** Full document stylesheet or the 18-tag minimal preset sheet. */
+export type ShareableStyleSet = 'base' | 'minimal';
+
+export interface ShareableAssetPlan {
+  readonly styles: ShareableStyleSet;
+  /**
+   * The default single-file runtime. Extension routes carry their own bundle
+   * script instead, so loading the baseline runtime would be wasted work.
+   */
+  readonly runtime: boolean;
+}
+
+/**
+ * Whether an export must carry a host extension bundle instead of the default
+ * standalone runtime. This is the routing decision preparation and the build
+ * must share.
+ */
+export function documentUsesExtensionBundle(
+  document: LocalDocument | null,
+  componentMode: EditorComponentMode = 'default',
+): boolean {
+  if (componentMode === 'minimal') return true;
+  // While the source is still compiling there is no document to route on.
+  if (!document) return false;
+  const { config } = getDemoHost(componentMode);
+  return Boolean(
+    document.extensions?.components.length
+    || config.themes.some(theme => theme.name === document.theme),
+  );
+}
+
+/**
+ * The generated artifacts a route needs. Preparation and the build share this
+ * plan so opening the dialog never fetches the 3.85 MB baseline runtime or the
+ * full stylesheet for a minimal export.
+ */
+export function resolveShareableAssetPlan(
+  mode: ShareableHtmlMode,
+  componentMode: EditorComponentMode = 'default',
+  usesExtensionBundle = componentMode === 'minimal',
+): ShareableAssetPlan {
+  const minimal = componentMode === 'minimal';
+  return {
+    styles: minimal ? 'minimal' : 'base',
+    runtime: mode === 'interactive' && !usesExtensionBundle,
+  };
 }
 
 /** A build failure with optional compiler or state diagnostics. */
@@ -166,54 +216,114 @@ export function countParameterDifferences(
 /* Generated raw artifacts                                             */
 /* ------------------------------------------------------------------ */
 
-interface BaseAssets {
-  css: string;
-  notices: string;
+interface PackageMetadata {
   packageVersion: string;
 }
 
-interface LoadedAssets extends BaseAssets {
-  runtimeScript: string;
-}
+/** A successful host bundle, or the build error that replaced it. */
+type HostBundle = LocalStandaloneBundle & { configKey: string; notices: string };
+type HostBundleLoad = HostBundle | { error: string; diagnostics: readonly Diagnostic[] };
+type HostBundleModule = { readonly default: HostBundleLoad };
 
-let baseAssetsPromise: Promise<BaseAssets> | null = null;
+let packageMetadataPromise: Promise<PackageMetadata> | null = null;
+let baseCssPromise: Promise<string> | null = null;
+let minimalCssPromise: Promise<string> | null = null;
+let noticesPromise: Promise<string> | null = null;
 let runtimeScriptPromise: Promise<string> | null = null;
+let minimalBundlePromise: Promise<HostBundleModule> | null = null;
+let defaultBundlePromise: Promise<HostBundleModule> | null = null;
 
 function resetFailed<T>(promise: Promise<T>, reset: () => void): Promise<T> {
   promise.catch(() => reset());
   return promise;
 }
 
-function loadBaseAssets(): Promise<BaseAssets> {
-  if (!baseAssetsPromise) {
-    baseAssetsPromise = resetFailed(
-      Promise.all([
-        import('virtual:reactive-md-assets/base-css'),
-        import('virtual:reactive-md-assets/notices'),
-        import('virtual:reactive-md-assets/package-json'),
-        import('virtual:reactive-md-assets/print-css'),
-      ])
-        .then(([css, notices, packageJson, printCss]) => {
-          if (!css.default.trim()) {
-            throw new ShareableAssetsError('The generated document stylesheet is empty.');
-          }
-          return {
-            css: `${css.default}\n${printCss.default}`,
-            notices: notices.default,
-            packageVersion: readPackageVersion(packageJson.default),
-          };
-        })
+function assetsFailure(error: unknown): Error {
+  return error instanceof ShareableAssetsError
+    ? error
+    : new ShareableAssetsError(errorText(error));
+}
+
+/** Package metadata only; cheap enough to load for every route. */
+function loadPackageMetadata(): Promise<PackageMetadata> {
+  if (!packageMetadataPromise) {
+    packageMetadataPromise = resetFailed(
+      import('virtual:reactive-md-assets/package-json')
+        .then((packageJson) => ({ packageVersion: readPackageVersion(packageJson.default) }))
         .catch((error: unknown) => {
-          throw error instanceof ShareableAssetsError
-            ? error
-            : new ShareableAssetsError(errorText(error));
+          throw assetsFailure(error);
         }),
       () => {
-        baseAssetsPromise = null;
+        packageMetadataPromise = null;
       },
     );
   }
-  return baseAssetsPromise;
+  return packageMetadataPromise;
+}
+
+function loadBaseCss(): Promise<string> {
+  if (!baseCssPromise) {
+    baseCssPromise = resetFailed(
+      Promise.all([
+        import('virtual:reactive-md-assets/base-css'),
+        import('virtual:reactive-md-assets/print-css'),
+      ])
+        .then(([css, printCss]) => {
+          if (!css.default.trim()) {
+            throw new ShareableAssetsError('The generated document stylesheet is empty.');
+          }
+          return `${css.default}\n${printCss.default}`;
+        })
+        .catch((error: unknown) => {
+          throw assetsFailure(error);
+        }),
+      () => {
+        baseCssPromise = null;
+      },
+    );
+  }
+  return baseCssPromise;
+}
+
+/** The 18-tag preset stylesheet; never pulls the full document stylesheet. */
+function loadMinimalCss(): Promise<string> {
+  if (!minimalCssPromise) {
+    minimalCssPromise = resetFailed(
+      Promise.all([
+        import('virtual:reactive-md-assets/minimal-css'),
+        import('virtual:reactive-md-assets/print-css'),
+      ])
+        .then(([css, printCss]) => {
+          if (!css.default.trim()) {
+            throw new ShareableAssetsError('The generated minimal stylesheet is empty.');
+          }
+          return `${css.default}\n${printCss.default}`;
+        })
+        .catch((error: unknown) => {
+          throw assetsFailure(error);
+        }),
+      () => {
+        minimalCssPromise = null;
+      },
+    );
+  }
+  return minimalCssPromise;
+}
+
+function loadNotices(): Promise<string> {
+  if (!noticesPromise) {
+    noticesPromise = resetFailed(
+      import('virtual:reactive-md-assets/notices')
+        .then(module => module.default)
+        .catch((error: unknown) => {
+          throw assetsFailure(error);
+        }),
+      () => {
+        noticesPromise = null;
+      },
+    );
+  }
+  return noticesPromise;
 }
 
 function loadRuntimeScript(): Promise<string> {
@@ -227,9 +337,7 @@ function loadRuntimeScript(): Promise<string> {
           return module.default;
         })
         .catch((error: unknown) => {
-          throw error instanceof ShareableAssetsError
-            ? error
-            : new ShareableAssetsError(errorText(error));
+          throw assetsFailure(error);
         }),
       () => {
         runtimeScriptPromise = null;
@@ -239,21 +347,97 @@ function loadRuntimeScript(): Promise<string> {
   return runtimeScriptPromise;
 }
 
-async function loadAssets(mode: ShareableHtmlMode, defaultRuntime = true): Promise<LoadedAssets> {
-  const base = await loadBaseAssets();
-  const runtimeScript = mode === 'interactive' && defaultRuntime ? await loadRuntimeScript() : '';
-  return { ...base, runtimeScript };
+/**
+ * Load a host bundle once. Import failures reset the cache so a retry after
+ * restarting the dev server can succeed; a bundle that reports its own build
+ * error stays cached and fails later with its diagnostics.
+ */
+function loadBundleModule(
+  importer: () => Promise<HostBundleModule>,
+  reset: () => void,
+): Promise<HostBundleModule> {
+  return resetFailed(
+    importer()
+      // A bundle that reports its own build error resolved successfully, so
+      // only a failed import becomes a `ShareableAssetsError`.
+      .catch((error: unknown) => {
+        throw assetsFailure(error);
+      }),
+    reset,
+  );
+}
+
+function loadMinimalBundle(): Promise<HostBundleModule> {
+  if (!minimalBundlePromise) {
+    minimalBundlePromise = loadBundleModule(
+      () => import('virtual:reactive-md-minimal-bundle'),
+      () => {
+        minimalBundlePromise = null;
+      },
+    );
+  }
+  return minimalBundlePromise;
+}
+
+/** The default host bundle replayed by interactive documents with extensions. */
+function loadDefaultBundle(): Promise<HostBundleModule> {
+  if (!defaultBundlePromise) {
+    defaultBundlePromise = loadBundleModule(
+      () => import('virtual:reactive-md/bundle'),
+      () => {
+        defaultBundlePromise = null;
+      },
+    );
+  }
+  return defaultBundlePromise;
+}
+
+/**
+ * Load the route's export payload ahead of the click. A bundle that reports its
+ * own build error is not treated as an asset failure; the build surfaces its
+ * diagnostics at export time.
+ */
+function warmExtensionBundle(minimal: boolean): Promise<void> {
+  return (minimal ? loadMinimalBundle() : loadDefaultBundle()).then(() => undefined);
+}
+
+/** Route-selected stylesheet; preparation and the build share this function. */
+export function loadShareableStyles(styles: ShareableStyleSet): Promise<string> {
+  return styles === 'minimal' ? loadMinimalCss() : loadBaseCss();
+}
+
+export interface ShareablePrepareOptions {
+  /** False while the source is still compiling; only metadata is prepared. */
+  readonly documentReady?: boolean;
+  /** Route through the host extension bundle instead of the default runtime. */
+  readonly usesExtensionBundle?: boolean;
 }
 
 /**
  * Load the build artifacts the dialog needs and report the package version.
- * Rejecting with `ShareableAssetsError` means the demo was not built yet.
+ * Only the route's own stylesheet and runtime are fetched: a minimal export
+ * never downloads the full stylesheet or the 3.85 MB baseline runtime, and an
+ * extension export warms its bundle instead of the baseline runtime. Until the
+ * source compiles there is no valid route or output, so only metadata loads.
+ * Rejecting with `ShareableAssetsError` means the demo was not built yet; a
+ * failed cache resets so reopening the dialog retries.
  */
 export async function prepareShareableHtmlAssets(
   mode: ShareableHtmlMode,
+  componentMode: EditorComponentMode = 'default',
+  options: ShareablePrepareOptions = {},
 ): Promise<PreparedShareableAssets> {
-  const assets = await loadAssets(mode);
-  return { version: assets.packageVersion };
+  const usesExtensionBundle = options.usesExtensionBundle ?? componentMode === 'minimal';
+  const plan = resolveShareableAssetPlan(mode, componentMode, usesExtensionBundle);
+  const metadata = loadPackageMetadata();
+  const warm: Promise<unknown>[] = [];
+  if (options.documentReady !== false) {
+    warm.push(loadShareableStyles(plan.styles));
+    if (plan.runtime) warm.push(loadRuntimeScript());
+    else if (mode === 'interactive') warm.push(warmExtensionBundle(componentMode === 'minimal'));
+  }
+  const [info] = await Promise.all([metadata, Promise.all(warm)]);
+  return { version: info.packageVersion };
 }
 
 /* ------------------------------------------------------------------ */
@@ -282,7 +466,8 @@ export function formatBuildError(error: unknown): string {
 export async function buildShareableHtml(
   options: ShareableHtmlBuildOptions,
 ): Promise<ShareableHtmlBuildResult> {
-  const { config: demoConfig, reactConfig, resources, notices } = host;
+  const minimal = options.componentMode === 'minimal';
+  const { config: demoConfig, reactConfig, resources, notices } = getDemoHost(options.componentMode);
   const { source, state, mode } = options;
   const locale: 'en' | 'zh' = options.locale === 'zh' ? 'zh' : 'en';
   const colorScheme: ShareableColorScheme = options.colorScheme ?? 'auto';
@@ -293,8 +478,7 @@ export async function buildShareableHtml(
     throw new ShareableHtmlBuildError('The document does not compile.', compiled.diagnostics);
   }
   const document = compiled.document;
-  const usesExtensions = Boolean(document.extensions?.components.length
-    || demoConfig.themes.some(theme => theme.name === document.theme));
+  const usesExtensions = documentUsesExtensionBundle(document, options.componentMode);
   if (usesExtensions && compileOptions.config.key !== demoConfig.key) {
     throw new ShareableHtmlBuildError('This document requires an extension configuration that is not installed in the Demo.');
   }
@@ -314,13 +498,23 @@ export async function buildShareableHtml(
     );
   }
 
-  const assets = await loadAssets(mode, !usesExtensions);
+  // Preparation and the build use one plan: the same stylesheet and runtime
+  // choice, so an already-primed route never needs a second large fetch.
+  const plan = resolveShareableAssetPlan(mode, options.componentMode, usesExtensions);
+  const [css, extensionNoticesBase, metadata] = await Promise.all([
+    loadShareableStyles(plan.styles),
+    loadNotices(),
+    loadPackageMetadata(),
+  ]);
+  const packageVersion = metadata.packageVersion;
+  const runtimeScript = plan.runtime ? await loadRuntimeScript() : '';
   let bundle: LocalStandaloneBundle | undefined;
   let extensionNotices = usesExtensions
     ? notices.map(notice => [notice.id, notice.license, notice.text].filter(Boolean).join('\n')).join('\n\n')
     : '';
   if (usesExtensions && mode === 'interactive') {
-    const built = (await import('virtual:reactive-md/bundle')).default;
+    // Vite updates the default export in place during a theme refresh.
+    const { default: built } = await (minimal ? loadMinimalBundle() : loadDefaultBundle());
     if ('error' in built) throw new ShareableHtmlBuildError(built.error, built.diagnostics);
     if (built.configKey !== demoConfig.key) {
       throw new ShareableAssetsError('The extension bundle is stale. Restart or rebuild the Demo.');
@@ -361,17 +555,17 @@ export async function buildShareableHtml(
     source,
     state,
     staticMarkup,
-    css: assets.css,
+    css,
     mode,
-    runtimeScript: mode === 'interactive' ? assets.runtimeScript : undefined,
+    runtimeScript: mode === 'interactive' ? runtimeScript : undefined,
     locale,
     colorScheme,
     compileOptions,
-    generator: { name: DEMO_GENERATOR_NAME, version: assets.packageVersion },
+    generator: { name: DEMO_GENERATOR_NAME, version: packageVersion },
     assets: 'inline' as const,
     imageCount,
     images: resolved.images,
-    notices: `${assets.notices}\n${extensionNotices}`,
+    notices: `${extensionNoticesBase}\n${extensionNotices}`,
   };
   const html = usesExtensions
     ? createLocalShareableHtml({ ...htmlOptions, document, config: demoConfig, resources, bundle })

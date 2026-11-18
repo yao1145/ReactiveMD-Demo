@@ -8,6 +8,8 @@ import classroomSource from '../../content/examples/local/scenarios/classroom.re
 import classroomZhSource from '../../content/examples/local/scenarios/classroom-zh.reactive.md?raw';
 import proposalSource from '../../content/examples/local/scenarios/proposal.reactive.md?raw';
 import proposalZhSource from '../../content/examples/local/scenarios/proposal-zh.reactive.md?raw';
+import minimalBudgetSource from '../../content/examples/local/scenarios/minimal-budget.reactive.md?raw';
+import minimalBudgetZhSource from '../../content/examples/local/scenarios/minimal-budget-zh.reactive.md?raw';
 import surveySource from '../../content/examples/local/scenarios/survey.reactive.md?raw';
 import surveyZhSource from '../../content/examples/local/scenarios/survey-zh.reactive.md?raw';
 import blogSource from '../../content/examples/local/scenarios/blog.reactive.md?raw';
@@ -58,6 +60,13 @@ export const EXAMPLES: PlaygroundExample[] = [
     hint: 'Discuss a four-week trial with a shopping list, a live budget and a delivery schedule.',
     hintZh: '带着采购清单、可调整预算和实施时间表，讨论一项四周试用方案。',
     source: lf(proposalSource), sourceZh: lf(proposalZhSource),
+  },
+  {
+    id: 'minimal-budget', section: 'scenario',
+    title: 'Workshop budget', titleZh: '工作坊预算',
+    hint: 'Adjust the budget, switch component modes, and export the result as PDF.',
+    hintZh: '调整预算、切换组件模式，再把计算结果导出为 PDF。',
+    source: lf(minimalBudgetSource), sourceZh: lf(minimalBudgetZhSource),
   },
   {
     id: 'survey', section: 'scenario',

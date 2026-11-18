@@ -15,13 +15,14 @@ import {
   type MouseEvent as ReactMouseEvent,
 } from 'react';
 import type { Diagnostic, SourceRange } from 'reactive-md';
-import { config as demoConfig } from 'virtual:reactive-md/host';
+import { getDemoHost } from '../settings/component-mode';
 import type { LocalSourceTarget } from 'reactive-md/react';
 import {
   MobileDocBar,
   ReactiveMarkdownEditor,
   type ReactiveMarkdownEditorHandle,
   type EditorTransaction,
+  type EditorComponentMode,
   type EditorViewMode,
 } from 'reactive-md-editor';
 import type {LocalCompileEditHint} from 'reactive-md';
@@ -129,6 +130,7 @@ export default function App() {
   const [htmlOptions, setHtmlOptions] = useState<DemoHtmlOptions>(freshHtmlOptions);
   const [markdownBreaks, setMarkdownBreaks] = useState(true);
   const [strict, setStrict] = useState(true);
+  const [componentMode, setComponentMode] = useState<EditorComponentMode>('default');
   const [editorToolbar, setEditorToolbar] = useState(true);
   const [editorAuthoring, setEditorAuthoring] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -238,7 +240,8 @@ export default function App() {
 
   const flushSourceWrite = useDraftPersistence(libraryMode, selectedExample, source, language, library);
 
-  const compileOptions = useMemo(() => ({ ...toCompileOptions(htmlOptions), markdownBreaks, strict, config: demoConfig }), [htmlOptions, markdownBreaks, strict]);
+  const { config: demoConfig, reactConfig } = getDemoHost(componentMode);
+  const compileOptions = useMemo(() => ({ ...toCompileOptions(htmlOptions), markdownBreaks, strict, config: demoConfig }), [htmlOptions, markdownBreaks, strict, demoConfig]);
   const compilation = useLocalCompilation(source, compileOptions, true, editHint.current);
   const currentExample = localizedExample(
     EXAMPLES.find((item) => item.id === selectedExample) ?? DEFAULT_EXAMPLE,
@@ -317,6 +320,7 @@ export default function App() {
     setHtmlOptions(freshHtmlOptions());
     setMarkdownBreaks(true);
     setStrict(true);
+    setComponentMode('default');
     setEditorToolbar(true);
     setEditorAuthoring(true);
     setRetainPreviewState(true);
@@ -362,6 +366,10 @@ export default function App() {
     download(`${exportBaseName}.reactive.md`, source, 'text/markdown;charset=utf-8');
   }, [exportBaseName, source]);
 
+  const changeComponentMode = useCallback((mode: EditorComponentMode) => {
+    setRuntimeDiagnostics([]);
+    setComponentMode(mode);
+  }, []);
   const openExportDialog = useCallback(() => setExportOpen(true), []);
   const closeExportDialog = useCallback(() => setExportOpen(false), []);
 
@@ -777,6 +785,8 @@ export default function App() {
               onMarkdownBreaksChange={setMarkdownBreaks}
               strict={strict}
               onStrictChange={setStrict}
+              componentMode={componentMode}
+              onComponentModeChange={changeComponentMode}
               htmlOptions={htmlOptions}
               onHtmlOptionsChange={changeHtmlOptions}
               editorToolbar={editorToolbar}
@@ -860,7 +870,10 @@ export default function App() {
                         <DiagnosticList diagnostics={compiled.diagnostics} focusDiagnostic={focusDiagnostic} />
                       </div>
                     ) : previewDocument ? (
-                      <LocalPreview key={instanceKey} document={previewDocument} session={previewSession} stateId={documentKey} onDiagnostics={report} images={documentImages.assets} onSourceNavigate={editorView === 'split' ? revealSource : undefined} />
+                      <LocalPreview key={`${componentMode}:${instanceKey}`} document={previewDocument}
+                        session={previewSession} stateId={componentMode === 'minimal' ? `${documentKey}:minimal` : documentKey}
+                        reactConfig={reactConfig} onDiagnostics={report} images={documentImages.assets}
+                        onSourceNavigate={editorView === 'split' ? revealSource : undefined} />
                     ) : (
                       <div className="preview-loading" role="status"><p>{copy.preview.preparing}</p></div>
                     )}
@@ -929,6 +942,7 @@ export default function App() {
           onImageFiles={addImages}
           onRemoveImage={removeImage}
           open={exportOpen}
+          componentMode={componentMode}
           source={source}
           baseName={exportBaseName}
           document={exportDocument}

@@ -91,6 +91,9 @@ export interface DemoCopy {
     interactiveHint: string;
     static: string;
     staticHint: string;
+    pdf: string;
+    pdfHint: string;
+    printPdfHint: string;
     stateLegend: string;
     authorInitial: string;
     authorInitialHint: string;
@@ -123,6 +126,8 @@ export interface DemoCopy {
     assetsFailed: (message: string) => string;
     buildFailed: (message: string) => string;
     exportHtml: string;
+    exportPdf: string;
+    printPdf: string;
     exportMarkdown: string;
     exportState: string;
     exportStateHint: string;
@@ -273,14 +278,17 @@ const ENGLISH: DemoCopy = {
   exportDialog: {
     title: 'Export document',
     description:
-      'Download the Markdown source, or create a self-contained HTML file that readers can open offline.',
+      'Download the Markdown source, self-contained HTML, or a PDF snapshot.',
     close: 'Close export dialog',
-    formatLegend: 'HTML output',
+    formatLegend: 'Output format',
     interactive: 'Interactive HTML',
     interactiveHint:
       'One self-contained file with the embedded runtime. Readers can use the controls, and the exported values are already applied.',
     static: 'Static HTML',
     staticHint: 'A read-only snapshot without a runtime or scripts, suitable for printing and archiving.',
+    pdf: 'PDF',
+    pdfHint: 'Download a paginated snapshot of the selected state.',
+    printPdfHint: 'Choose Save as PDF in the browser print dialog.',
     stateLegend: 'Starting values',
     authorInitial: 'Author initial values',
     authorInitialHint:
@@ -312,20 +320,22 @@ const ENGLISH: DemoCopy = {
     htmlModeStateNote: 'Starting values and state export do not apply in native HTML mode.',
     exportStateHtmlMode: 'State export is unavailable in native HTML mode.',
     compilePending: 'Waiting for the current source to finish compiling…',
-    compileFailed: (message) => `HTML export is unavailable until the source compiles: ${message}`,
+    compileFailed: (message) => `Resolve compilation errors before exporting. ${message}`,
     compileUnavailable:
-      'HTML export is unavailable because the current source has not compiled yet.',
+      'Export is available after the current source compiles.',
     assetsLoading: 'Checking the generated export assets…',
     assetsFailed: (message) =>
       `The generated export assets are missing or unreadable: ${message}. Run npm run build before exporting.`,
-    buildFailed: (message) => `Could not render the HTML file: ${message}`,
+    buildFailed: (message) => `Export failed. ${message}`,
     exportHtml: 'Export HTML',
+    exportPdf: 'Download PDF',
+    printPdf: 'Print or save PDF',
     exportMarkdown: 'Download Markdown',
     exportState: 'Save current state',
     exportStateHint:
       'Download the current preview parameters as a reactive-md-state/v1 file for a CLI build.',
     exportStateUnavailable: 'Open a running preview to save its current parameters.',
-    preparing: 'Rendering HTML…',
+    preparing: 'Preparing export…',
     cancel: 'Cancel',
   },
   editor: {
@@ -476,13 +486,16 @@ const CHINESE: DemoCopy = {
   },
   exportDialog: {
     title: '导出文档',
-    description: '下载 Markdown 源码，或生成一份读者可离线打开的自包含 HTML 文件。',
+    description: '下载 Markdown 源码、自包含 HTML 或 PDF 快照。',
     close: '关闭导出对话框',
-    formatLegend: 'HTML 输出',
+    formatLegend: '输出格式',
     interactive: '交互式 HTML',
     interactiveHint: '单文件内嵌运行时。读者可以使用控件，打开时已经应用导出的参数值。',
     static: '静态 HTML',
     staticHint: '只读快照，不包含运行时和脚本，适合打印和归档。',
+    pdf: 'PDF',
+    pdfHint: '将所选状态排版成分页文档并下载。',
+    printPdfHint: '在浏览器打印窗口中选择「另存为 PDF」。',
     stateLegend: '起始值',
     authorInitial: '作者初值',
     authorInitialHint: '使用文档声明的默认值。每次打开和重置都从相同的值开始。',
@@ -510,18 +523,20 @@ const CHINESE: DemoCopy = {
     htmlModeStateNote: '原生 HTML 模式下不适用起始值和状态导出。',
     exportStateHtmlMode: '原生 HTML 模式下无法导出状态。',
     compilePending: '正在等待当前源码编译完成…',
-    compileFailed: (message) => `源码编译通过前无法导出 HTML：${message}`,
-    compileUnavailable: '当前源码尚未编译完成，暂时无法导出 HTML。',
+    compileFailed: (message) => `请修复编译错误后再导出。${message}`,
+    compileUnavailable: '源码编译完成后即可导出。',
     assetsLoading: '正在检查生成的导出资源…',
     assetsFailed: (message) =>
       `生成的导出资源缺失或无法读取：${message}。请先运行 npm run build 再导出。`,
-    buildFailed: (message) => `无法渲染 HTML 文件：${message}`,
+    buildFailed: (message) => `导出失败。${message}`,
     exportHtml: '导出 HTML',
+    exportPdf: '下载 PDF',
+    printPdf: '打印或保存 PDF',
     exportMarkdown: '下载 Markdown',
     exportState: '保存当前状态',
     exportStateHint: '把当前预览参数下载为 reactive-md-state/v1 文件，供 CLI 构建使用。',
     exportStateUnavailable: '请先打开正在运行的预览，再保存当前参数。',
-    preparing: '正在渲染 HTML…',
+    preparing: '正在准备导出…',
     cancel: '取消',
   },
   editor: {

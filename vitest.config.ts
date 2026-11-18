@@ -3,6 +3,6 @@ import { reactiveMd } from 'reactive-md/vite';
 import { exportAssets } from './vite.export-assets.ts';
 
 export default defineConfig({
-  plugins: [reactiveMd(), exportAssets()],
+  plugins: [reactiveMd({ includeMinimal: true }), exportAssets()],
   test: { include: ['tests/**/*.test.{ts,tsx}'], css: true },
 });
