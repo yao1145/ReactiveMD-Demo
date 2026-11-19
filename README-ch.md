@@ -105,3 +105,7 @@ import 'reactive-md/styles.css';
 ## 部署
 
 站点是静态构建。`npm run build` 写入 `dist/`；`.github/workflows/site.yml` 将该目录作为 workflow artifact 上传，到此为止。生产部署是手动、带版本号的符号链接切换，详见 [AGENTS-ch.md](AGENTS-ch.md)。
+
+## 本地联网问卷
+
+运行 `npm run dev`，打开[联网问卷](http://127.0.0.1:5173/?example=network-survey)。两个计票面板共享一条 SSE 连接，票数保存在当前开发服务进程内。运行 `node scripts/verify-network-survey.mjs` 可验证首次响应丢失后重试只计一票，以及最后一个面板隐藏后连接关闭。

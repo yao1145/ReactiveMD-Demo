@@ -16,6 +16,8 @@ import {
 } from 'react';
 import type { Diagnostic, SourceRange } from 'reactive-md';
 import { getDemoHost } from '../settings/component-mode';
+import { SURVEY_EXAMPLE_ID } from '../network/survey-contract';
+import { getSurveyNetwork } from '../network/survey-network';
 import type { LocalSourceTarget } from 'reactive-md/react';
 import {
   MobileDocBar,
@@ -241,6 +243,7 @@ export default function App() {
   const flushSourceWrite = useDraftPersistence(libraryMode, selectedExample, source, language, library);
 
   const { config: demoConfig, reactConfig } = getDemoHost(componentMode);
+  const network = libraryMode === 'example' && selectedExample === SURVEY_EXAMPLE_ID ? getSurveyNetwork() : undefined;
   const compileOptions = useMemo(() => ({ ...toCompileOptions(htmlOptions), markdownBreaks, strict, config: demoConfig }), [htmlOptions, markdownBreaks, strict, demoConfig]);
   const compilation = useLocalCompilation(source, compileOptions, true, editHint.current);
   const currentExample = localizedExample(
@@ -872,7 +875,7 @@ export default function App() {
                     ) : previewDocument ? (
                       <LocalPreview key={`${componentMode}:${instanceKey}`} document={previewDocument}
                         session={previewSession} stateId={componentMode === 'minimal' ? `${documentKey}:minimal` : documentKey}
-                        reactConfig={reactConfig} onDiagnostics={report} images={documentImages.assets}
+                        reactConfig={reactConfig} network={network} onDiagnostics={report} images={documentImages.assets}
                         onSourceNavigate={editorView === 'split' ? revealSource : undefined} />
                     ) : (
                       <div className="preview-loading" role="status"><p>{copy.preview.preparing}</p></div>

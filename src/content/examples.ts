@@ -1,4 +1,7 @@
 import type { Language } from '../ui/i18n';
+import { SURVEY_EXAMPLE_ID } from '../network/survey-contract';
+import networkSurveySource from '../../content/examples/local/scenarios/network-survey.reactive.md?raw';
+import networkSurveyZhSource from '../../content/examples/local/scenarios/network-survey-zh.reactive.md?raw';
 import * as installedExtensions from '../../extensions';
 import featuresSource from '../../content/examples/local/showcase/features.reactive.md?raw';
 import diagnosticsSource from '../../content/examples/local/diagnostics.reactive.md?raw';
@@ -74,6 +77,13 @@ export const EXAMPLES: PlaygroundExample[] = [
     hint: 'Choose a time and topics, then prepare a personal summary for the organiser.',
     hintZh: '填写时间、兴趣与材料偏好，生成一份可发给组织者的个人摘要。',
     source: lf(surveySource), sourceZh: lf(surveyZhSource),
+  },
+  {
+    id: SURVEY_EXAMPLE_ID, section: 'scenario',
+    title: 'Network survey', titleZh: '联网问卷',
+    hint: 'Send a response and watch two panels share a live results stream.',
+    hintZh: '提交问卷，观察两个计票面板共享实时统计流。',
+    source: lf(networkSurveySource), sourceZh: lf(networkSurveyZhSource),
   },
   {
     id: 'blog', section: 'scenario',

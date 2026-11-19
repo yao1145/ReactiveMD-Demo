@@ -1,6 +1,7 @@
 import { memo, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { notifyLocalRuntime, type Diagnostic, type LocalRuntime } from 'reactive-md';
 import { LocalDocumentView, type LocalReactConfig, type LocalSourceTarget } from 'reactive-md/react';
+import type { NetworkConfig } from 'reactive-md/runtime';
 import { flushComponentStateOnPageHide } from 'reactive-md/runtime/browser';
 import { reactConfig as demoReactConfig } from 'virtual:reactive-md/host';
 import { useCopy, useLanguage } from '../ui/i18n';
@@ -18,10 +19,11 @@ interface LocalPreviewProps {
   onDiagnostics: (diagnostics: Diagnostic[]) => void;
   images: readonly ImageAsset[];
   reactConfig?: LocalReactConfig;
+  network?: NetworkConfig;
   onSourceNavigate?(target: LocalSourceTarget): void;
 }
 
-export const LocalPreview = memo(function LocalPreview({ document, session, stateId, onDiagnostics, images, reactConfig = demoReactConfig, onSourceNavigate }: LocalPreviewProps) {
+export const LocalPreview = memo(function LocalPreview({ document, session, stateId, onDiagnostics, images, network, reactConfig = demoReactConfig, onSourceNavigate }: LocalPreviewProps) {
   const language = useLanguage();
   const copy = useCopy();
   const imageProps = useMemo(() => imagePolicy(Object.fromEntries(images.map(a => [a.url, a.dataUrl]))), [images]);
@@ -98,6 +100,7 @@ export const LocalPreview = memo(function LocalPreview({ document, session, stat
   return (
     <LocalDocumentView
       reactConfig={reactConfig}
+      network={network}
       {...imageProps}
       document={instance.document}
       runtime={instance.runtime}

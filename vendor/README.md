@@ -18,7 +18,7 @@ The site renders the local extension source in [plugin/](../plugin/README.md) an
 
 | File | Package | Version |
 | --- | --- | --- |
-| `reactive-md-0.8.0-f991729cef88.tgz` | `reactive-md` | `0.8.0` |
+| `reactive-md-0.8.0-805397b77343.tgz` | `reactive-md` | `0.8.0` |
 | `reactive-md-editor-0.1.0-76778127514a.tgz` | `reactive-md-editor` | `0.1.0` |
 | `reactive-md-sci-fi-theme-1.0.0-525cab7ab93f.tgz` | `reactive-md-sci-fi-theme` | `1.0.0` |
 | `reactive-md-tetris-package-0.1.0-fc1fa620038f.tgz` | `reactive-md-tetris-package` | `0.1.0` |
@@ -38,6 +38,6 @@ The game packages declare a `reactive-md` peer range of `^0.8.0-next.0` and a Re
 
 Build the package in its own repository, copy the output here with the versioned, content-addressed filename, update the `file:` path in `package.json` and regenerate the lockfile. [docs/candidate-package-updates-en.md](../docs/candidate-package-updates-en.md) records the current engine and editor procedure.
 
-The engine candidate includes the 18-tag minimal preset and static PDF export. Its SHA256 is `f991729cef880d4d473ea6c02e1aa519bd4eacc5d81cfa5877356350ac092d66`.
+The engine candidate from commit `3ff7e2d` adds named network channels and the optional submit control. Its SHA256 is `805397b773434886a4006ba96ebb62447d840be2fc1ac8a89126db2c2d493883`.
 
 The editor candidate uses the host's export dialog and compile options for PDF and component modes. Its SHA256 is `76778127514a8ceb18c881c86d045faba2a328d5e795aba5c7b21ebf8ea34f76`. The theme fixture was built from commit `351b341` and has SHA256 `525cab7ab93fda6331e8fd5260c2c85aec5935559032bc951ad0ed827f7d4277`.

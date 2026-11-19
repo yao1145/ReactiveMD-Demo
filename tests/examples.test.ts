@@ -3,7 +3,7 @@ import { compileLocal, createLocalRuntime } from 'reactive-md';
 import { EXAMPLES, DEFAULT_EXAMPLE_ID, localizedExample, localizedExamples } from '../src/content/examples';
 import { host, examples as extensionExamples } from '../extensions';
 
-const BUILTIN_COUNT = 8;
+const BUILTIN_COUNT = 9;
 
 function exampleSource(id: string) {
   const example = EXAMPLES.find((item) => item.id === id);
@@ -21,7 +21,7 @@ describe('playground local documents consumed through the public package', () =>
     expect(new Set(EXAMPLES.map((example) => example.id)).size).toBe(EXAMPLES.length);
     const contributedIds = new Set(extensionExamples.map(example => example.id));
     const builtins = EXAMPLES.filter(example => !contributedIds.has(example.id));
-    expect(builtins.filter(example => example.section === 'scenario').map(example => example.id)).toEqual(['classroom', 'proposal', 'minimal-budget', 'survey', 'blog']);
+    expect(builtins.filter(example => example.section === 'scenario').map(example => example.id)).toEqual(['classroom', 'proposal', 'minimal-budget', 'survey', 'network-survey', 'blog']);
     expect(builtins.filter((example) => example.section === 'feature').map((example) => example.id))
       .toEqual(['features']);
     expect(builtins.filter((example) => example.section === 'reference').map((example) => example.id)).toEqual(['sci-fi-theme']);

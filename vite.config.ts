@@ -3,9 +3,10 @@ import react from '@vitejs/plugin-react';
 import { reactiveMd } from 'reactive-md/vite';
 import { exportAssets } from './vite.export-assets.ts';
 import { pdfExport } from './vite.pdf-export.ts';
+import { surveyApi } from './vite.survey.ts';
 
 export default defineConfig({
-  plugins: [react(), reactiveMd({ includeMinimal: true }), exportAssets(), pdfExport()],
+  plugins: [react(), reactiveMd({ includeMinimal: true }), exportAssets(), pdfExport(), surveyApi()],
   // Vitest and the host bundle builder use their own Vite instances.
   cacheDir: 'node_modules/.vite-demo',
   // The export dialog imports the server renderer on demand. Pre-bundle it so

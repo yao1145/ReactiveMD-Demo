@@ -114,3 +114,8 @@ See [docs/migration.md](docs/migration.md) for the import and path changes that 
 ## Deployment
 
 The site is a static build. `npm run build` writes `dist/`; `.github/workflows/site.yml` uploads that directory as a workflow artifact and stops there. Production deployment is a manual, versioned symlink switch documented in [AGENTS.md](AGENTS.md).
+
+## Local network survey
+
+Start the Demo with `npm run dev` and open [Network survey](http://127.0.0.1:5173/?example=network-survey).
+The two results panels share an SSE connection. Start the local browser check with `node scripts/verify-network-survey.mjs` to verify that retrying after a lost response records one vote. The dev server keeps votes in memory.
