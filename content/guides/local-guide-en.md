@@ -2,7 +2,7 @@
 
 Add controls to Markdown, and the prose, calculations and charts update as the reader changes them. Open the [online Playground](https://yaozi.raricy.com/) and paste an example into the editor to try it in the preview.
 
-This guide uses the current working tree with syntax revision `local-draft-3`. Each section starts with a runnable example, then explains it. The complete tag reference is at the end.
+This guide uses the current working tree with syntax revision `local-draft-3`. Most sections start with a runnable example, then explain it; network submission needs a host channel, so its working example is the separate Open-air cinema document. The complete tag reference is at the end.
 
 ## 1. Your first interactive document
 
@@ -108,7 +108,7 @@ Arrays cannot be interpolated directly in `{{ }}`. Convert them with `len`, an i
 
 ## 4. Expressions
 
-Expressions in `{{ }}` run locally. The language does not execute JavaScript or make network requests.
+Expressions in `{{ }}` run locally. The language does not execute JavaScript, and a document on its own makes no network requests. A host can enable named channels for the optional submit button and for subscriptions; see section 10.
 
 ```markdown
 <slider bind="people" label="People" initial="2" min="1" max="20">
@@ -441,6 +441,23 @@ At <tooltip text="8 or more people will trigger a venue capacity reminder.">8 pe
 
 `tooltip` is an inline explanation and requires `text`. Readers see it on pointer hover or keyboard focus. Use it for a short phrase or name.
 
+## 10. Network submission
+
+A document on its own makes no network requests. A host can open named channels for a document and decide which direction each channel allows: submission, subscription, or both. The document contains only the channel name. Endpoints, request headers, tokens and validation stay in host code.
+
+Network submission needs the optional `reactive-md/plugins/network` package. It adds one tag, `submit-button`:
+
+- `channel` is required and static. It names a channel the host enabled for submission.
+- `fields` is required and static. It lists public writable bindings separated by spaces; one click sends their current values as one snapshot. Duplicates, computed values, read-only externals and unknown names fail the whole submission.
+- `label` sets the button text. The default is `Submit`.
+- `disabled` is an optional dynamic boolean that disables the button while true.
+
+A submit line looks like `<submit-button channel="answers" fields="choice comment" label="Send response">`. The button shows one of four outcomes: submitting, submitted, rejected with a reason, or unconfirmed. An unconfirmed send may have reached the server; pressing the button again with unchanged fields reuses the same key, so a server that deduplicates by key counts the response once. Editing a field starts a new submission. A required field with no value, or a control holding an invalid draft, stops the send and names the field.
+
+Subscription runs in the other direction. The official plugin ships only the submit button; a host or custom component can subscribe to a channel and receive messages the host has validated. A subscription can also update declared `<external>` values through the host mapping; prose, computations and conditions then read the new values while the reader's inputs keep their state. The Open-air cinema example in the Playground shows the full setup: one submit button, two live tally panels and the host channel configuration behind them.
+
+This guide preview has no channel enabled, so a submit button placed here would stay disabled. Use the Open-air cinema example to try a real send and a live subscription.
+
 ## Common errors
 
 | Problem | Cause and fix |
@@ -457,6 +474,10 @@ At <tooltip text="8 or more people will trigger a venue capacity reminder.">8 pe
 | A plot rejects a formula | Check whether the LaTeX is in the computable set and write multi-letter parameters as `\mathrm{name}`. |
 | A calculation shows "Unable to calculate" | Check for division by zero, a type mismatch or a non-finite result. Other content still updates. |
 | A declaration has no effect | Place `const` and `computed` at document top level and check that the name does not duplicate a control. |
+| A submit button stays disabled | The current page has no channel enabled for submission, or the `fields` list is invalid. Open a page whose host configures the channel. |
+| A submission is rejected | The host validator refused the payload; check the named field and its current draft. |
+| A submission is unconfirmed | The request may have reached the server. Retry with unchanged fields so the same idempotency key is reused. |
+| A subscription stays empty | The host has not enabled the channel, or the stream is still connecting. |
 
 Fix the first diagnostic before the later ones. Compile errors block the preview; unknown-tag warnings preserve the affected source; runtime calculation errors affect only the corresponding content.
 
@@ -464,7 +485,7 @@ Use inline code or code fences to show literal tags and expressions. Write `\{{ 
 
 ## Complete component reference
 
-The following tables list all 49 tags in `local-draft-3`, grouped by purpose. A no-body component has no closing tag, a container must close explicitly, an inline component can sit inside a sentence, a child tag belongs inside its parent, and a declaration does not render as interface content.
+The following tables list all 49 tags in the base `local-draft-3` presets, grouped by purpose. A no-body component has no closing tag, a container must close explicitly, an inline component can sit inside a sentence, a child tag belongs inside its parent, and a declaration does not render as interface content.
 
 Most interactive controls support `label`, optional `bind`, optional `initial` and dynamic `disabled`. The tables list the key attributes only. `number`/`slider` and `date` bounds and `required` may use one interpolation, such as `max="{{ rooms * 4 }}"`; narrowing a range keeps the current value and shows a field error instead of clamping it.
 
@@ -559,10 +580,20 @@ Most interactive controls support `label`, optional `bind`, optional `initial` a
 | `node` | `id` required and unique, `label` required, `tone` can be dynamic | Diagram node |
 | `edge` | `from`, `to` required, `label` | Diagram edge |
 
-These 49 tags are the full set. `option`, `tab`, `disclosure`, `node`, `edge`, `step` and `column` are structural children; they must appear inside their matching parent and cannot be used alone.
+These 49 tags are the full set for the base presets. `option`, `tab`, `disclosure`, `node`, `edge`, `step` and `column` are structural children; they must appear inside their matching parent and cannot be used alone.
 
 `table` and `chart` require `key` together with `bind` or `initial`; `key` identifies the selected row. Each `$$...$$` block in a `plot` defines one curve, with up to 16 curves per plot.
 
 In addition, `<theme name="default">` before the body selects the document theme. It is document metadata and is not counted among the 49 tags.
 
 Default mode also supports P0 HTML elements such as `div`, `span`, `p` and `h1` through `h6`. Among them, `div`, `p` and `h1` through `h6` accept a static `align` value (`left`, `center`, `right` or `justify`). These are HTML elements, not part of the 49 tags above.
+
+### Optional network component
+
+Network submission adds one official optional tag, installed with `reactive-md/plugins/network`. It works with every base preset and is not part of the 49 tags above.
+
+| Tag | Key attributes | Purpose |
+| --- | --- | --- |
+| `submit-button` | `channel` required and static; `fields` required and static; `label`; dynamic `disabled` | Send the listed public bindings through a host-enabled channel |
+
+The host owns channel names, endpoints, validation and authorization. See section 10.
