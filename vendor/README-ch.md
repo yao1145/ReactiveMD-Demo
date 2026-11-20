@@ -18,7 +18,7 @@ Demo 通过 tarball 安装的依赖都放在本目录。引擎和编辑器快照
 
 | 文件 | 包 | 版本 |
 | --- | --- | --- |
-| `reactive-md-0.9.0-cf7bb81291b0.tgz` | `reactive-md` | `0.9.0` |
+| `reactive-md-0.9.0-dba5ed514f91.tgz` | `reactive-md` | `0.9.0` |
 | `reactive-md-editor-0.2.0-c489c61e1846.tgz` | `reactive-md-editor` | `0.2.0` |
 | `reactive-md-sci-fi-theme-1.0.0-525cab7ab93f.tgz` | `reactive-md-sci-fi-theme` | `1.0.0` |
 | `reactive-md-tetris-package-0.1.0-fc1fa620038f.tgz` | `reactive-md-tetris-package` | `0.1.0` |
@@ -38,8 +38,8 @@ Demo 通过 tarball 安装的依赖都放在本目录。引擎和编辑器快照
 
 在包所属仓库中构建，使用带版本号和内容哈希的文件名复制到这里，更新 `package.json` 中的 `file:` 路径并重新生成 lockfile。当前的引擎与编辑器更新流程见 [docs/candidate-package-updates-ch.md](../docs/candidate-package-updates-ch.md)。
 
-引擎 tarball 与 [reactive-md@0.9.0](https://www.npmjs.com/package/reactive-md/v/0.9.0) 的 npm 发布包一致。SHA256 为 `cf7bb81291b02bb687d7ec241551d6a4cc12d7ab823851a8cda83578178e3152`。
+引擎候选包基于 [reactive-md@0.9.0](https://www.npmjs.com/package/reactive-md/v/0.9.0) 发布包，并包含 [94cd24c](https://github.com/yao1145/ReactiveMD/commit/94cd24c) 的流式源码编译工作：`sourcePhase`、结果 `status`、`transientDiagnostics`，以及配套的 scheduler、Worker 和 React 改动。该包由该提交的 `dist-library/` 打包生成。SHA256 为 `dba5ed514f91b344a7e0e5855ad1a7d796d6c969241584c67802b557a7f9a4b2`。
 
-Editor 0.2.0 候选包基于 [4cb9816](https://github.com/yao1145/ReactiveMD-Editor/commit/4cb98167d04b3b168b19ae7b472a94dbd97cc28a) 构建。分析 Worker 打包了 Demo 锁定的同一份正式引擎。SHA256 为 `c489c61e1846c0e9410f7a8f14d53b2c7de646b6be70d993bb15e9348ee4cdbb`。
+Editor 0.2.0 候选包基于 [4cb9816](https://github.com/yao1145/ReactiveMD-Editor/commit/4cb98167d04b3b168b19ae7b472a94dbd97cc28a) 构建。分析 Worker 打包的是已发布的 [reactive-md@0.9.0](https://www.npmjs.com/package/reactive-md/v/0.9.0) 引擎，不包含上述流式改动。SHA256 为 `c489c61e1846c0e9410f7a8f14d53b2c7de646b6be70d993bb15e9348ee4cdbb`。
 
 主题夹具由提交 `351b341` 构建，SHA256 为 `525cab7ab93fda6331e8fd5260c2c85aec5935559032bc951ad0ed827f7d4277`。

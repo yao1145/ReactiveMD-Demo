@@ -18,7 +18,7 @@ The site renders the local extension source in [plugin/](../plugin/README.md) an
 
 | File | Package | Version |
 | --- | --- | --- |
-| `reactive-md-0.9.0-cf7bb81291b0.tgz` | `reactive-md` | `0.9.0` |
+| `reactive-md-0.9.0-dba5ed514f91.tgz` | `reactive-md` | `0.9.0` |
 | `reactive-md-editor-0.2.0-c489c61e1846.tgz` | `reactive-md-editor` | `0.2.0` |
 | `reactive-md-sci-fi-theme-1.0.0-525cab7ab93f.tgz` | `reactive-md-sci-fi-theme` | `1.0.0` |
 | `reactive-md-tetris-package-0.1.0-fc1fa620038f.tgz` | `reactive-md-tetris-package` | `0.1.0` |
@@ -38,8 +38,8 @@ The game packages declare a `reactive-md` peer range of `^0.8.0-next.0` and a Re
 
 Build the package in its own repository, copy the output here with the versioned, content-addressed filename, update the `file:` path in `package.json` and regenerate the lockfile. [docs/candidate-package-updates-en.md](../docs/candidate-package-updates-en.md) records the current engine and editor procedure.
 
-The engine tarball matches [reactive-md@0.9.0](https://www.npmjs.com/package/reactive-md/v/0.9.0). SHA256 is `cf7bb81291b02bb687d7ec241551d6a4cc12d7ab823851a8cda83578178e3152`.
+The engine candidate is built on the [reactive-md@0.9.0](https://www.npmjs.com/package/reactive-md/v/0.9.0) release plus the streaming source compilation work at [94cd24c](https://github.com/yao1145/ReactiveMD/commit/94cd24c): `sourcePhase`, result `status`, `transientDiagnostics`, and the matching scheduler, Worker and React changes. It was packed from `dist-library/` at that commit. SHA256 is `dba5ed514f91b344a7e0e5855ad1a7d796d6c969241584c67802b557a7f9a4b2`.
 
-The Editor 0.2.0 candidate was built from [4cb9816](https://github.com/yao1145/ReactiveMD-Editor/commit/4cb98167d04b3b168b19ae7b472a94dbd97cc28a). Its analysis Worker bundles the same published engine used here. SHA256 is `c489c61e1846c0e9410f7a8f14d53b2c7de646b6be70d993bb15e9348ee4cdbb`.
+The Editor 0.2.0 candidate was built from [4cb9816](https://github.com/yao1145/ReactiveMD-Editor/commit/4cb98167d04b3b168b19ae7b472a94dbd97cc28a). Its analysis Worker bundles the published [reactive-md@0.9.0](https://www.npmjs.com/package/reactive-md/v/0.9.0) engine, so it does not include the streaming changes above. SHA256 is `c489c61e1846c0e9410f7a8f14d53b2c7de646b6be70d993bb15e9348ee4cdbb`.
 
 The theme fixture was built from commit `351b341` and has SHA256 `525cab7ab93fda6331e8fd5260c2c85aec5935559032bc951ad0ed827f7d4277`.

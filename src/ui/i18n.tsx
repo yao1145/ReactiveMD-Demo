@@ -181,6 +181,41 @@ export interface DemoCopy {
     showActions: string;
     hideActions: string;
   };
+  streaming: {
+    nav: string;
+    title: string;
+    subtitle: string;
+    region: string;
+    controls: string;
+    start: string;
+    cancel: string;
+    restart: string;
+    statusLabel: string;
+    statusIdle: string;
+    statusStreaming: string;
+    statusFinalizing: string;
+    statusDone: string;
+    statusCancelled: string;
+    runMeta: (generation: number, submitted: number, total: number) => string;
+    snapshot: (status: string, phase: string) => string;
+    duration: (milliseconds: number) => string;
+    discarded: (count: number) => string;
+    count: (count: number) => string;
+    sourceHeading: string;
+    sourceMeta: (characters: number) => string;
+    sourceEmpty: string;
+    previewHeading: string;
+    previewNote: string;
+    previewCancelled: string;
+    previewIdle: string;
+    transientHeading: string;
+    transientHint: string;
+    diagnosticsHeading: string;
+    diagnosticsHint: string;
+    finalHeading: string;
+    finalHint: string;
+    none: string;
+  };
   status: {
     compileFailed: string;
     compiled: (diagnostics: number, duration: number, fallback: boolean) => string;
@@ -386,6 +421,46 @@ const ENGLISH: DemoCopy = {
     showActions: 'Show preview actions',
     hideActions: 'Hide preview actions',
   },
+  streaming: {
+    nav: 'Streaming',
+    title: 'Streaming source sample',
+    subtitle:
+      'Watch a fixed chunk list grow into a ReactiveMD document. Every snapshot compiles as it arrives, and the final snapshot restores interaction.',
+    region: 'Streaming source sample',
+    controls: 'Streaming run controls',
+    start: 'Start',
+    cancel: 'Cancel',
+    restart: 'Restart',
+    statusLabel: 'Run status',
+    statusIdle: 'Idle',
+    statusStreaming: 'Streaming',
+    statusFinalizing: 'Applying final snapshot',
+    statusDone: 'Complete',
+    statusCancelled: 'Cancelled',
+    runMeta: (generation, submitted, total) =>
+      `Generation ${generation} · chunk ${submitted} of ${total}`,
+    snapshot: (status, phase) => `Latest result: ${status} (${phase})`,
+    duration: (milliseconds) => `${milliseconds} ms`,
+    discarded: (count) => `Discarded stale results: ${count}`,
+    count: (count) => `${count}`,
+    sourceHeading: 'Generated source',
+    sourceMeta: (characters) => `${characters} characters so far`,
+    sourceEmpty: 'No source yet. Start a run.',
+    previewHeading: 'Live preview',
+    previewNote:
+      'Streaming snapshots render in static mode: controls are read-only and side effects wait for the final snapshot.',
+    previewCancelled: 'The run was cancelled. The truncated snapshot stays read-only.',
+    previewIdle: 'Start a run to build the document chunk by chunk.',
+    transientHeading: 'Provisional diagnostics',
+    transientHint:
+      'Repairable issues from the current snapshot. They never enter final diagnostics.',
+    diagnosticsHeading: 'Snapshot diagnostics',
+    diagnosticsHint: 'Non-transient issues in the current snapshot.',
+    finalHeading: 'Final diagnostics',
+    finalHint:
+      'Issues from the completed source. Finalization clears the provisional issues.',
+    none: 'None',
+  },
   status: {
     compileFailed: 'Compile failed',
     compiled: (diagnostics, duration, fallback) => {
@@ -584,6 +659,41 @@ const CHINESE: DemoCopy = {
     exitFullscreen: '退出全屏',
     showActions: '显示预览操作',
     hideActions: '隐藏预览操作',
+  },
+  streaming: {
+    nav: '流式',
+    title: '流式源码示例',
+    subtitle: '观察固定分片如何逐步生成一份 ReactiveMD 文档。每次快照到达即编译，最终快照恢复交互。',
+    region: '流式源码示例',
+    controls: '流式运行控制',
+    start: '开始',
+    cancel: '取消',
+    restart: '重新开始',
+    statusLabel: '运行状态',
+    statusIdle: '空闲',
+    statusStreaming: '流式生成中',
+    statusFinalizing: '正在应用最终快照',
+    statusDone: '已完成',
+    statusCancelled: '已取消',
+    runMeta: (generation, submitted, total) => `第 ${generation} 代 · 第 ${submitted} / ${total} 片`,
+    snapshot: (status, phase) => `最新结果：${status}（${phase}）`,
+    duration: (milliseconds) => `${milliseconds} ms`,
+    discarded: (count) => `已丢弃过期结果：${count}`,
+    count: (count) => `${count}`,
+    sourceHeading: '已生成源码',
+    sourceMeta: (characters) => `当前 ${characters} 个字符`,
+    sourceEmpty: '还没有源码。开始一次运行。',
+    previewHeading: '实时预览',
+    previewNote: '流式快照以静态模式渲染：控件只读，副作用等待最终快照。',
+    previewCancelled: '运行已取消，截断的快照保持只读。',
+    previewIdle: '开始运行，逐片生成文档。',
+    transientHeading: '临时诊断',
+    transientHint: '当前快照中可修复的问题，不会进入最终诊断。',
+    diagnosticsHeading: '快照诊断',
+    diagnosticsHint: '当前快照中的非临时问题。',
+    finalHeading: '最终诊断',
+    finalHint: '完整源码的问题；最终化会清空临时诊断。',
+    none: '无',
   },
   status: {
     compileFailed: '编译失败',
