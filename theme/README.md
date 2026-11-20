@@ -4,11 +4,13 @@
 
 This directory is the site's theme runtime. `reactiveMd()` in `vite.config.ts` discovers `theme/<name>/`, inlines its CSS and registers it with the compiler, so the editor, preview and offline export render these files directly.
 
-The `reactive-md-sci-fi-theme` tarball in `vendor/` is a compatibility fixture for tests. The site never imports it, and `src/main.tsx` must not: [vendor/README.md](../vendor/README.md) records the fixture.
+The `reactive-md-sci-fi-theme` tarball in `vendor/` is a compatibility fixture for tests. The site never imports it, and `src/main.tsx` must not: [vendor/README.md](../vendor/README.md) records the fixture. The sci-fi CSS is derived from `reactive-md-sci-fi-theme@1.0.0` public entries (MIT).
 
 | Directory | Theme name | Files |
 | --- | --- | --- |
-| `sci-fi/` | `sci-fi` | `theme.json` identity (`reactive-md/theme-sci-fi`, `sci-fi`, `1.0.0`), `theme.css` entry with `@import` lines, `assets/tokens.css`, `assets/components.css`, `assets/notch.css`, its own `README.md` |
+| `sci-fi/` | `sci-fi` | `theme.json` identity (`reactive-md/theme-sci-fi`, `sci-fi`, `1.0.0`), `theme.css` entry with `@import` lines, `assets/tokens.css`, `assets/components.css`, `assets/notch.css` |
+
+`theme.css` imports the three asset files. `assets/tokens.css` holds the color, type, spacing, radius and control tokens for both schemes; `assets/components.css` holds document, panel, table, form, navigation, code and print styles; `assets/notch.css` cuts an 8px corner on panels, cards and the chart frame. Edit `theme.css` or these files in place.
 
 ## Select a theme
 

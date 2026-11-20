@@ -4,11 +4,13 @@
 
 本目录是站点的主题运行时。`vite.config.ts` 中的 `reactiveMd()` 会扫描 `theme/<名称>/`，内联其 CSS 并注册到编译器，编辑器、预览和离线导出因此直接渲染这里的文件。
 
-`vendor/` 中的 `reactive-md-sci-fi-theme` tarball 是兼容性测试夹具。站点从不导入它，`src/main.tsx` 也不得导入：相关记录见 [vendor/README-ch.md](../vendor/README-ch.md)。
+`vendor/` 中的 `reactive-md-sci-fi-theme` tarball 是兼容性测试夹具。站点从不导入它，`src/main.tsx` 也不得导入：相关记录见 [vendor/README-ch.md](../vendor/README-ch.md)。sci-fi 主题的 CSS 派生自 `reactive-md-sci-fi-theme@1.0.0` 的公开入口（MIT）。
 
 | 目录 | 主题名 | 文件 |
 | --- | --- | --- |
-| `sci-fi/` | `sci-fi` | `theme.json` 标识（`reactive-md/theme-sci-fi`、`sci-fi`、`1.0.0`），`theme.css` 入口及 `@import` 行，`assets/tokens.css`，`assets/components.css`，`assets/notch.css`，本目录的 `README.md` |
+| `sci-fi/` | `sci-fi` | `theme.json` 标识（`reactive-md/theme-sci-fi`、`sci-fi`、`1.0.0`），`theme.css` 入口及 `@import` 行，`assets/tokens.css`，`assets/components.css`，`assets/notch.css` |
+
+`theme.css` 引入三个资源文件。`assets/tokens.css` 保存浅色与深色两套颜色、字体、间距、圆角与控制 token；`assets/components.css` 覆盖文档、面板、表格、表单、导航、代码与打印样式；`assets/notch.css` 为面板、卡片和图表外框切出 8px 的角。编辑主题时直接修改 `theme.css` 或这些文件。
 
 ## 选择主题
 

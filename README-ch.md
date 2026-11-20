@@ -54,16 +54,21 @@ npm run dev
 | `npm run build` | 类型检查并将静态站点构建到 `dist/` |
 | `npm run preview` | 提供生产构建的预览服务 |
 | `npm test` | Vitest 单元与集成测试 |
+| `npm run test:watch` | Vitest 监听模式 |
 | `npm run test:browser:smoke` | 一次 Chromium 桌面端和移动端冒烟测试 |
+| `npm run test:browser` | 先运行编辑器滚动检查，再运行导出检查（`test:editor` + `test:export`） |
 | `npm run test:editor` | 编辑器滚动、视图和源码导航检查 |
 | `npm run test:toolbar` | 工具栏与组件插入检查 |
+| `npm run test:toolbar:compact` | 紧凑工具栏检查 |
 | `npm run test:interactions` | 编辑器选区和交互检查 |
 | `npm run test:export` | HTML 和图片导出检查 |
 | `npm run test:runtime-extensions` | 站点本地 `plugin/` 扩展与离线导出 bundle |
 | `npm run test:outline` | 文档大纲行为 |
 | `npm run test:workbench` | 紧凑工作台布局 |
+| `npm run test:preview:actions` | 全屏预览操作检查 |
+| `npm run test:preview:slider` | 预览滑块命中目标检查 |
 
-大多数浏览器脚本面向 `http://127.0.0.1:5173`；请先启动 `npm run dev`，或将 `DEMO_URL` 设为另一个正在运行的站点。`test:browser:smoke`、`test:interactions` 和 `test:runtime-extensions` 会自行启动 Vite 服务器。脚本默认使用 Edge；设置 `PLAYWRIGHT_CHANNEL=chromium` 可使用内置浏览器。报告和截图输出到 `artifacts/`。
+大多数浏览器脚本面向 `http://127.0.0.1:5173`；请先启动 `npm run dev`，或将 `DEMO_URL` 设为另一个正在运行的站点。`test:browser:smoke`、`test:interactions` 和 `test:runtime-extensions` 会自行启动 Vite 服务器。大多数浏览器脚本默认使用 Edge；`test:browser:smoke` 使用内置 Chromium。设置 `PLAYWRIGHT_CHANNEL` 可覆盖两者的默认值。报告和截图输出到 `artifacts/`。
 
 ```sh
 npm run dev
@@ -78,7 +83,7 @@ DEMO_URL=http://127.0.0.1:5173 PLAYWRIGHT_CHANNEL=msedge npm run test:editor
 - `plugin/` 存放站点运行的组件源码，`theme/` 存放主题源码。
 - `extensions.ts` 保留示例元数据与供测试使用的兼容 host 导出。
 
-示例和指南文件是通过 `?raw` 导入的普通 Markdown 源文件。就地编辑即可；导航标题和提示位于 `src/examples.ts`。
+示例和指南文件是通过 `?raw` 导入的普通 Markdown 源文件。就地编辑即可；导航标题和提示位于 `src/content/examples.ts`。
 
 ## 导出资源
 
@@ -100,11 +105,11 @@ import 'reactive-md/styles.css';
 
 ## 从 monorepo 迁移
 
-将 `demo/` 变成当前仓库的导入和路径改动，参见 [docs/migration-ch.md](docs/migration-ch.md)。
+将 `demo/` 变成当前仓库的导入和路径改动，参见[扩展编写指南](docs/extension-authoring-ch.md#6-从-monorepo-迁移宿主代码)。
 
 ## 部署
 
-站点是静态构建。`npm run build` 写入 `dist/`；`.github/workflows/site.yml` 将该目录作为 workflow artifact 上传，到此为止。生产部署是手动、带版本号的符号链接切换，详见 [AGENTS-ch.md](AGENTS-ch.md)。
+站点是静态构建。`npm run build` 写入 `dist/`；`.github/workflows/site.yml` 将该目录作为 workflow artifact 上传，到此为止。生产部署由维护者手动执行带版本号的符号链接切换。
 
 ## 本地联网问卷
 

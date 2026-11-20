@@ -53,16 +53,21 @@ Tetris and 2048 run from local source under `plugin/tetris/` and `plugin/game-20
 | `npm run build` | Type-check and build the static site into `dist/` |
 | `npm run preview` | Serve the production build |
 | `npm test` | Vitest unit and integration tests |
+| `npm run test:watch` | Vitest in watch mode |
 | `npm run test:browser:smoke` | One Chromium desktop and mobile smoke run |
+| `npm run test:browser` | Editor scrolling checks followed by export checks (`test:editor` + `test:export`) |
 | `npm run test:editor` | Editor scrolling, views and source navigation checks |
 | `npm run test:toolbar` | Toolbar and component insertion checks |
+| `npm run test:toolbar:compact` | Compact toolbar checks |
 | `npm run test:interactions` | Editor selection and interaction checks |
 | `npm run test:export` | HTML and image export checks |
 | `npm run test:runtime-extensions` | Local `plugin/` extensions and the offline export bundle |
 | `npm run test:outline` | Document outline behavior |
 | `npm run test:workbench` | Compact workbench layout |
+| `npm run test:preview:actions` | Fullscreen preview action checks |
+| `npm run test:preview:slider` | Preview slider hit-target checks |
 
-Most browser scripts target `http://127.0.0.1:5173`; start `npm run dev` first, or set `DEMO_URL` to another running site. `test:browser:smoke`, `test:interactions` and `test:runtime-extensions` start their own Vite server. Scripts use Edge by default; set `PLAYWRIGHT_CHANNEL=chromium` to use the bundled browser. Reports and screenshots go to `artifacts/`.
+Most browser scripts target `http://127.0.0.1:5173`; start `npm run dev` first, or set `DEMO_URL` to another running site. `test:browser:smoke`, `test:interactions` and `test:runtime-extensions` start their own Vite server. Most browser scripts use Edge by default; `test:browser:smoke` uses the bundled Chromium. Set `PLAYWRIGHT_CHANNEL` to override either. Reports and screenshots go to `artifacts/`.
 
 ```sh
 npm run dev
@@ -109,11 +114,11 @@ import 'reactive-md/styles.css';
 
 ## Migration from the monorepo
 
-See [docs/migration.md](docs/migration.md) for the import and path changes that turned `demo/` into this repository.
+See [extension authoring](docs/extension-authoring-en.md#6-migrate-host-code-from-the-monorepo) for the import and path changes that turned `demo/` into this repository.
 
 ## Deployment
 
-The site is a static build. `npm run build` writes `dist/`; `.github/workflows/site.yml` uploads that directory as a workflow artifact and stops there. Production deployment is a manual, versioned symlink switch documented in [AGENTS.md](AGENTS.md).
+The site is a static build. `npm run build` writes `dist/`; `.github/workflows/site.yml` uploads that directory as a workflow artifact and stops there. Production deployment is a manual, versioned symlink switch performed by the maintainers.
 
 ## Local network survey
 

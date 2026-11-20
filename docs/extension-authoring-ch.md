@@ -89,6 +89,21 @@ npm run test:runtime-extensions
 
 夹具清单见 [vendor/README-ch.md](../vendor/README-ch.md)，完整说明见 [Demo README](../README-ch.md)；目录规则见引擎文档[按目录接入](https://github.com/yao1145/ReactiveMD/blob/main/docs/integration/directory-discovery-ch.md)。
 
+## 6. 从 monorepo 迁移宿主代码
+
+本仓库曾是 ReactiveMD monorepo 中的 `demo/`。现在它基于 `vendor/` 中的 tarball 构建，并拥有自己的内容、配置和工作流。`../../examples/local/`、`../../docs/guides/` 这类父级引用不再解析；内容源位于 `content/examples/local/` 和 `content/guides/`，通过 `src/content/` 中的 `?raw` 导入进入应用。
+
+编辑器是独立包，替换旧的子路径：
+
+| 之前 | 之后 |
+| --- | --- |
+| `reactive-md/editor` | `reactive-md-editor` |
+| `reactive-md/editor/styles.css` | `reactive-md-editor/styles.css` |
+| `reactive-md/editor/codemirror` | `reactive-md-editor/codemirror` |
+| `reactive-md/editor/codemirror/styles.css` | `reactive-md-editor/codemirror/styles.css` |
+
+引擎导入继续使用包名：`reactive-md` 的 `compileLocal`、`reactive-md/react` 的 `LocalDocumentView` 和 `reactive-md/vite` 的 `reactiveMd`。应用入口加载 `reactive-md/styles.css` 与 `reactive-md-editor/styles.css`。`vite.config.ts` 和 `vitest.config.ts` 都要注册 `reactiveMd()` 与 `exportAssets()`；导出代码通过 `virtual:reactive-md-assets/*` 虚拟模块读取引擎产物。`tsconfig.json` 独立配置，按已安装包的导出解析模块，不设指回引擎源码的 `paths` 别名。
+
 ## 相关文档
 
 - [扩展作者教程](https://github.com/yao1145/ReactiveMD/blob/main/docs/development/extension-tutorial-ch.md)

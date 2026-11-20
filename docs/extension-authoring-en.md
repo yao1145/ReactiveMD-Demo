@@ -89,6 +89,21 @@ npm run test:runtime-extensions
 
 The [vendor README](../vendor/README.md) lists the fixtures and the [Demo README](../README.md) documents the scripts; [directory discovery](https://github.com/yao1145/ReactiveMD/blob/main/docs/integration/directory-discovery-en.md) documents the discovery rules.
 
+## 6. Migrate host code from the monorepo
+
+This repository was `demo/` inside the ReactiveMD monorepo. It now builds against the tarballs in `vendor/` and owns its content, configuration and workflows. Parent references such as `../../examples/local/` and `../../docs/guides/` no longer resolve; content sources live in `content/examples/local/` and `content/guides/` and enter the application through the `?raw` imports in `src/content/`.
+
+The editor is a separate package. Replace its old subpaths:
+
+| Before | After |
+| --- | --- |
+| `reactive-md/editor` | `reactive-md-editor` |
+| `reactive-md/editor/styles.css` | `reactive-md-editor/styles.css` |
+| `reactive-md/editor/codemirror` | `reactive-md-editor/codemirror` |
+| `reactive-md/editor/codemirror/styles.css` | `reactive-md-editor/codemirror/styles.css` |
+
+Engine imports keep their package specifiers: `compileLocal` from `reactive-md`, `LocalDocumentView` from `reactive-md/react` and `reactiveMd` from `reactive-md/vite`. Load `reactive-md/styles.css` and `reactive-md-editor/styles.css` at the application entry. Keep `reactiveMd()` and `exportAssets()` registered in both `vite.config.ts` and `vitest.config.ts`; export code resolves engine artifacts through the `virtual:reactive-md-assets/*` modules. `tsconfig.json` is standalone and resolves installed package exports, with no `paths` aliases into engine source.
+
 ## Related documents
 
 - [Extension author tutorial](https://github.com/yao1145/ReactiveMD/blob/main/docs/development/extension-tutorial-en.md)
