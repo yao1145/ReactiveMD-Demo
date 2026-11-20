@@ -18,7 +18,7 @@ Demo 通过 tarball 安装的依赖都放在本目录。引擎和编辑器快照
 
 | 文件 | 包 | 版本 |
 | --- | --- | --- |
-| `reactive-md-0.8.0-8939a515a340.tgz` | `reactive-md` | `0.8.0` |
+| `reactive-md-0.8.0-b7bbf8e1e790.tgz` | `reactive-md` | `0.8.0` |
 | `reactive-md-editor-0.1.0-76778127514a.tgz` | `reactive-md-editor` | `0.1.0` |
 | `reactive-md-sci-fi-theme-1.0.0-525cab7ab93f.tgz` | `reactive-md-sci-fi-theme` | `1.0.0` |
 | `reactive-md-tetris-package-0.1.0-fc1fa620038f.tgz` | `reactive-md-tetris-package` | `0.1.0` |
@@ -38,6 +38,6 @@ Demo 通过 tarball 安装的依赖都放在本目录。引擎和编辑器快照
 
 在包所属仓库中构建，使用带版本号和内容哈希的文件名复制到这里，更新 `package.json` 中的 `file:` 路径并重新生成 lockfile。当前的引擎与编辑器更新流程见 [docs/candidate-package-updates-ch.md](../docs/candidate-package-updates-ch.md)。
 
-引擎候选由提交 `2163f73` 及工作区改动构建：在宿主、构建、导出与 standalone 样式资源前声明共享层顺序，修复亮色模式下 Mafs 背景与主按钮文字的层叠问题；同时统一代码块背景、移除 accordion 顶部细线、让表格行选择框与多选保持一致，修正 jump 按钮文字、chart 轴刻度和 table 单元格内容的垂直居中，把表格分页设为次级按钮样式，并让粘性表格选择列跟随所在卡片的表面色。SHA256 为 `8939a515a340bf0db6b9d9cff9fb5270714ba409a94e72e87b3c1657a1534c9c`。
+引擎候选由提交 `2163f73` 及工作区改动构建：在宿主、构建、导出与 standalone 样式资源前声明共享层顺序，修复亮色模式下 Mafs 背景与主按钮文字的层叠问题；同时统一代码块背景、移除 accordion 顶部细线、让表格行选择框与多选保持一致，修正 jump 按钮文字、chart 轴刻度和 table 单元格内容的垂直居中，把表格分页设为次级按钮样式，让粘性表格选择列跟随所在卡片的表面色，并新增红色 `alert tone="error"`。SHA256 为 `b7bbf8e1e7902a18442f0f82f1aa13de3c13618eb0bc10285ca5bc1f65eade71`。
 
 编辑器候选通过统一导出入口和宿主编译配置接入 PDF 与组件模式。SHA256 为 `76778127514a8ceb18c881c86d045faba2a328d5e795aba5c7b21ebf8ea34f76`。主题夹具由提交 `351b341` 构建，SHA256 为 `525cab7ab93fda6331e8fd5260c2c85aec5935559032bc951ad0ed827f7d4277`。

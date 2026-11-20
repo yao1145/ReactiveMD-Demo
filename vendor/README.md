@@ -18,7 +18,7 @@ The site renders the local extension source in [plugin/](../plugin/README.md) an
 
 | File | Package | Version |
 | --- | --- | --- |
-| `reactive-md-0.8.0-8939a515a340.tgz` | `reactive-md` | `0.8.0` |
+| `reactive-md-0.8.0-b7bbf8e1e790.tgz` | `reactive-md` | `0.8.0` |
 | `reactive-md-editor-0.1.0-76778127514a.tgz` | `reactive-md-editor` | `0.1.0` |
 | `reactive-md-sci-fi-theme-1.0.0-525cab7ab93f.tgz` | `reactive-md-sci-fi-theme` | `1.0.0` |
 | `reactive-md-tetris-package-0.1.0-fc1fa620038f.tgz` | `reactive-md-tetris-package` | `0.1.0` |
@@ -38,6 +38,6 @@ The game packages declare a `reactive-md` peer range of `^0.8.0-next.0` and a Re
 
 Build the package in its own repository, copy the output here with the versioned, content-addressed filename, update the `file:` path in `package.json` and regenerate the lockfile. [docs/candidate-package-updates-en.md](../docs/candidate-package-updates-en.md) records the current engine and editor procedure.
 
-The engine candidate from commit `2163f73` with working-tree changes declares the shared layer order before host, build, export and standalone style resources, fixing the light-theme cascade for Mafs surfaces and primary-button ink. It also unifies block code backgrounds, removes the accordion top rule, aligns table row checkboxes with multi-select, centers jump-button text and chart axis ticks, vertically centers table cell content, renders table pagination as secondary buttons, and keeps the sticky table selection column on the surrounding card surface. Its SHA256 is `8939a515a340bf0db6b9d9cff9fb5270714ba409a94e72e87b3c1657a1534c9c`.
+The engine candidate from commit `2163f73` with working-tree changes declares the shared layer order before host, build, export and standalone style resources, fixing the light-theme cascade for Mafs surfaces and primary-button ink. It also unifies block code backgrounds, removes the accordion top rule, aligns table row checkboxes with multi-select, centers jump-button text and chart axis ticks, vertically centers table cell content, renders table pagination as secondary buttons, keeps the sticky table selection column on the surrounding card surface, and adds the red `alert tone="error"`. Its SHA256 is `b7bbf8e1e7902a18442f0f82f1aa13de3c13618eb0bc10285ca5bc1f65eade71`.
 
 The editor candidate uses the host's export dialog and compile options for PDF and component modes. Its SHA256 is `76778127514a8ceb18c881c86d045faba2a328d5e795aba5c7b21ebf8ea34f76`. The theme fixture was built from commit `351b341` and has SHA256 `525cab7ab93fda6331e8fd5260c2c85aec5935559032bc951ad0ed827f7d4277`.
