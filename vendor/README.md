@@ -6,8 +6,8 @@ Every dependency the Demo installs from a tarball lives here. The engine and edi
 
 | Tarball | Role | Loaded by |
 | --- | --- | --- |
-| `reactive-md-<version>-<hash>.tgz` | candidate engine snapshot | `npm run dev`, `npm run build`, `npm test` |
-| `reactive-md-editor-<version>-<hash>.tgz` | candidate editor snapshot | `npm run dev`, `npm run build`, `npm test` |
+| `reactive-md-<version>-<hash>.tgz` | pinned engine package | `npm run dev`, `npm run build`, `npm test` |
+| `reactive-md-editor-<version>-<hash>.tgz` | pinned editor package | `npm run dev`, `npm run build`, `npm test` |
 | `reactive-md-tetris-package-<version>-<hash>.tgz` | compatibility fixture | `tests/installed-tetris.test.ts`, `tests/extension-host.test.tsx`, `tests/directory-discovery.test.ts` |
 | `reactive-md-game-2048-package-<version>-<hash>.tgz` | compatibility fixture | `tests/directory-discovery.test.ts` |
 | `reactive-md-sci-fi-theme-<version>-<hash>.tgz` | compatibility fixture | `tests/directory-discovery.test.ts` |
@@ -18,8 +18,8 @@ The site renders the local extension source in [plugin/](../plugin/README.md) an
 
 | File | Package | Version |
 | --- | --- | --- |
-| `reactive-md-0.8.0-b7bbf8e1e790.tgz` | `reactive-md` | `0.8.0` |
-| `reactive-md-editor-0.1.0-76778127514a.tgz` | `reactive-md-editor` | `0.1.0` |
+| `reactive-md-0.9.0-cf7bb81291b0.tgz` | `reactive-md` | `0.9.0` |
+| `reactive-md-editor-0.2.0-c489c61e1846.tgz` | `reactive-md-editor` | `0.2.0` |
 | `reactive-md-sci-fi-theme-1.0.0-525cab7ab93f.tgz` | `reactive-md-sci-fi-theme` | `1.0.0` |
 | `reactive-md-tetris-package-0.1.0-fc1fa620038f.tgz` | `reactive-md-tetris-package` | `0.1.0` |
 | `reactive-md-game-2048-package-0.1.0-ce931218c317.tgz` | `reactive-md-game-2048-package` | `0.1.0` |
@@ -38,6 +38,8 @@ The game packages declare a `reactive-md` peer range of `^0.8.0-next.0` and a Re
 
 Build the package in its own repository, copy the output here with the versioned, content-addressed filename, update the `file:` path in `package.json` and regenerate the lockfile. [docs/candidate-package-updates-en.md](../docs/candidate-package-updates-en.md) records the current engine and editor procedure.
 
-The engine candidate from commit `2163f73` with working-tree changes declares the shared layer order before host, build, export and standalone style resources, fixing the light-theme cascade for Mafs surfaces and primary-button ink. It also unifies block code backgrounds, removes the accordion top rule, aligns table row checkboxes with multi-select, centers jump-button text and chart axis ticks, vertically centers table cell content, renders table pagination as secondary buttons, keeps the sticky table selection column on the surrounding card surface, and adds the red `alert tone="error"`. Its SHA256 is `b7bbf8e1e7902a18442f0f82f1aa13de3c13618eb0bc10285ca5bc1f65eade71`.
+The engine tarball matches [reactive-md@0.9.0](https://www.npmjs.com/package/reactive-md/v/0.9.0). SHA256 is `cf7bb81291b02bb687d7ec241551d6a4cc12d7ab823851a8cda83578178e3152`.
 
-The editor candidate uses the host's export dialog and compile options for PDF and component modes. Its SHA256 is `76778127514a8ceb18c881c86d045faba2a328d5e795aba5c7b21ebf8ea34f76`. The theme fixture was built from commit `351b341` and has SHA256 `525cab7ab93fda6331e8fd5260c2c85aec5935559032bc951ad0ed827f7d4277`.
+The Editor 0.2.0 candidate was built from [4cb9816](https://github.com/yao1145/ReactiveMD-Editor/commit/4cb98167d04b3b168b19ae7b472a94dbd97cc28a). Its analysis Worker bundles the same published engine used here. SHA256 is `c489c61e1846c0e9410f7a8f14d53b2c7de646b6be70d993bb15e9348ee4cdbb`.
+
+The theme fixture was built from commit `351b341` and has SHA256 `525cab7ab93fda6331e8fd5260c2c85aec5935559032bc951ad0ed827f7d4277`.

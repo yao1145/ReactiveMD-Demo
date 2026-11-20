@@ -2,7 +2,7 @@
 
 **中文** · [English](README.md)
 
-Reactive MD 的 Playground：包含编辑器、实时预览、文档库、HTML 导出和一组双语示例文章。站点组件与主题是 `plugin/` 和 `theme/` 下的本地源码；候选版 `reactive-md` 引擎和 `reactive-md-editor` 包以仓库内提交的 tarball 提供，因此本仓库无需引擎源码树即可构建。
+Reactive MD 的 Playground 提供编辑器、实时预览、文档库、HTML 和 PDF 导出及双语示例。站点组件和主题位于 `plugin/` 和 `theme/`。构建使用 `vendor/` 中锁定的引擎和编辑器 tarball。
 
 在线站点：[yaozi.raricy.com](https://yaozi.raricy.com/)。
 
@@ -30,7 +30,7 @@ npm run dev
 
 `npm ci` 需要 `package-lock.json`。在没有 lockfile 的全新检出中，先运行一次 `npm install --legacy-peer-deps`，然后提交结果。
 
-引擎和编辑器以 `vendor/` 下的 tarball 形式提供（`reactive-md` 0.8.0、`reactive-md-editor` 0.1.0）。完整清单、哈希与更新流程见 [vendor/README-ch.md](vendor/README-ch.md)；当前候选更新流程见 [docs/candidate-package-updates-ch.md](docs/candidate-package-updates-ch.md)。
+引擎和编辑器以 `vendor/` 下的 tarball 形式提供（`reactive-md` 0.9.0、`reactive-md-editor` 0.2.0）。参阅[包清单与哈希](vendor/README-ch.md)和[候选包更新流程](docs/candidate-package-updates-ch.md)。
 
 科幻主题从 `theme/sci-fi/theme.css` 自动发现，因此声明 `<theme name="sci-fi">` 的文档可以在预览、编辑器与离线导出中正常渲染。
 
@@ -41,7 +41,7 @@ npm run dev
 | 路径 | 角色 | 加载方 |
 | --- | --- | --- |
 | `plugin/`、`theme/` | 产品运行时扩展源码 | `npm run dev`、`npm run build`、预览与导出 |
-| `vendor/reactive-md-<版本>-<哈希>.tgz`、`vendor/reactive-md-editor-<版本>-<哈希>.tgz` | 候选引擎与编辑器快照 | 所有构建、测试与预览 |
+| `vendor/reactive-md-<版本>-<哈希>.tgz`、`vendor/reactive-md-editor-<版本>-<哈希>.tgz` | 锁定的引擎和编辑器包 | 所有构建、测试与预览 |
 | `vendor/reactive-md-tetris-package-*.tgz`、`vendor/reactive-md-game-2048-package-*.tgz`、`vendor/reactive-md-sci-fi-theme-*.tgz` | 兼容性测试夹具 | `tests/installed-tetris.test.ts`、`tests/extension-host.test.tsx`、`tests/directory-discovery.test.ts` |
 
 站点渲染的游戏与主题来自 `plugin/` 与 `theme/` 中的目录。安装的游戏与主题 tarball 用于验证 npm 消费者能发现并编译这些包，站点不导入它们。
@@ -114,3 +114,5 @@ import 'reactive-md/styles.css';
 ## 本地联网问卷
 
 运行 `npm run dev`，打开[联网问卷](http://127.0.0.1:5173/?example=network-survey)。两个计票面板共享一条 SSE 连接，票数保存在当前开发服务进程内。运行 `node scripts/verify-network-survey.mjs` 可验证首次响应丢失后重试只计一票，以及最后一个面板隐藏后连接关闭。
+
+生产站点可以预览这份示例，提交与实时计票需要本地开发服务。

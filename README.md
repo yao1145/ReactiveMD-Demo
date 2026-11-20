@@ -2,7 +2,7 @@
 
 **English** · [中文](README-ch.md)
 
-The Playground for Reactive MD: an editor, live preview, document library, HTML export and a set of bilingual example articles. The site's components and theme are local source under `plugin/` and `theme/`. The candidate `reactive-md` engine and `reactive-md-editor` package arrive as committed tarballs, so this repository builds without the engine source tree.
+The Reactive MD Playground includes an editor, live preview, a document library, HTML and PDF export, and bilingual examples. Site components and themes live under `plugin/` and `theme/`. The repository builds with the engine and editor tarballs pinned in `vendor/`.
 
 Live site: [yaozi.raricy.com](https://yaozi.raricy.com/).
 
@@ -38,7 +38,7 @@ dialog, where you can choose Save as PDF.
 
 The games and the theme that the site renders are the directories in [plugin/](plugin/README.md) and [theme/](theme/README.md). The installed game and theme tarballs verify that an npm consumer discovers and compiles those packages; the site imports none of them.
 
-The engine and editor arrive as tarballs under `vendor/` (`reactive-md` 0.8.0, `reactive-md-editor` 0.1.0). [vendor/README.md](vendor/README.md) lists the full inventory, hashes and the update procedure; [docs/candidate-package-updates-en.md](docs/candidate-package-updates-en.md) records the current candidate procedure.
+The engine and editor arrive as tarballs under `vendor/` (`reactive-md` 0.9.0 and `reactive-md-editor` 0.2.0). See the [package inventory and hashes](vendor/README.md) and the [candidate update procedure](docs/candidate-package-updates-en.md).
 
 The sci-fi theme is discovered from `theme/sci-fi/theme.css`, so documents that declare
 `<theme name="sci-fi">` render in the preview, the editor and the offline export.
@@ -122,5 +122,6 @@ The site is a static build. `npm run build` writes `dist/`; `.github/workflows/s
 
 ## Local network survey
 
-Start the Demo with `npm run dev` and open [Network survey](http://127.0.0.1:5173/?example=network-survey).
-The two results panels share an SSE connection. Start the local browser check with `node scripts/verify-network-survey.mjs` to verify that retrying after a lost response records one vote. The dev server keeps votes in memory.
+Start the Demo with `npm run dev` and open the [network survey](http://127.0.0.1:5173/?example=network-survey). The two results panels share an SSE connection. The dev server keeps votes in memory. Run `node scripts/verify-network-survey.mjs` to check that retrying after a lost response records one vote.
+
+The production site renders the example with its network channel unavailable.

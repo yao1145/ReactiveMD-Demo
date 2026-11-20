@@ -4,6 +4,8 @@
 
 Demo 基于 `vendor/` 中已提交的 tarball 构建：引擎、编辑器、科幻主题和两个游戏包。旧的 `update:demo-*` 脚本属于 monorepo，本仓库没有这些命令；`package.json` 中也没有 `update:*` 条目。更新候选包的工作分两步：在所属仓库构建产物，在 Demo 检出中替换依赖。
 
+同时更新引擎和编辑器时，先在编辑器锁定引擎 tarball 并重建分析 Worker，再在 Demo 锁定同一份引擎 tarball 和生成的编辑器 tarball。若 npm 发布的引擎完整性值不同，先用发布包重建编辑器，再更新这里的两个包。
+
 ## 步骤
 
 1. **在所属仓库构建。** 引擎在 `ReactiveMD` 中运行 `npm run check`，它同时执行打包消费者边界检查。编辑器在 `ReactiveMD-Editor` 中运行 `npm run check`。主题和游戏包使用各自的构建脚本。

@@ -456,7 +456,7 @@ A submit line looks like `<submit-button channel="answers" fields="choice commen
 
 Subscription runs in the other direction. The official plugin ships only the submit button; a host or custom component can subscribe to a channel and receive messages the host has validated. A subscription can also update declared `<external>` values through the host mapping; prose, computations and conditions then read the new values while the reader's inputs keep their state. The Open-air cinema example in the Playground shows the full setup: one submit button, two live tally panels and the host channel configuration behind them.
 
-This guide preview has no channel enabled, so a submit button placed here would stay disabled. Use the Open-air cinema example to try a real send and a live subscription.
+The guide preview leaves the submit button disabled. Start the Demo locally with `npm run dev` and open Open-air cinema to send a reply and see the live tallies. The production site renders the document with its network channel unavailable.
 
 ## Common errors
 

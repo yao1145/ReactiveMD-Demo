@@ -81,8 +81,8 @@ export const EXAMPLES: PlaygroundExample[] = [
   {
     id: SURVEY_EXAMPLE_ID, section: 'scenario',
     title: 'Open-air cinema', titleZh: '露天电影夜',
-    hint: 'Reply to a film club screening and watch the chair count update on two live panels.',
-    hintZh: '回复电影社的露天放映邀请，在两块实时计票板上看椅子数量如何变化。',
+    hint: 'Preview the survey online. Run npm run dev locally to submit a reply and watch two live tallies.',
+    hintZh: '线上可预览问卷。运行本地开发服务后，可提交回复并查看两块实时计票板。',
     source: lf(networkSurveySource), sourceZh: lf(networkSurveyZhSource),
   },
   {

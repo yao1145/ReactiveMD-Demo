@@ -4,6 +4,8 @@
 
 The Demo builds against committed tarballs in `vendor/`: the engine, the editor, the sci-fi theme and the two game packages. This document replaces older instructions that ran `update:demo-*` scripts. Those scripts belonged to the monorepo and do not exist here; `package.json` has no `update:*` entry, so the work happens in the owning repository plus the Demo checkout.
 
+When updating the engine and editor together, pin the engine tarball in the editor first and rebuild its analysis Worker. Then pin the same engine bytes and the resulting editor tarball in the Demo. If the engine published to npm has a different integrity value, rebuild the editor against the published engine before updating the pair here.
+
 ## Procedure
 
 1. **Build in the owning repository.** Engine: `npm run check` in `ReactiveMD` (it also runs the packed-consumer boundary check). Editor: `npm run check` in `ReactiveMD-Editor`. Theme and game packages: their own build script.
