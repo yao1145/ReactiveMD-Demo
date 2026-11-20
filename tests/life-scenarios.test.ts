@@ -61,16 +61,39 @@ describe.each(['en', 'zh'] as const)('%s everyday documents', language => {
     } finally { runtime.dispose(); }
   });
 
-  it('keeps all six merged demonstrations independent in the same runtime', () => {
+  it('keeps the brief, budget, room plan and runbook independent in the same runtime', () => {
     const { runtime, set } = start('features');
+    const budget = language === 'zh'
+      ? { initial: 3600, atThirty: 3660, withoutRefreshments: 3390 }
+      : { initial: 490, atThirty: 498, withoutRefreshments: 462 };
     try {
-      set('formsSeats', 6);
-      expect(runtime.evaluate('formsTotal')).toBe(480);
-      expect(runtime.evaluate('flowTotal')).toBe(320);
-      expect(runtime.evaluate('statisticsTotal')).toBe(620);
-      set('functionsA', 0);
-      expect(runtime.evaluate('functionsWaveHeight')).toBe(0);
-      expect(runtime.evaluate('formsTotal')).toBe(480);
+      expect(runtime.evaluate('visitorSeats')).toBe(20);
+      expect(runtime.evaluate('expectedVisitors')).toBe(14);
+      expect(runtime.evaluate('budgetUsed')).toBe(budget.initial);
+      expect(runtime.evaluate('deskDistance')).toBe(5);
+
+      set('capacity', 30);
+      expect(runtime.evaluate('visitorSeats')).toBe(26);
+      expect(runtime.evaluate('expectedVisitors')).toBe(18);
+      expect(runtime.evaluate('budgetUsed')).toBe(budget.atThirty);
+
+      set('refreshments', false);
+      expect(runtime.evaluate('refreshmentSpend')).toBe(0);
+      expect(runtime.evaluate('budgetUsed')).toBe(budget.withoutRefreshments);
+      expect(runtime.evaluate('expectedVisitors')).toBe(18);
+
+      set('deskX', 6);
+      set('deskY', 8);
+      expect(runtime.evaluate('deskDistance')).toBe(10);
+      expect(runtime.evaluate('budgetUsed')).toBe(budget.withoutRefreshments);
+
+      set('stations', ['bikes', 'electronics']);
+      expect(runtime.evaluate('stationCount')).toBe(2);
+      expect(runtime.evaluate('quietLength')).toBe(2);
+
+      set('openingDone', ['item-1', 'item-2']);
+      expect(runtime.evaluate('openingCompletion')).toBe(0.5);
+      expect(runtime.evaluate('openingReady')).toBe(false);
       expect(runtime.validate()).toEqual([]);
     } finally { runtime.dispose(); }
   });

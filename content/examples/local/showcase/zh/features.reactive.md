@@ -1,655 +1,357 @@
-# 功能演示
+# 社区维修日
 
-这篇文档收集了函数、表单、图表、布局、流程和计时组件。沿着大纲浏览，直接修改控件，也可以打开源码，把需要的部分复制到自己的文档。
+一个周六，一份共用的运行手册。先定活动简报，再挑维修项目、平衡预算、布置场地，最后按同一页文档把当天跑完。每个控件都写进同一份文档，所以简报里的改动会一路传到场地平面图和收尾清单。
 
-<const name="functionsMonthsPerYear" value="{{ 12 }}">
-<computed name="functionsMonthlyRate" value="{{ functionsR / (100 * functionsMonthsPerYear) }}">
-<computed name="functionsGrowthFactor" value="{{ pow(1 + functionsMonthlyRate, functionsMonthsPerYear * functionsT) }}">
-<computed name="functionsEndingBalance" value="{{ functionsMonthlyRate == 0 ? functionsP + functionsMonthsPerYear * functionsM * functionsT : functionsP * functionsGrowthFactor + functionsM * (functionsGrowthFactor - 1) / functionsMonthlyRate }}">
-<computed name="functionsDeposits" value="{{ functionsP + functionsMonthsPerYear * functionsM * functionsT }}">
-<computed name="functionsDistance" value="{{ sqrt(functionsPx * functionsPx + functionsPy * functionsPy) }}">
-<computed name="functionsWaveHeight" value="{{ functionsA * sin(functionsF * functionsPx) }}">
-<computed name="functionsInsideInterval" value="{{ functionsPx >= functionsLow && functionsPx <= functionsHigh }}">
+<anchor id="top">
 
-## 用参数改变函数
+<jump to="runbook" appearance="button" color="#2563eb">跳到当天运行手册</jump>
 
-先把振幅拖到 0，观察波形变成直线；再恢复振幅、提高频率，看看同一区间能容纳多少个波峰。
+<const name="promoHalf" value="{{ 8 }}">
+<const name="volunteerSeats" value="{{ 4 }}">
+<computed name="visitorSeats" value="{{ capacity - volunteerSeats }}">
+<computed name="datesReady" value="{{ signupClose != '' && eventDate != '' }}">
+<computed name="registrationInTime" value="{{ datesReady && dateCompare(signupClose, eventDate) <= 0 }}">
+<computed name="expectedVisitors" value="{{ round(capacity * promoReach / (promoHalf + promoReach)) }}">
+<computed name="promoSpend" value="{{ 150 + promoReach * 45 }}">
+<computed name="refreshmentSpend" value="{{ refreshments ? expectedVisitors * 15 : 0 }}">
+<computed name="budgetUsed" value="{{ venueCost + materialsCost + promoSpend + refreshmentSpend }}">
+<computed name="budgetLeft" value="{{ budgetLimit - budgetUsed }}">
+<computed name="deskDistance" value="{{ sqrt(deskX * deskX + deskY * deskY) }}">
+<computed name="quietLength" value="{{ quietEnd - quietStart }}">
+<computed name="stationCount" value="{{ len(stations) }}">
+<computed name="openingDoneCount" value="{{ len(openingDone) }}">
+<computed name="openingCompletion" value="{{ openingDoneCount / 4 }}">
+<computed name="openingReady" value="{{ openingDoneCount == 4 }}">
 
-<grid>
-<card>
-<panel title="调整波形">
-<slider bind="functionsA" label="振幅" initial="1" min="0" max="3" step="0.5">
-<slider bind="functionsF" label="频率" initial="1" min="0.5" max="3" step="0.5">
-</panel>
+## 设定活动简报
 
-当前振幅 **{{ functionsA }}**, 频率 **{{ functionsF }}**.
+维修日借用一间屋子，只办一个周六，从十点开到三点。先定谁来拍板、办在哪里、屋里能容纳多少访客；这些答案会一路决定维修项目、预算和时间表。
 
-<if when="{{ functionsA == 0 }}">
-<alert title="波形已变为直线">振幅为零时，任何频率对应的函数值都是零。</alert>
-</if>
-</card>
-<card>
-<plot min="0" max="12.56" label="可调正弦波" x-label="x" y-label="y">
-$$ y = \mathrm{functionsA}\sin(\mathrm{functionsF}x) $$
-</plot>
-</card>
-</grid>
-
-### 用同一组参数继续探索
-
-<tabs label="函数探索">
-<tab label="多曲线比较">
-两条曲线共用上方的振幅与频率，比较它们的波峰和过零点。
-
-<plot min="0" max="12.56" label="正弦与余弦">
-$$ y = \mathrm{functionsA}\sin(\mathrm{functionsF}x) $$
-$$ y = \mathrm{functionsA}\cos(\mathrm{functionsF}x) $$
-</plot>
-</tab>
-<tab label="分段函数">
-负半轴是直线，正半轴是抛物线；上方振幅同时缩放两段函数。
-
-<plot min="-3" max="3" label="直线与抛物线衔接">
-$$
-y = \begin{cases}
-\mathrm{functionsA}x, & x < 0 \\
-\mathrm{functionsA}x^2, & x \ge 0
-\end{cases}
-$$
-</plot>
-</tab>
-<tab label="参数方程与隐函数">
-有些曲线不是 x 的函数图像。参数方程用 `t` 同时给出 x(t) 与 y(t)，隐式方程则在方形区域内追踪等值线。拖动缩放参数，观察双纽线如何变化。
-
-<slider bind="functionsLemniscate" label="双纽线缩放 a" initial="1" min="0.5" max="2" step="0.25">
-
-<grid>
-<card>
-<plot min="0" max="12.566" label="摆线" x-label="x" y-label="y">
-$$ \begin{cases} x = t - \sin t \\ y = 1 - \cos t \end{cases} $$
-</plot>
-</card>
-<card>
-<plot min="-3" max="3" samples="200" label="双纽线" x-label="x" y-label="y">
-$$ (x^2 + y^2)^2 = 2\mathrm{functionsLemniscate}^2(x^2 - y^2) $$
-</plot>
-</card>
-</grid>
-</tab>
-<tab label="应用：储蓄增长">
-每月末存入固定金额，按月复利计算。将年利率调到零，比较只存本金时的增长。
-
-<panel title="储蓄参数">
-<number bind="functionsP" label="初始金额" initial="10000" min="0" step="100">
-<number bind="functionsM" label="每月存入" initial="500" min="0" step="100">
-<slider bind="functionsR" label="年利率（%）" initial="5" min="0" max="10" step="0.5">
-<slider bind="functionsT" label="年数" initial="20" min="1" max="40">
-</panel>
-
-<plot min="0" max="{{ functionsT }}" label="储蓄增长曲线" x-label="年" y-label="金额">
-$$
-y = \begin{cases}
-\mathrm{functionsP} + 12\mathrm{functionsM}x, & \mathrm{functionsR} = 0 \\
-\mathrm{functionsP}\left(1+\mathrm{functionsMonthlyRate}\right)^{12x} + \mathrm{functionsM}\frac{\left(1+\mathrm{functionsMonthlyRate}\right)^{12x}-1}{\mathrm{functionsMonthlyRate}}, & \mathrm{functionsR} \ne 0
-\end{cases}
-$$
-</plot>
-
-第 **{{ functionsT }}** 年的期末金额：**{{ formatCurrency(functionsEndingBalance, 'CNY', 2, 'zh-CN') }}**，其中存入本金 **{{ formatCurrency(functionsDeposits, 'CNY', 2, 'zh-CN') }}**、利息 **{{ formatCurrency(functionsEndingBalance - functionsDeposits, 'CNY', 2, 'zh-CN') }}**。年利率为 **{{ formatPercent(functionsR / 100, 1, 'zh-CN') }}**。曲线和期末计算共用月利率，零利率时直接累计存款。
-</tab>
-</tabs>
-
-### 探索坐标与区间
-
-选择一个区间，再拖动坐标点。比较横坐标是否落在区间内，并读取波形在该位置的高度。
-
-<panel title="坐标与区间">
-<range-slider label="观察区间" bind-start="functionsLow" bind-end="functionsHigh" initial-start="-3" initial-end="3" min="-5" max="5" color="#7c3aed">
-
-当前区间：**{{ functionsLow }}–{{ functionsHigh }}**，宽度为 **{{ functionsHigh - functionsLow }}**。
-
-<coordinate label="点的位置" bind-x="functionsPx" bind-y="functionsPy" initial-x="1" initial-y="2" x-min="-5" x-max="5" y-min="-5" y-max="5" color="#2563eb">
-
-坐标：**({{ functionsPx }}, {{ functionsPy }})**，距原点 **{{ formatNumber(functionsDistance, 2, 'zh-CN') }}**。
-
-{{ functionsInsideInterval ? '横坐标位于观察区间内。' : '横坐标位于观察区间外。' }} 波形在这一横坐标处的高度为 **{{ formatNumber(functionsWaveHeight, 2, 'zh-CN') }}**。
-
-用科学计数法读取同一高度：**{{ formatScientific(functionsWaveHeight, 2, 'zh-CN') }}**，便于比较接近零的数值。
-
-<quiz type="number" label="点 (3, 4) 到原点的距离是多少？" answer="5" tolerance="0.01" explanation="3² + 4² 的平方根是 5，可以把坐标点拖到 (3, 4) 验证。">
-</quiz>
-</panel>
-
-### 看看写法
-
-<accordion>
-<disclosure label="展开关键源码">
-
-```markdown
-<slider bind="a" label="振幅" initial="1" min="0" max="3" step="0.5">
-<slider bind="f" label="频率" initial="1" min="0.5" max="3" step="0.5">
-<coordinate label="点的位置" bind-x="px" bind-y="py" initial-x="1" initial-y="2" x-min="-5" x-max="5" y-min="-5" y-max="5">
-<computed name="waveHeight" value="{{ a * sin(f * px) }}">
-高度: {{ formatNumber(waveHeight, 2) }} · {{ formatScientific(waveHeight, 2) }}
-
-<plot min="0" max="12.56" label="正弦波">
-$$ y = a\sin(fx) $$
-</plot>
-```
-
-</disclosure>
-</accordion>
-
-<computed name="formsOrganizer" value="{{ trim(formsName) == '' ? '你的小组' : trim(formsName) }}">
-<computed name="formsUnitCost" value="{{ (formsFormat == 'onsite' ? 80 : 60) + (formsEquipment ? 20 : 0) }}">
-<computed name="formsTotal" value="{{ formsSeats * formsUnitCost }}">
-<computed name="formsDatesReady" value="{{ formsDate != '' && formsDeadline != '' && dateCompare(formsDeadline, formsDate) <= 0 }}">
-<computed name="formsRegistrationGap" value="{{ formsDatesReady ? dateDiff(formsDate, formsDeadline) : null }}">
-
-## 边填写，边生成活动方案
-
-修改称呼和人数，再切换线下或线上形式。调低预算或将报名截止日期设到活动之后，查看相应提示；选择主题，生成准备清单。
-
-<grid>
-<card>
-<panel title="活动配置">
-<input bind="formsName" label="组织者" initial="Alex" placeholder="你的称呼">
-<choices bind="formsFormat" label="活动形式" initial="onsite">
-<option value="onsite">线下</option>
-<option value="online">线上</option>
+<panel title="活动简报">
+<input bind="organizer" label="组织者" initial="Mira" placeholder="谁为这份计划拍板？">
+<choices bind="venue" label="场地" initial="hall">
+<option value="hall">社区礼堂</option>
+<option value="library">图书馆活动室</option>
+<option value="makerspace">创客空间</option>
 </choices>
-<slider bind="formsSeats" label="参与人数" initial="4" min="1" max="20">
-<date bind="formsDate" label="活动日期" initial="2026-11-01">
-<date bind="formsDeadline" label="报名截止日期" initial="2026-10-25">
-<number bind="formsBudget" label="费用上限" initial="500" min="0" max="5000" step="10">
-<validation when="{{ formsDatesReady }}" message="请填写两个日期，并将报名截止日期设为不晚于活动日期。" fields="formsDeadline formsDate">
-<validation when="{{ formsTotal <= formsBudget }}" message="预计费用超出上限 {{ formatCurrency(formsTotal - formsBudget, 'CNY', 2, 'zh-CN') }}，请调整人数、材料或费用上限。" fields="formsSeats formsEquipment formsBudget">
-<textarea bind="formsNotes" label="补充要求" placeholder="写下小组的具体需要">
-<toggle bind="formsEquipment" label="增加材料包（每人 20 元）">
-</panel>
-</card>
-
-<card title="你的活动方案">
-**{{ formsOrganizer }}** · {{ formsDate }}
-
-{{ formsFormat == 'onsite' ? '线下活动' : '线上活动' }} · **{{ formsSeats }}** 人
-
-每人费用： **{{ formatCurrency(formsUnitCost, 'CNY', 2, 'zh-CN') }}**
-
-预计总费用： **{{ formatCurrency(formsTotal, 'CNY', 2, 'zh-CN') }}**
-
-<badge tone="{{ formsTotal <= formsBudget ? 'success' : 'warning' }}">费用上限：{{ formatCurrency(formsBudget, 'CNY', 2, 'zh-CN') }}</badge>
-
-<if when="{{ formsDatesReady }}">
-报名于 **{{ formsDeadline }}** 截止，比活动提前 **{{ formsRegistrationGap }}** 天。
-</if>
-
-补充要求： {{ trim(formsNotes) == '' ? '暂未填写。' : trim(formsNotes) }}
-
-<if when="{{ formsFormat == 'onsite' }}">
-<alert title="线下准备">预订至少能容纳 {{ formsSeats }} 人的场地，并准备公共屏幕。</alert>
-</if>
-<if when="{{ formsFormat == 'online' }}">
-<alert title="线上准备">提前分享会议链接，确认每位参与者都能打开活动文档。</alert>
-</if>
-</card>
-</grid>
-
-### 试一次完整的修改
-
-选择线上、调到 6 人并增加材料包，总费用变为 **¥480.00**。点击活动配置的恢复默认，回到初始的 **¥320.00**。
-
-### 为小组安排合适的学习内容
-
-选择经验水平、活动节奏和主题，让学习安排与上方的费用方案一起明确下来。
-
-<panel title="学习偏好">
-<select bind="formsLevel" label="经验水平" initial="intro">
-<option value="intro">第一次参与</option>
-<option value="advanced">已有使用经验</option>
+<select bind="booking" label="访客如何报名" initial="form">
+<option value="form">在线表单</option>
+<option value="dropin">直接到场</option>
+<option value="partner">合作机构转介</option>
 </select>
+<date bind="eventDate" label="活动日期" initial="2026-11-14">
+<date bind="signupClose" label="报名截止" initial="2026-11-07">
+<slider bind="capacity" label="场地容量" initial="24" min="8" max="60">
+<number bind="budgetLimit" label="支出上限（元）" initial="6500" min="0" max="20000" step="100">
+<textarea bind="briefNotes" label="给志愿者的备注" rows="2" placeholder="当天开始前，团队还需要知道什么？">
+<toggle bind="refreshments" label="提供茶点" initial="true">
+<checkbox bind="guide" label="打印一份带走的维修指南" color="#167875">
+<validation when="{{ datesReady && registrationInTime }}" message="请把两个日期都填上，并让报名在活动当天或之前截止。" fields="signupClose eventDate">
+</panel>
 
-<radio-group bind="formsPace" label="活动节奏" initial="guided">
-<option value="guided">跟随步骤练习</option>
-<option value="independent">自主探索</option>
+**{{ organizer }}** 将在 **{{ eventDate }}** 于{{ venue == 'hall' ? '社区礼堂' : venue == 'library' ? '图书馆活动室' : '创客空间' }}开门，现场有 **{{ visitorSeats }}** 个访客席位和四个志愿者席位。
+
+<badge tone="{{ registrationInTime ? 'success' : 'warning' }}">{{ !datesReady ? '请先选择两个日期' : registrationInTime ? '报名按计划截止' : '报名截止得太晚' }}</badge>
+
+<if when="{{ datesReady }}">
+从报名截止到开门，中间有 **{{ dateDiff(eventDate, signupClose) }}** 天。
+</if>
+
+<if when="{{ booking == 'form' }}">
+<alert title="提前发提醒">活动前一天发邮件，写清地址，并请访客尽量带上出故障的那个零件。</alert>
+</if>
+<if when="{{ booking == 'dropin' }}">
+<alert title="做好排队的准备">直接到场的访客会一阵一阵地来；从第一个小时起，<tooltip text="用几句简短对话判断哪位志愿者和哪张工位能帮上这位访客。">分诊</tooltip>台就要有人守着。</alert>
+</if>
+<if when="{{ booking == 'partner' }}">
+<alert title="确认转介人数">请在活动前的周三向合作机构要一个大致人数。</alert>
+</if>
+
+<if when="{{ guide }}">
+每位访客都会带走一份打印指南，所以<tooltip text="访客回家后可以照着复述的简短步骤。">带回家的说明</tooltip>要和他当天接受的维修对得上。
+</if>
+
+### 复制这张开场卡片
+
+<accordion>
+<disclosure label="查看这张卡片的源码">
+下面这段可以独立运行；把它粘进一篇新文档，就能开始任何小型活动的计划。
+
+```markdown
+<input bind="organizer" label="组织者" initial="Mira">
+<date bind="day" label="活动日期" initial="2026-11-14">
+<slider bind="capacity" label="场地容量" initial="24" min="8" max="60">
+<computed name="seats" value="{{ capacity - 4 }}">
+
+**{{ organizer }}** 在 **{{ day }}** 开门：**{{ seats }}** 个访客席位、四名志愿者，以及一份共用的运行手册。
+```
+
+</disclosure>
+</accordion>
+
+## 选择维修项目
+
+志愿者只修自己熟悉的东西。最多选三个工位；下表会给每个工位安排负责人和准备事项。带教节奏和分诊方式决定队伍在几张工位之间怎么流动。
+
+<panel title="维修项目">
+<multi-select bind="stations" label="维修工位" max-selected="3" initial="bikes" color="#167875">
+<option value="bikes">自行车</option>
+<option value="electronics">小家电</option>
+<option value="textiles">衣物与布艺</option>
+<option value="furniture">木家具</option>
+</multi-select>
+<radio-group bind="pace" label="志愿者带教节奏" initial="guided">
+<option value="guided">按清单带教</option>
+<option value="roaming">在工位之间巡场帮忙</option>
 </radio-group>
-
-<multi-select bind="formsSubjects" label="活动主题" max-selected="2" color="#167875">
-<option value="math">数学</option>
-<option value="physics">物理</option>
-<option value="chemistry">化学</option>
-</multi-select>
-
-<checkbox bind="formsAccessible" label="提供书面步骤说明">
-
-| 配置 | 当前安排 |
-| --- | --- |
-| 水平 | {{ formsLevel == 'intro' ? '从一个完整示例开始' : '比较几种不同方法' }} |
-| 节奏 | {{ formsPace == 'guided' ? '一起按步骤练习' : '留出自主探索时间' }} |
-| 主题 | 已选择 {{ len(formsSubjects) }} / 2 项 |
-
-<data-table label="主题准备清单" rows="{{ formsSubjects }}" key="{{ item }}" max-rows="2">
-<column label="主题" value="{{ item == 'math' ? '数学' : item == 'physics' ? '物理' : '化学' }}">
-<column label="准备事项" value="{{ item == 'chemistry' ? '准备材料与操作说明' : '准备一个完整例题' }}">
-<column label="配套说明" value="{{ formsAccessible ? '附书面步骤' : '现场讲解' }}">
-</data-table>
-
-<if when="{{ contains(formsSubjects, 'chemistry') }}">
-<badge color="#167875">加入一个化学示例</badge>
-</if>
-<if when="{{ formsAccessible }}">
-<alert title="准备书面说明">为每一步写明参数名称和预期结果，方便参与者自行查阅。</alert>
-</if>
+<select bind="triage" label="分诊方式" initial="paired">
+<option value="paired">每位访客配对一名志愿者</option>
+<option value="queue">统一排队、叫号</option>
+</select>
+<checkbox bind="toolKit" label="摆出共用工具箱" color="#167875">
 </panel>
 
-### 看看写法
-
-<accordion>
-<disclosure label="展开关键源码">
-
-```markdown
-<const name="rate" value="{{ 80 }}">
-<computed name="total" value="{{ seats * rate }}">
-<slider bind="seats" label="参与人数" initial="4" min="1" max="20">
-<number bind="budget" label="费用上限" initial="500" min="0" max="5000">
-<validation when="{{ total <= budget }}" message="请调整人数或费用上限。" fields="seats budget">
-<badge tone="{{ total <= budget ? 'success' : 'warning' }}">{{ formatCurrency(total, 'CNY', 2, 'zh-CN') }}</badge>
-
-<multi-select bind="subjects" label="主题" max-selected="2">
-<option value="math">数学</option>
-<option value="physics">物理</option>
-</multi-select>
-<data-table label="准备清单" rows="{{ subjects }}" key="{{ item }}" max-rows="2">
-<column label="主题" value="{{ item == 'math' ? '数学' : '物理' }}">
+<data-table label="工位安排" rows="{{ stations }}" key="{{ item }}" max-rows="3">
+<column label="工位" value="{{ item == 'bikes' ? '自行车' : item == 'electronics' ? '小家电' : item == 'textiles' ? '衣物与布艺' : '木家具' }}">
+<column label="负责人" value="{{ item == 'bikes' ? 'Sam' : item == 'electronics' ? 'Iris' : item == 'textiles' ? 'Noor' : 'Theo' }}">
+<column label="准备" value="{{ item == 'electronics' ? '给工位做 PAT 测试，并给备用线材贴标签' : item == 'textiles' ? '开门前穿好三台缝纫机' : item == 'furniture' ? '铺好防尘布，备齐夹具' : '检查停车架、打气筒和备用内胎' }}">
 </data-table>
-```
 
-</disclosure>
-</accordion>
+场上有 **{{ stationCount }}** 个工位。{{ pace == 'guided' ? '每位负责人照着同一份清单带教，访客能看见下一步做什么。' : '负责人会在工位之间走动，由分诊台记录谁还在等。' }}{{ toolKit ? '共用的工具箱摆在屋子中间。' : '各工位自带工具。' }}
 
-<const name="statisticsBudgets" value="{{ [150, 200, 220, 120] }}">
-<computed name="statisticsExpenses" value="{{ [statisticsContent, statisticsVisual, statisticsInteraction, statisticsTesting] }}">
-<computed name="statisticsBudget" value="{{ sum(statisticsBudgets) }}">
-<computed name="statisticsTotal" value="{{ sum(statisticsExpenses) }}">
-<computed name="statisticsRemaining" value="{{ statisticsBudget - statisticsTotal }}">
-
-## 一份预算，多种观察方式
-
-把视觉费用从 230 调到 300，总费用恰好达到 690 元预算；继续增加，观察超支提示。下方各视图读取同一组费用参数。
-
-<grid>
-<card>
-<panel title="活动费用">
-<number bind="statisticsContent" label="内容费用" initial="120" min="0" max="1000" step="10">
-<number bind="statisticsVisual" label="视觉费用" initial="230" min="0" max="1000" step="10">
-<number bind="statisticsInteraction" label="交互费用" initial="180" min="0" max="1000" step="10">
-<number bind="statisticsTesting" label="测试费用" initial="90" min="0" max="1000" step="10">
-</panel>
-</card>
-<card>
-<grid>
-<card title="费用合计">**{{ formatCurrency(statisticsTotal, 'CNY', 2, 'zh-CN') }}**</card>
-<card title="预算余额">**{{ formatCurrency(statisticsRemaining, 'CNY', 2, 'zh-CN') }}**</card>
-</grid>
-
-<badge tone="{{ statisticsRemaining >= 0 ? 'success' : 'warning' }}">预算使用率：{{ formatPercent(statisticsTotal / statisticsBudget, 1, 'zh-CN') }}</badge>
-
-每项平均 **{{ formatCurrency(average(statisticsExpenses), 'CNY', 2, 'zh-CN') }}**，最低 **{{ formatCurrency(minOf(statisticsExpenses), 'CNY', 2, 'zh-CN') }}**，最高 **{{ formatCurrency(maxOf(statisticsExpenses), 'CNY', 2, 'zh-CN') }}**。
-
-<if when="{{ statisticsTotal > statisticsBudget }}">
-<alert tone="warning" title="费用已超出预算">需要减少 **{{ formatNumber(statisticsTotal - statisticsBudget, 2, 'zh-CN') }}** 元，才能回到 690 元预算内。</alert>
+<if when="{{ contains(stations, 'electronics') }}">
+<alert tone="warning" title="预约 PAT 测试仪">小家电进工位前要先做便携电器安全测试。</alert>
+</if>
+<if when="{{ contains(stations, 'textiles') }}">
+<alert title="早点穿好缝纫机">三台机器里只要有一台没穿好线，布艺工位就会堵住。</alert>
+</if>
+<if when="{{ stationCount == 0 }}">
+<alert title="至少选一个工位">项目空着，访客进门就没有能参加的内容。</alert>
 </if>
 
-<chart bind="statisticsSelectedExpense" key="项目" title="实际费用与预算比较" y-label="元">
-| 项目 | 实际 | 预算 |
-| --- | ---: | ---: |
-| 内容 | {{ statisticsExpenses[0] }} | {{ statisticsBudgets[0] }} |
-| 视觉 | {{ statisticsExpenses[1] }} | {{ statisticsBudgets[1] }} |
-| 交互 | {{ statisticsExpenses[2] }} | {{ statisticsBudgets[2] }} |
-| 测试 | {{ statisticsExpenses[3] }} | {{ statisticsBudgets[3] }} |
-</chart>
-</card>
-</grid>
+## 平衡预算
 
-### 查看数据明细
+场地、材料、宣传和茶点共用同一个上限。到场曲线把宣传覆盖和访客人数连在一起，图表、明细表和各项总额读的是同一组数字。
 
-搜索项目、按实际费用排序，或翻页查看。搜索只筛选此表，图表继续展示全部四个项目。
+<panel title="支出">
+<number bind="venueCost" label="场地（元）" initial="1800" min="0" max="12000" step="50">
+<number bind="materialsCost" label="材料（元）" initial="900" min="0" max="12000" step="50">
+<slider bind="promoReach" label="宣传覆盖（百份）" initial="12" min="0" max="40">
+<validation when="{{ budgetUsed <= budgetLimit }}" message="支出已超出上限 {{ formatCurrency(budgetUsed - budgetLimit, 'CNY', 2, 'zh-CN') }}；请削减一项成本，或提高上限。" fields="budgetLimit venueCost materialsCost promoReach">
+</panel>
 
-<table bind="statisticsSelectedExpense" key="项目" initial="内容" label="费用明细" page-size="2">
-| 项目 | 实际 | 预算 |
-| --- | ---: | ---: |
-| 内容 | {{ statisticsExpenses[0] }} | {{ statisticsBudgets[0] }} |
-| 视觉 | {{ statisticsExpenses[1] }} | {{ statisticsBudgets[1] }} |
-| 交互 | {{ statisticsExpenses[2] }} | {{ statisticsBudgets[2] }} |
-| 测试 | {{ statisticsExpenses[3] }} | {{ statisticsBudgets[3] }} |
-</table>
+目前支出 **{{ formatCurrency(budgetUsed, 'CNY', 2, 'zh-CN') }}**，上限是 **{{ formatCurrency(budgetLimit, 'CNY', 2, 'zh-CN') }}**。
 
-当前选择：**{{ statisticsSelectedExpense }}**。点击行首圆圈或图表中的数据项，其他视图会同步显示选择。搜索、排序和分页保留当前选择。
+<badge tone="{{ budgetLeft >= 0 ? 'success' : 'warning' }}">{{ budgetLeft >= 0 ? '还剩 ' + formatCurrency(budgetLeft, 'CNY', 2, 'zh-CN') : '超出 ' + formatCurrency(-budgetLeft, 'CNY', 2, 'zh-CN') }}</badge>
 
-### 换一种观察角度
+<progress label="预算使用" value="{{ budgetLimit == 0 ? 100 : budgetUsed / budgetLimit * 100 }}" color="#167875">
 
-<tabs label="预算视角">
-<tab label="费用占比">
-<chart bind="statisticsSelectedExpense" key="项目" kind="donut" title="费用流向">
-| 项目 | 实际 |
+<if when="{{ budgetUsed > budgetLimit }}">
+<alert tone="warning" title="超出预算">把计划交给场地方之前，先砍掉 **{{ formatCurrency(budgetUsed - budgetLimit, 'CNY', 2, 'zh-CN') }}**。</alert>
+</if>
+
+发出 **{{ formatNumber(promoReach * 100, 0, 'zh-CN') }}** 份传单时，模型预计会来 **{{ expectedVisitors }}** 位访客，占场地的 **{{ formatPercent(expectedVisitors / capacity, 0, 'zh-CN') }}**。宣传花费 **{{ formatCurrency(promoSpend, 'CNY', 2, 'zh-CN') }}**；茶点{{ refreshments ? '按计划人数' : '已关闭，因此' }}再增加 **{{ formatCurrency(refreshmentSpend, 'CNY', 2, 'zh-CN') }}**。
+
+<grid columns="2">
+<card title="图表">
+<chart bind="costRow" key="项目" kind="bar" title="各项支出" y-label="元">
+| 项目 | 费用 |
 | --- | ---: |
-| 内容 | {{ statisticsExpenses[0] }} |
-| 视觉 | {{ statisticsExpenses[1] }} |
-| 交互 | {{ statisticsExpenses[2] }} |
-| 测试 | {{ statisticsExpenses[3] }} |
+| 场地 | {{ venueCost }} |
+| 材料 | {{ materialsCost }} |
+| 宣传 | {{ promoSpend }} |
+| 茶点 | {{ refreshmentSpend }} |
 </chart>
-</tab>
-<tab label="预算与实际">
-<chart bind="statisticsSelectedExpense" key="项目" kind="scatter" title="预算与实际散点" x="预算" y="实际" x-label="预算" y-label="实际">
-| 项目 | 实际 | 预算 |
-| --- | ---: | ---: |
-| 内容 | {{ statisticsExpenses[0] }} | {{ statisticsBudgets[0] }} |
-| 视觉 | {{ statisticsExpenses[1] }} | {{ statisticsBudgets[1] }} |
-| 交互 | {{ statisticsExpenses[2] }} | {{ statisticsBudgets[2] }} |
-| 测试 | {{ statisticsExpenses[3] }} | {{ statisticsBudgets[3] }} |
-</chart>
-</tab>
-</tabs>
+</card>
+<card title="明细表">
+<table bind="costRow" key="项目" initial="场地" label="费用明细" page-size="2">
+| 项目 | 费用 |
+| --- | ---: |
+| 场地 | {{ venueCost }} |
+| 材料 | {{ materialsCost }} |
+| 宣传 | {{ promoSpend }} |
+| 茶点 | {{ refreshmentSpend }} |
+</table>
+</card>
+</grid>
 
-### 看看写法
+图表和明细表共用同一个选中项：**{{ costRow }}**。给明细表排序或翻页，不会改变图表。
 
-<accordion>
-<disclosure label="展开关键源码">
+<plot min="0" max="40" label="宣传覆盖与预计到场人数" x-label="宣传覆盖（百份）" y-label="访客">
+$$ y = \mathrm{capacity}\frac{x}{\mathrm{promoHalf}+x} $$
+</plot>
 
-```markdown
-<const name="budgets" value="{{ [150, 200, 220, 120] }}">
-<number bind="content" label="内容费用" initial="120" min="0" max="1000">
-<number bind="visual" label="视觉费用" initial="230" min="0" max="1000">
-<number bind="interaction" label="交互费用" initial="180" min="0" max="1000">
-<number bind="testing" label="测试费用" initial="90" min="0" max="1000">
-<computed name="expenses" value="{{ [content, visual, interaction, testing] }}">
-<computed name="total" value="{{ sum(expenses) }}">
-合计: {{ formatCurrency(total, 'CNY', 2, 'zh-CN') }}
+曲线越接近场地容量就越平。拖动宣传滑块，在曲线上找到当前的位置；传单翻倍，人群通常不会跟着翻倍。
 
-<chart title="实际费用与预算比较">
-| 项目 | 实际 | 预算 |
-| --- | ---: | ---: |
-| 视觉 | {{ expenses[1] }} | {{ budgets[1] }} |
-</chart>
-```
+## 布置场地
 
-</disclosure>
-</accordion>
+入口是一个十米见方平面的原点。把接待台放在一眼能看到的地方；它到入口的直线距离和安静时段，决定侧屋怎么用。
 
-<const name="layoutWorkshopDay" value="{{ '2026-11-01' }}">
-<computed name="layoutReadingPhase" value="{{ layoutReadingDate == '' ? 'undated' : dateCompare(layoutReadingDate, layoutWorkshopDay) < 0 ? 'before' : dateCompare(layoutReadingDate, layoutWorkshopDay) == 0 ? 'during' : 'after' }}">
-<computed name="layoutDaysUntil" value="{{ layoutReadingDate == '' ? null : dateDiff(layoutWorkshopDay, layoutReadingDate) }}">
+<anchor id="layout">
 
-## 让一份活动指南更好读
+<panel title="接待台">
+<coordinate label="接待台位置（米）" bind-x="deskX" bind-y="deskY" initial-x="3" initial-y="4" x-min="0" x-max="10" y-min="0" y-max="10" step="0.5" color="#2563eb">
+</panel>
 
-先并排比较两张卡片，再将阅读日期改到活动当天或之后，观察提示变化。切换阅读角色、展开常见问题，找到需要的内容。
+接待台离入口 **{{ formatNumber(deskDistance, 1, 'zh-CN') }}** 米。靠近门口能让队伍留在室外，也给维修工位腾出空间。
 
-<anchor id="reading-start">
+<quiz type="number" label="把接待台放在 (3, 4)，它离入口有多远？" answer="5" tolerance="0.01" explanation="用勾股定理：3² + 4² 的平方根是 5。">
+</quiz>
+
+<panel title="安静时段">
+<range-slider label="静音室开放时段" bind-start="quietStart" bind-end="quietEnd" initial-start="13" initial-end="15" min="9" max="18" step="1" color="#7c3aed">
+</panel>
+
+侧屋从 **{{ quietStart }}:00** 到 **{{ quietEnd }}:00** 保持安静，共 **{{ quietLength }}** 小时。
+
+<if when="{{ quietLength >= 2 }}">
+<alert tone="success" title="预订侧屋">两个小时够做倾听陪伴，也能让一件布艺活慢慢收尾。</alert>
+</if>
+<if when="{{ quietLength < 2 }}">
+<alert tone="warning" title="缩短侧屋安排">这个时段一次只约一位访客，把倾听陪伴挪到门厅。</alert>
+</if>
 
 <section color="#45536f">
-先找到需要的阅读深度。<text color="#a2273a">**把重要提醒放在读者看得见的位置。**</text> 段落可以统一着色，局部文字可以单独强调。
+入口保持畅通，给接待台标一个号码。<text color="#a2273a">**访客应该先看见队伍，再加入队伍。**</text>
 </section>
 
-<jump to="reading-details" appearance="button" color="#2563eb">跳到常见问题</jump>
+<anchor id="runbook">
 
-<panel title="阅读时间">
-<date bind="layoutReadingDate" label="你在哪天阅读？" initial="2026-10-24">
-</panel>
+## 当天的运行
 
-<badge tone="{{ layoutReadingPhase == 'before' ? 'neutral' : layoutReadingPhase == 'undated' ? 'warning' : 'success' }}">{{ layoutReadingPhase == 'before' ? '活动前：准备' : layoutReadingPhase == 'during' ? '活动当天：动手探索' : layoutReadingPhase == 'after' ? '活动后：回顾' : '选择阅读日期' }}</badge>
+这一页现在变成运行手册。点选访客路线上的一个站点，走一遍开场流程，然后在开门期间使用清单、计时器和时间表。
 
-<if when="{{ layoutReadingPhase == 'before' }}">
-距离 **{{ layoutWorkshopDay }}** 的活动还有 **{{ layoutDaysUntil }}** 天，先从准备卡片开始。
-</if>
-<if when="{{ layoutReadingPhase == 'after' }}">
-活动已过去 **{{ layoutDaysUntil == null ? 0 : -layoutDaysUntil }}** 天。回顾一次有效的探索，并向同伴分享。
-</if>
-
-<grid>
-<card title="活动之前">
-准备一份简短的 Markdown 文档，想好一个希望读者能动手探索的问题。
-
-<badge>准备</badge>
-</card>
-<card title="活动之中">
-给文档加入输入控件，展示参数改变时，解释和结果如何随之变化。
-
-<badge tone="success">动手体验</badge>
-</card>
-</grid>
-
-### 选择你的阅读角色
-
-<tabs label="活动角色">
-<tab label="参与者">
-#### 让一个想法可以交互
-
-1. 找到一个读者可以调整的数字。
-2. 把它连接到一句话或一张图。
-3. 请同伴操作，观察结果。
-
-把参数命名后， <tooltip text="命名后的输入控件，可以让正文和图表读取它当前的值。">响应式绑定</tooltip> 会将输入和解释连接起来。
-</tab>
-<tab label="组织者">
-#### 引导一次探索
-
-先展示结果，再邀请大家做一次明确的调整。讨论发生了什么，最后展开源码，解释其中的关系。
-
-> 可以这样提问：如果把这个值翻倍，会发生什么？
-</tab>
-</tabs>
-
-<anchor id="reading-details">
-
-### 按需展开细节
-
-<accordion label="活动常见问题">
-<disclosure label="需要提前准备什么？" open>
-准备浏览器、一篇短文和一个具体问题，就可以开始。
-</disclosure>
-<disclosure label="这些布局如何搭配？">
-卡片用于比较相关信息，标签页区分阅读情境，折叠内容保留随时可查的补充细节。
-</disclosure>
-</accordion>
-
-<alert title="保持阅读主线">先呈现主要解释，再让读者决定何时展开补充内容。</alert>
-
-<jump to="reading-start" appearance="button" color="#2563eb">返回阅读概览</jump>
-
-### 看看写法
-
-<accordion>
-<disclosure label="展开关键源码">
-
-```markdown
-<const name="workshopDay" value="{{ '2026-11-01' }}">
-<date bind="readingDate" label="阅读日期" initial="2026-10-24">
-<computed name="daysUntil" value="{{ readingDate == '' ? null : dateDiff(workshopDay, readingDate) }}">
-<grid>
-<card title="活动日期">{{ workshopDay }}</card>
-<card title="相隔天数">{{ daysUntil }}</card>
-</grid>
-<accordion>
-<disclosure label="阅读更多">在这里补充细节。</disclosure>
-</accordion>
-```
-
-</disclosure>
-</accordion>
-
-<const name="flowRate" value="{{ 80 }}">
-<computed name="flowTotal" value="{{ flowPeople * flowRate }}">
-
-## 跟随一个数值走过文档
-
-先调整人数，再依次选择输入、计算和显示节点，跟随同一个数值，观察它如何变成最终结果。
-
-<panel title="试一个数值">
-<slider bind="flowPeople" label="人数" initial="4" min="1" max="12">
-</panel>
-
-<diagram bind="flowSelected" initial="input" label="从输入到解释">
-<node id="input" label="输入: {{ flowPeople }}">
-滑块用 people 命名当前数值，目前是 **{{ flowPeople }}**.
+<diagram bind="stop" initial="checkin" label="访客路线">
+<node id="checkin" label="迎接：{{ organizer }}">
+接待台核对报名、发号码，再把访客指向分诊工位。
 </node>
-<node id="compute" label="计算: {{ flowPeople }} × {{ flowRate }}">
-每人费用 80 元，总费用为 **{{ flowPeople }} × {{ flowRate }} = {{ flowTotal }}**.
+<node id="triage" label="分诊：{{ stationCount }} 个工位">
+志愿者问清哪里坏了、自己试过什么、能不能留一个小时。
 </node>
-<node id="view" label="显示: {{ flowTotal }}">
-正文读取只读的 total：活动费用为 **{{ formatCurrency(flowTotal, 'CNY', 2, 'zh-CN') }}**。计算节点、这里和下方说明共用这一个结果。
+<node id="repair" label="维修：{{ expectedVisitors }} 人">
+工位判断物件是修好带走、等零件，还是带上建议回家。
 </node>
-<edge from="input" to="compute" label="参数变化">
-<edge from="compute" to="view" label="结果更新">
+<edge from="checkin" to="triage" label="排队">
+<edge from="triage" to="repair" label="分配">
 </diagram>
 
-正在查看： **{{ flowSelected == 'input' ? '输入' : flowSelected == 'compute' ? '计算' : '显示' }}**.
+当前站点：**{{ stop == 'checkin' ? '迎接' : stop == 'triage' ? '分诊' : '维修' }}**。
 
-<if when="{{ flowSelected == 'input' }}">
-<alert title="从可调整的输入开始">试着调到 6 人，再选择计算节点，跟进计算过程。</alert>
+<if when="{{ stop == 'checkin' }}">
+<alert title="让门口流动起来">接待台安排两名志愿者：一人招呼，一人核对名单。</alert>
 </if>
-<if when="{{ flowSelected == 'compute' }}">
-<alert title="让关系可见">命名计算 total = people * rate 的结果是 **{{ flowTotal }}**.</alert>
+<if when="{{ stop == 'triage' }}">
+<alert title="问三个问题">哪里坏了？你自己试过什么？能不能留一个小时？</alert>
 </if>
-<if when="{{ flowSelected == 'view' }}">
-<alert tone="success" title="文档呈现计算结果">当前 {{ flowPeople }} 人，总费用为 **{{ flowTotal }}**.</alert>
+<if when="{{ stop == 'repair' }}">
+<alert tone="success" title="记下结果">每修一件就留一句记录，收尾复盘时用得上。</alert>
 </if>
 
-### 用键盘继续探索
+### 走一遍开场流程
 
-按 Tab 聚焦图中的节点，用方向键移动焦点，再按 Enter 或空格键选择。节点说明和图下正文会跟随选择同步更新。
-
-### 按步骤解释这个流程
-
-<steps label="讲解路线" bind="flowLesson">
-<step label="读取输入" value="observe">
-先查看输入节点，当前人数为 **{{ flowPeople }}**。
+<steps label="开场流程" bind="openingStep" initial="unlock">
+<step label="开门准备" value="unlock">
+开锁、摆出共用工具箱，并在第一位访客到来前测试每张工位。
 </step>
-<step label="核对计算" value="calculate">
-选择计算节点。每人 80 元，因此 **{{ flowPeople }} × {{ flowRate }} = {{ flowTotal }}**。
-</step>
-<step label="解释结果" value="practice">
-选择显示节点，向同伴说明人数变化为何会改变合计。
+<step label="团队简报" value="brief">
+一起走一遍访客路线、分诊问题和静音室时段。
 
-<quiz type="choice" label="哪个表达式用于计算总费用？" answer="total" explanation="总费用等于人数乘以每人的费用。">
-<option value="total">people × 80</option>
-<option value="sum">people + 80</option>
-<option value="fixed">80</option>
+<counter bind="volunteersBriefed" label="已听取简报的志愿者" initial="0" min="0" max="12">
+
+<quiz type="choice" label="一位访客拿着坏台灯到场，也没有预约。他先去哪里？" answer="triage" explanation="无论是否预约，每位访客都先经过分诊，再去工位。">
+<option value="triage">分诊工位</option>
+<option value="repair">最近的维修工位</option>
+<option value="desk">回到门口</option>
 </quiz>
-
-<counter label="讲解轮数" initial="0" min="0" max="10">
+</step>
+<step label="开门迎客" value="open">
+为第一个维修时段启动工位计时器，然后放队伍进门。
 </step>
 </steps>
 
-当前步骤：**{{ flowLesson }}**。向同伴讲清一次结果后，可以记录一轮讲解。
+当前步骤：**{{ openingStep == 'unlock' ? '开门准备' : openingStep == 'brief' ? '团队简报' : '开门迎客' }}**。已有 **{{ volunteersBriefed }}** 位志愿者听过简报。
 
-### 看看写法
-
-<accordion>
-<disclosure label="展开关键源码">
-
-```markdown
-<const name="rate" value="{{ 80 }}">
-<computed name="total" value="{{ people * rate }}">
-<slider bind="people" label="人数" initial="4" min="1" max="12">
-<diagram bind="selected" initial="input" label="一个简单流程">
-<node id="input" label="输入: {{ people }}">读取人数。</node>
-<node id="compute" label="计算: {{ total }}">{{ people }} × {{ rate }} = {{ total }}</node>
-<node id="view" label="显示: {{ total }}">{{ formatCurrency(total, 'CNY', 2, 'zh-CN') }}</node>
-<edge from="input" to="compute">
-<edge from="compute" to="view">
-</diagram>
-当前节点: {{ selected }}
-```
-
-</disclosure>
-</accordion>
-
-<const name="tasksPreparationCount" value="{{ 3 }}">
-<computed name="tasksReadyCount" value="{{ len(tasksDone) }}">
-<computed name="tasksCompletion" value="{{ tasksReadyCount / tasksPreparationCount }}">
-<computed name="tasksReadyToShare" value="{{ tasksReadyCount == tasksPreparationCount }}">
-
-## 完成一次专注活动
-
-勾选准备步骤、清点到场人数，再启动一段专注计时。同一页集中呈现活动安排、完成进度和时间。
-
-<panel title="活动准备进度">
-<checklist color="#167875" bind="tasksDone" label="一起做好准备">
-- [x] 选定一个要探索的问题
-- [ ] 打开文档，调整一个参数
-- [ ] 向同伴解释观察到的结果
+<grid columns="2">
+<card title="维修时段">
+<timer label="工位计时器" duration="45">
+维修开始时启动。每换一位访客就重置一次。
+</card>
+<card title="开场清单">
+<panel title="开门之前">
+<checklist bind="openingDone" label="开场检查" color="#167875">
+- [x] 摆出工具箱
+- [ ] 测试 PAT 工位
+- [ ] 穿好缝纫机
+- [ ] 标好接待台
 </checklist>
 
-已完成： **{{ tasksReadyCount }} / {{ tasksPreparationCount }}**。勾选后，下表会补上对应的回顾问题。
-
-<progress color="#167875" label="准备进度" value="{{ tasksCompletion * 100 }}">
-
-<badge tone="{{ tasksReadyToShare ? 'success' : 'neutral' }}">{{ formatPercent(tasksCompletion, 0, 'zh-CN') }} 已完成</badge>
-
-<data-table label="已完成的准备" rows="{{ tasksDone }}" key="{{ item }}" max-rows="3">
-<column label="事项" value="{{ item == 'item-1' ? '选定探索问题' : item == 'item-2' ? '调整文档参数' : '向同伴解释结果' }}">
-<column label="回顾问题" value="{{ item == 'item-1' ? '希望了解什么？' : item == 'item-2' ? '调整后有什么变化？' : '如何解释这一结果？' }}">
-</data-table>
-
-<if when="{{ tasksReadyToShare }}">
-<alert tone="success" title="可以开始分享了">问题、示例和观察结果都已准备就绪。</alert>
-</if>
+<progress label="开场准备度" value="{{ openingCompletion * 100 }}" color="#167875">
 </panel>
-
-<grid>
-<card title="到场人数">
-<counter bind="tasksCount" label="已到场人数" initial="0" min="0" max="20">
-已到场： **{{ tasksCount }}**.
-</card>
-<card title="一分钟探索">
-<timer label="专注计时器" duration="60">
-准备好后开始；需要讨论时暂停，下一轮探索时重置。
 </card>
 </grid>
 
-### 查看完整活动安排
+已就绪：**{{ openingDoneCount }} / 4**。
 
-<timeline title="45 分钟活动安排">
-| 事项 | 开始 | 时长 | 说明 |
-| --- | ---: | ---: | --- |
-| 确定问题 | 0 | 10 | 确定一个要探索的主题 |
-| 动手探索 | 10 | 25 | 调整控件，比较结果 |
-| 整理观察 | 15 | 15 | 与探索阶段同步记录 |
-| 交流分享 | 35 | 10 | 分享一个有用的发现 |
-</timeline>
+<badge tone="{{ openingReady ? 'success' : 'neutral' }}">{{ formatPercent(openingCompletion, 0, 'zh-CN') }} 完成</badge>
 
-恢复活动准备进度的默认值，会重置该清单。人数计数器和计时器位于面板外，各自保留状态。
-
-### 记录分享后的待办
-
-已完成事项会加上删除线。隐藏再展开这份清单，已经勾选的事项仍会保留。
-
-<toggle bind="tasksFollowUp" label="显示后续待办" initial="true">
-<if when="{{ tasksFollowUp }}">
-<checklist label="分享之后" color="#167875">
-- [ ] 保存一个有用的观察结果
-- [ ] 把文档分享给同伴
-</checklist>
+<if when="{{ openingReady }}">
+<alert tone="success" title="可以开门">开场检查全部完成；第一位访客坐下时启动工位计时器。</alert>
 </if>
 
-### 看看写法
-
-<accordion>
-<disclosure label="展开关键源码">
-
-```markdown
-<checklist bind="done" label="准备步骤">
-- [x] 选定问题
-- [ ] 探索结果
-</checklist>
-<computed name="completion" value="{{ len(done) / 2 }}">
-<progress label="进度" value="{{ completion * 100 }}">
-{{ formatPercent(completion, 0) }}
-
-<data-table label="已完成事项" rows="{{ done }}" key="{{ item }}" max-rows="2">
-<column label="事项" value="{{ item == 'item-1' ? '选定问题' : '探索结果' }}">
+<data-table label="已完成的开场检查" rows="{{ openingDone }}" key="{{ item }}" max-rows="4">
+<column label="检查" value="{{ item == 'item-1' ? '摆出工具箱' : item == 'item-2' ? '测试 PAT 工位' : item == 'item-3' ? '穿好缝纫机' : '标好接待台' }}">
+<column label="为什么重要" value="{{ item == 'item-1' ? '志愿者不用到处找工具' : item == 'item-2' ? '小家电测试才安全' : item == 'item-3' ? '布艺维修不用先排队等机器' : '访客能找到队伍' }}">
 </data-table>
-```
 
+清单面板的重置按钮会恢复开场检查；计时器和志愿者计数器在面板之外，各自保留状态。
+
+### 看清一整天的安排
+
+<timeline title="周六时间表">
+| 事项 | 开始 | 时长 | 说明 |
+| --- | ---: | ---: | --- |
+| 布置与简报 | 0 | 60 | 测试工位，给志愿者做简报 |
+| 开门迎接 | 60 | 15 | 接待台开始放行队伍 |
+| 上午维修 | 75 | 120 | 三个工位并行 |
+| 午餐 | 195 | 45 | 志愿者轮流休息 |
+| 下午维修 | 240 | 90 | 静音室安排倾听陪伴 |
+| 收尾复盘 | 330 | 30 | 记录结果和缺少的零件 |
+</timeline>
+
+## 交接这份手册
+
+同一页文档有三种读者：决定来不来的访客、准备工位的志愿者，以及收尾的组织者。选择一个角色；每个标签页保留自己的说明和控件。
+
+<tabs label="谁在读这份文档？">
+<tab label="访客">
+带上要修的物件、能配上的备件，以及<tooltip text="写一句自己已经试过什么，分诊会快很多。">你试过哪些办法</tooltip>。报名方式是**{{ booking == 'form' ? '在线表单' : booking == 'dropin' ? '无需报名' : '合作机构转介' }}**；十点开门。
+
+<if when="{{ booking == 'form' }}">
+<alert title="留意截止日期">报名在 **{{ signupClose }}** 截止；之后再想参加，请到门口询问。</alert>
+</if>
+</tab>
+<tab label="志愿者">
+**{{ pace == 'guided' ? '带教清单' : '巡场简报' }}**完成后，你的工位就准备好了。先读**{{ stop == 'triage' ? '分诊' : '迎接' }}**站，再启动工位计时器。
+
+<badge tone="{{ toolKit ? 'success' : 'warning' }}">{{ toolKit ? '共用工具箱已摆出' : '请自带工具' }}</badge>
+</tab>
+<tab label="组织者">
+预算**{{ budgetLeft >= 0 ? '还剩 ' + formatCurrency(budgetLeft, 'CNY', 2, 'zh-CN') : '超出 ' + formatCurrency(-budgetLeft, 'CNY', 2, 'zh-CN') }}**，预计来 **{{ expectedVisitors }}** 位访客。开锁前再核对一遍路线和时间表。
+
+<jump to="layout" appearance="link" color="#2563eb">回看场地布置</jump>
+<jump to="runbook" appearance="button" color="#2563eb">回到运行手册</jump>
+</tab>
+</tabs>
+
+<accordion label="交接时的常见问题">
+<disclosure label="来的人比场地容量多怎么办？" open>
+访客席位是 **{{ visitorSeats }}** 个，模型预计 **{{ expectedVisitors }}** 人。发分时回场号，比直接劝回更稳妥；同时把门内人数控制在容量以内。
+</disclosure>
+<disclosure label="什么时候撤掉一个工位？">
+负责人来不了时，就把它从项目里去掉，并在分诊台重新分配访客。当前工位数是 **{{ stationCount }}**。
 </disclosure>
 </accordion>
+
+<alert title="给下一次留个记录">记下缺少的零件、需要二次上门的维修和最忙的时段。下一次的活动简报就从这些记录开始。</alert>
+
+<jump to="top" appearance="button" color="#2563eb">回到活动简报</jump>

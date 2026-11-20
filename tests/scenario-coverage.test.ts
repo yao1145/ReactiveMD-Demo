@@ -8,7 +8,7 @@ function componentNames(nodes: LocalNode[]): string[] {
 }
 
 describe('consolidated feature document', () => {
-  it('combines the six tours into one feature document', () => {
+  it('keeps one continuous feature document', () => {
     expect(EXAMPLES.filter(example => example.section === 'feature').map(example => example.id))
       .toEqual(['features']);
     expect(EXAMPLES.some(example => ['explore','gallery'].includes(example.id))).toBe(false);

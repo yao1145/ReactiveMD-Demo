@@ -80,9 +80,9 @@ export const EXAMPLES: PlaygroundExample[] = [
   },
   {
     id: SURVEY_EXAMPLE_ID, section: 'scenario',
-    title: 'Network survey', titleZh: '联网问卷',
-    hint: 'Send a response and watch two panels share a live results stream.',
-    hintZh: '提交问卷，观察两个计票面板共享实时统计流。',
+    title: 'Open-air cinema', titleZh: '露天电影夜',
+    hint: 'Reply to a film club screening and watch the chair count update on two live panels.',
+    hintZh: '回复电影社的露天放映邀请，在两块实时计票板上看椅子数量如何变化。',
     source: lf(networkSurveySource), sourceZh: lf(networkSurveyZhSource),
   },
   {
@@ -94,9 +94,9 @@ export const EXAMPLES: PlaygroundExample[] = [
   },
   {
     id: 'features', section: 'feature',
-    title: 'Feature demo', titleZh: '功能演示',
-    hint: 'Six former tours in one continuous document, with independent controls and shared navigation.',
-    hintZh: '原来的六篇示例合成一篇连续文档，各节控件独立，通过大纲导航。',
+    title: 'Repair day', titleZh: '社区维修日',
+    hint: 'Plan and run a one-day repair café: brief, programme, budget, floor plan and the day itself in one continuous document.',
+    hintZh: '从活动简报、维修项目、预算和场地布置，到当天运行与交接，用一篇连续文档完成社区维修日。',
     source: lf(featuresSource), sourceZh: lf(featuresZhSource),
   },
   {

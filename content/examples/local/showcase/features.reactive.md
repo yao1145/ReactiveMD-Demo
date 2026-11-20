@@ -1,655 +1,357 @@
-# Feature demo
+# Repair day
 
-Functions, forms, charts, layouts, diagrams and timers in one document. Follow the outline, try the controls, or open the source and copy a section into your own document.
+One Saturday, one shared runbook. Set the brief, choose the programme, balance the budget, plan the room, then run the day itself. Every control feeds the same document, so a change in the brief reaches the floor plan and the closing checklist.
 
-<const name="functionsMonthsPerYear" value="{{ 12 }}">
-<computed name="functionsMonthlyRate" value="{{ functionsR / (100 * functionsMonthsPerYear) }}">
-<computed name="functionsGrowthFactor" value="{{ pow(1 + functionsMonthlyRate, functionsMonthsPerYear * functionsT) }}">
-<computed name="functionsEndingBalance" value="{{ functionsMonthlyRate == 0 ? functionsP + functionsMonthsPerYear * functionsM * functionsT : functionsP * functionsGrowthFactor + functionsM * (functionsGrowthFactor - 1) / functionsMonthlyRate }}">
-<computed name="functionsDeposits" value="{{ functionsP + functionsMonthsPerYear * functionsM * functionsT }}">
-<computed name="functionsDistance" value="{{ sqrt(functionsPx * functionsPx + functionsPy * functionsPy) }}">
-<computed name="functionsWaveHeight" value="{{ functionsA * sin(functionsF * functionsPx) }}">
-<computed name="functionsInsideInterval" value="{{ functionsPx >= functionsLow && functionsPx <= functionsHigh }}">
+<anchor id="top">
 
-## Functions you can shape
+<jump to="runbook" appearance="button" color="#2563eb">Skip to the day-of runbook</jump>
 
-Drag Amplitude to 0: the wave becomes a flat line. Restore it, then increase Frequency to fit more waves into the same interval.
+<const name="promoHalf" value="{{ 8 }}">
+<const name="volunteerSeats" value="{{ 4 }}">
+<computed name="visitorSeats" value="{{ capacity - volunteerSeats }}">
+<computed name="datesReady" value="{{ signupClose != '' && eventDate != '' }}">
+<computed name="registrationInTime" value="{{ datesReady && dateCompare(signupClose, eventDate) <= 0 }}">
+<computed name="expectedVisitors" value="{{ round(capacity * promoReach / (promoHalf + promoReach)) }}">
+<computed name="promoSpend" value="{{ 20 + promoReach * 6 }}">
+<computed name="refreshmentSpend" value="{{ refreshments ? expectedVisitors * 2 : 0 }}">
+<computed name="budgetUsed" value="{{ venueCost + materialsCost + promoSpend + refreshmentSpend }}">
+<computed name="budgetLeft" value="{{ budgetLimit - budgetUsed }}">
+<computed name="deskDistance" value="{{ sqrt(deskX * deskX + deskY * deskY) }}">
+<computed name="quietLength" value="{{ quietEnd - quietStart }}">
+<computed name="stationCount" value="{{ len(stations) }}">
+<computed name="openingDoneCount" value="{{ len(openingDone) }}">
+<computed name="openingCompletion" value="{{ openingDoneCount / 4 }}">
+<computed name="openingReady" value="{{ openingDoneCount == 4 }}">
 
-<grid>
-<card>
-<panel title="Shape the wave">
-<slider bind="functionsA" label="Amplitude" initial="1" min="0" max="3" step="0.5">
-<slider bind="functionsF" label="Frequency" initial="1" min="0.5" max="3" step="0.5">
-</panel>
+## Set the brief
 
-Amplitude **{{ functionsA }}**, frequency **{{ functionsF }}**.
+The café borrows a room for one Saturday and runs from ten to three. Decide who signs off the plan, where it happens and how many visitors the room can hold; those answers shape the programme, the budget and the timetable.
 
-<if when="{{ functionsA == 0 }}">
-<alert title="The wave is flat">Multiplying by zero makes every output zero, whatever the frequency.</alert>
-</if>
-</card>
-<card>
-<plot min="0" max="12.56" label="Adjustable sine wave" x-label="x" y-label="y">
-$$ y = \mathrm{functionsA}\sin(\mathrm{functionsF}x) $$
-</plot>
-</card>
-</grid>
-
-### Explore the same parameters
-
-<tabs label="Function explorations">
-<tab label="Compare curves">
-Both curves share the amplitude and frequency above. Compare their peaks and zero crossings.
-
-<plot min="0" max="12.56" label="Sine and cosine">
-$$ y = \mathrm{functionsA}\sin(\mathrm{functionsF}x) $$
-$$ y = \mathrm{functionsA}\cos(\mathrm{functionsF}x) $$
-</plot>
-</tab>
-<tab label="Piecewise function">
-The negative side is linear; the positive side is quadratic. Amplitude scales both branches.
-
-<plot min="-3" max="3" label="Linear meets quadratic">
-$$
-y = \begin{cases}
-\mathrm{functionsA}x, & x < 0 \\
-\mathrm{functionsA}x^2, & x \ge 0
-\end{cases}
-$$
-</plot>
-</tab>
-<tab label="Parametric and implicit">
-Some curves are not graphs of a function of x. A parametric block traces x(t) and y(t); an implicit equation is traced over a square region. Drag the scale to resize the lemniscate.
-
-<slider bind="functionsLemniscate" label="Lemniscate scale" initial="1" min="0.5" max="2" step="0.25">
-
-<grid>
-<card>
-<plot min="0" max="12.566" label="Cycloid" x-label="x" y-label="y">
-$$ \begin{cases} x = t - \sin t \\ y = 1 - \cos t \end{cases} $$
-</plot>
-</card>
-<card>
-<plot min="-3" max="3" samples="200" label="Lemniscate" x-label="x" y-label="y">
-$$ (x^2 + y^2)^2 = 2\mathrm{functionsLemniscate}^2(x^2 - y^2) $$
-</plot>
-</card>
-</grid>
-</tab>
-<tab label="Savings application">
-Monthly deposits and monthly compounding turn a formula into a small planning tool. Set the annual rate to zero to compare deposits alone.
-
-<panel title="Savings parameters">
-<number bind="functionsP" label="Starting amount" initial="10000" min="0" step="100">
-<number bind="functionsM" label="Monthly deposit" initial="500" min="0" step="100">
-<slider bind="functionsR" label="Annual rate (%)" initial="5" min="0" max="10" step="0.5">
-<slider bind="functionsT" label="Years" initial="20" min="1" max="40">
-</panel>
-
-<plot min="0" max="{{ functionsT }}" label="Savings growth" x-label="Years" y-label="Amount">
-$$
-y = \begin{cases}
-\mathrm{functionsP} + 12\mathrm{functionsM}x, & \mathrm{functionsR} = 0 \\
-\mathrm{functionsP}\left(1+\mathrm{functionsMonthlyRate}\right)^{12x} + \mathrm{functionsM}\frac{\left(1+\mathrm{functionsMonthlyRate}\right)^{12x}-1}{\mathrm{functionsMonthlyRate}}, & \mathrm{functionsR} \ne 0
-\end{cases}
-$$
-</plot>
-
-At year **{{ functionsT }}**, the ending balance is **{{ formatCurrency(functionsEndingBalance, 'USD', 2, 'en-US') }}**: deposits of **{{ formatCurrency(functionsDeposits, 'USD', 2, 'en-US') }}** and interest of **{{ formatCurrency(functionsEndingBalance - functionsDeposits, 'USD', 2, 'en-US') }}**. The annual rate is **{{ formatPercent(functionsR / 100, 1, 'en-US') }}**. The curve and ending balance share the monthly rate; at zero rate they count deposits directly.
-</tab>
-</tabs>
-
-### Explore a point and an interval
-
-Choose an interval, then drag the point. Compare its horizontal position with the interval and read the wave height at that position.
-
-<panel title="Point and interval">
-<range-slider label="Observation interval" bind-start="functionsLow" bind-end="functionsHigh" initial-start="-3" initial-end="3" min="-5" max="5" color="#7c3aed">
-
-Interval: **{{ functionsLow }}–{{ functionsHigh }}**. Width: **{{ functionsHigh - functionsLow }}**.
-
-<coordinate label="Point position" bind-x="functionsPx" bind-y="functionsPy" initial-x="1" initial-y="2" x-min="-5" x-max="5" y-min="-5" y-max="5" color="#2563eb">
-
-Point: **({{ functionsPx }}, {{ functionsPy }})**. Distance from the origin: **{{ formatNumber(functionsDistance, 2, 'en-US') }}**.
-
-{{ functionsInsideInterval ? 'The point lies inside the horizontal interval.' : 'The point lies outside the horizontal interval.' }} Wave height at this x: **{{ formatNumber(functionsWaveHeight, 2, 'en-US') }}**.
-
-The same height in scientific notation is **{{ formatScientific(functionsWaveHeight, 2, 'en-US') }}**, useful when comparing values near zero.
-
-<quiz type="number" label="How far is (3, 4) from the origin?" answer="5" tolerance="0.01" explanation="The square root of 3² + 4² is 5. Try placing the point at (3, 4).">
-</quiz>
-</panel>
-
-### How it is written
-
-<accordion>
-<disclosure label="Show the key source">
-
-```markdown
-<slider bind="a" label="Amplitude" initial="1" min="0" max="3" step="0.5">
-<slider bind="f" label="Frequency" initial="1" min="0.5" max="3" step="0.5">
-<coordinate label="Point position" bind-x="px" bind-y="py" initial-x="1" initial-y="2" x-min="-5" x-max="5" y-min="-5" y-max="5">
-<computed name="waveHeight" value="{{ a * sin(f * px) }}">
-Height: {{ formatNumber(waveHeight, 2) }} · {{ formatScientific(waveHeight, 2) }}
-
-<plot min="0" max="12.56" label="Sine wave">
-$$ y = a\sin(fx) $$
-</plot>
-```
-
-</disclosure>
-</accordion>
-
-<computed name="formsOrganizer" value="{{ trim(formsName) == '' ? 'Your group' : trim(formsName) }}">
-<computed name="formsUnitCost" value="{{ (formsFormat == 'onsite' ? 80 : 60) + (formsEquipment ? 20 : 0) }}">
-<computed name="formsTotal" value="{{ formsSeats * formsUnitCost }}">
-<computed name="formsDatesReady" value="{{ formsDate != '' && formsDeadline != '' && dateCompare(formsDeadline, formsDate) <= 0 }}">
-<computed name="formsRegistrationGap" value="{{ formsDatesReady ? dateDiff(formsDate, formsDeadline) : null }}">
-
-## Build a workshop plan
-
-Change the name, headcount and format. Lower the budget or move the registration deadline past the workshop to see a hint; choose subjects to generate a preparation plan.
-
-<grid>
-<card>
-<panel title="Workshop details">
-<input bind="formsName" label="Organizer" initial="Alex" placeholder="Your name">
-<choices bind="formsFormat" label="Format" initial="onsite">
-<option value="onsite">In person</option>
-<option value="online">Online</option>
+<panel title="Event brief">
+<input bind="organizer" label="Organizer" initial="Mira" placeholder="Who signs off the plan?">
+<choices bind="venue" label="Venue" initial="hall">
+<option value="hall">Community hall</option>
+<option value="library">Library room</option>
+<option value="makerspace">Makerspace</option>
 </choices>
-<slider bind="formsSeats" label="Participants" initial="4" min="1" max="20">
-<date bind="formsDate" label="Workshop date" initial="2026-11-01">
-<date bind="formsDeadline" label="Registration deadline" initial="2026-10-25">
-<number bind="formsBudget" label="Spending limit" initial="500" min="0" max="5000" step="10">
-<validation when="{{ formsDatesReady }}" message="Fill both dates and close registration on or before the workshop date." fields="formsDeadline formsDate">
-<validation when="{{ formsTotal <= formsBudget }}" message="Estimate exceeds the limit by {{ formatCurrency(formsTotal - formsBudget, 'USD', 2, 'en-US') }}; adjust participants, materials or the limit." fields="formsSeats formsEquipment formsBudget">
-<textarea bind="formsNotes" label="Special requests" placeholder="What would help your group?">
-<toggle bind="formsEquipment" label="Include a materials kit (20 per person)">
-</panel>
-</card>
-
-<card title="Your workshop at a glance">
-**{{ formsOrganizer }}** · {{ formsDate }}
-
-{{ formsFormat == 'onsite' ? 'In-person workshop' : 'Online workshop' }} · **{{ formsSeats }}** participants
-
-Per person: **{{ formatCurrency(formsUnitCost, 'USD', 2, 'en-US') }}**
-
-Estimated total: **{{ formatCurrency(formsTotal, 'USD', 2, 'en-US') }}**
-
-<badge tone="{{ formsTotal <= formsBudget ? 'success' : 'warning' }}">Spending limit: {{ formatCurrency(formsBudget, 'USD', 2, 'en-US') }}</badge>
-
-<if when="{{ formsDatesReady }}">
-Registration closes **{{ formsDeadline }}**, **{{ formsRegistrationGap }}** days before the workshop.
-</if>
-
-Requests: {{ trim(formsNotes) == '' ? 'No special requests yet.' : trim(formsNotes) }}
-
-<if when="{{ formsFormat == 'onsite' }}">
-<alert title="Prepare the room">Reserve a room with at least {{ formsSeats }} seats and arrange a shared display.</alert>
-</if>
-<if when="{{ formsFormat == 'online' }}">
-<alert title="Prepare the call">Share the meeting link and check that everyone can open the workshop document.</alert>
-</if>
-</card>
-</grid>
-
-### Try a complete change
-
-Choose Online, set 6 participants and add materials: the estimate becomes **{{ formatCurrency(480, 'USD', 2, 'en-US') }}**. Reset Workshop details to return to the original **{{ formatCurrency(320, 'USD', 2, 'en-US') }}**.
-
-### Tailor the workshop to your group
-
-Choose the level, pace and subjects. These details shape the learning plan alongside the cost estimate above.
-
-<panel title="Learning preferences">
-<select bind="formsLevel" label="Experience level" initial="intro">
-<option value="intro">First workshop</option>
-<option value="advanced">Already familiar</option>
+<select bind="booking" label="How visitors book" initial="form">
+<option value="form">Online form</option>
+<option value="dropin">Drop in</option>
+<option value="partner">Partner referral</option>
 </select>
+<date bind="eventDate" label="Event date" initial="2026-11-14">
+<date bind="signupClose" label="Registration closes" initial="2026-11-07">
+<slider bind="capacity" label="Room capacity" initial="24" min="8" max="60">
+<number bind="budgetLimit" label="Spending limit (USD)" initial="900" min="0" max="3000" step="25">
+<textarea bind="briefNotes" label="Notes for volunteers" rows="2" placeholder="Anything the team should know before the day?">
+<toggle bind="refreshments" label="Serve refreshments" initial="true">
+<checkbox bind="guide" label="Print a written repair guide" color="#167875">
+<validation when="{{ datesReady && registrationInTime }}" message="Choose both dates and close registration on or before the event." fields="signupClose eventDate">
+</panel>
 
-<radio-group bind="formsPace" label="Session pace" initial="guided">
-<option value="guided">Guided practice</option>
-<option value="independent">Independent exploration</option>
+**{{ organizer }}** opens the doors on **{{ eventDate }}** at the {{ venue == 'hall' ? 'community hall' : venue == 'library' ? 'library room' : 'makerspace' }}, with **{{ visitorSeats }}** visitor seats and four volunteer seats.
+
+<badge tone="{{ registrationInTime ? 'success' : 'warning' }}">{{ !datesReady ? 'Choose both dates' : registrationInTime ? 'Registration closes in time' : 'Registration closes too late' }}</badge>
+
+<if when="{{ datesReady }}">
+There are **{{ dateDiff(eventDate, signupClose) }}** days between the deadline and the doors opening.
+</if>
+
+<if when="{{ booking == 'form' }}">
+<alert title="Send a reminder">Email everyone the day before with the address and a request to bring the part that failed if they have it.</alert>
+</if>
+<if when="{{ booking == 'dropin' }}">
+<alert title="Expect an uneven queue">Walk-ins arrive in bursts; keep the <tooltip text="A short conversation that decides which station can help each visitor.">triage</tooltip> desk staffed from the first hour.</alert>
+</if>
+<if when="{{ booking == 'partner' }}">
+<alert title="Confirm referrals">Ask partner organisations for a rough headcount by the Wednesday before the event.</alert>
+</if>
+
+<if when="{{ guide }}">
+Each visitor leaves with a printed guide, so the <tooltip text="The short list of steps a visitor can repeat at home.">take-home notes</tooltip> should match the repair they received.
+</if>
+
+### Copy the opening card
+
+<accordion>
+<disclosure label="Show the source for this card">
+This block runs on its own; paste it into a fresh document to start any small event plan.
+
+```markdown
+<input bind="organizer" label="Organizer" initial="Mira">
+<date bind="day" label="Event date" initial="2026-11-14">
+<slider bind="capacity" label="Room capacity" initial="24" min="8" max="60">
+<computed name="seats" value="{{ capacity - 4 }}">
+
+**{{ organizer }}** opens the doors on **{{ day }}**: {{ seats }} visitor seats, four volunteers and one shared runbook.
+```
+
+</disclosure>
+</accordion>
+
+## Choose the programme
+
+Volunteers repair what they know. Pick up to three stations; the table below assigns a lead and a preparation task to each one. The learning pace and the triage style decide how the queue moves between benches.
+
+<panel title="Programme">
+<multi-select bind="stations" label="Repair stations" max-selected="3" initial="bikes" color="#167875">
+<option value="bikes">Bicycles</option>
+<option value="electronics">Small electronics</option>
+<option value="textiles">Clothing and textiles</option>
+<option value="furniture">Wooden furniture</option>
+</multi-select>
+<radio-group bind="pace" label="Volunteer rhythm" initial="guided">
+<option value="guided">Guided repairs with a checklist</option>
+<option value="roaming">Roaming help between benches</option>
 </radio-group>
-
-<multi-select bind="formsSubjects" label="Workshop subjects" max-selected="2" color="#167875">
-<option value="math">Mathematics</option>
-<option value="physics">Physics</option>
-<option value="chemistry">Chemistry</option>
-</multi-select>
-
-<checkbox bind="formsAccessible" label="Include a written step-by-step guide">
-
-| Detail | Your choice |
-| --- | --- |
-| Level | {{ formsLevel == 'intro' ? 'Start with a worked example' : 'Compare several approaches' }} |
-| Pace | {{ formsPace == 'guided' ? 'Work through the steps together' : 'Leave time to explore independently' }} |
-| Subjects | {{ len(formsSubjects) }} / 2 selected |
-
-<data-table label="Subject preparation" rows="{{ formsSubjects }}" key="{{ item }}" max-rows="2">
-<column label="Subject" value="{{ item == 'math' ? 'Mathematics' : item == 'physics' ? 'Physics' : 'Chemistry' }}">
-<column label="Preparation" value="{{ item == 'chemistry' ? 'Prepare materials and instructions' : 'Prepare a worked example' }}">
-<column label="Guide" value="{{ formsAccessible ? 'Written steps included' : 'Live explanation' }}">
-</data-table>
-
-<if when="{{ contains(formsSubjects, 'chemistry') }}">
-<badge color="#167875">Include a chemistry example</badge>
-</if>
-<if when="{{ formsAccessible }}">
-<alert title="Prepare the written guide">Include the parameter names and the expected result for each step.</alert>
-</if>
+<select bind="triage" label="Triage style" initial="paired">
+<option value="paired">Pair every visitor with one volunteer</option>
+<option value="queue">Keep one queue and call numbers</option>
+</select>
+<checkbox bind="toolKit" label="Set out a shared tool kit" color="#167875">
 </panel>
 
-### How it is written
-
-<accordion>
-<disclosure label="Show the key source">
-
-```markdown
-<const name="rate" value="{{ 80 }}">
-<computed name="total" value="{{ seats * rate }}">
-<slider bind="seats" label="Participants" initial="4" min="1" max="20">
-<number bind="budget" label="Spending limit" initial="500" min="0" max="5000">
-<validation when="{{ total <= budget }}" message="Adjust participants or the spending limit." fields="seats budget">
-<badge tone="{{ total <= budget ? 'success' : 'warning' }}">{{ formatCurrency(total, 'USD', 2, 'en-US') }}</badge>
-
-<multi-select bind="subjects" label="Subjects" max-selected="2">
-<option value="math">Mathematics</option>
-<option value="physics">Physics</option>
-</multi-select>
-<data-table label="Preparation" rows="{{ subjects }}" key="{{ item }}" max-rows="2">
-<column label="Subject" value="{{ item == 'math' ? 'Mathematics' : 'Physics' }}">
+<data-table label="Station plan" rows="{{ stations }}" key="{{ item }}" max-rows="3">
+<column label="Station" value="{{ item == 'bikes' ? 'Bicycles' : item == 'electronics' ? 'Small electronics' : item == 'textiles' ? 'Clothing and textiles' : 'Wooden furniture' }}">
+<column label="Lead" value="{{ item == 'bikes' ? 'Sam' : item == 'electronics' ? 'Iris' : item == 'textiles' ? 'Noor' : 'Theo' }}">
+<column label="Preparation" value="{{ item == 'electronics' ? 'PAT test the bench and label spare cables' : item == 'textiles' ? 'Thread three machines before doors open' : item == 'furniture' ? 'Clear a dust sheet and clamps' : 'Check stands, pumps and spare tubes' }}">
 </data-table>
-```
 
-</disclosure>
-</accordion>
+**{{ stationCount }}** station{{ stationCount == 1 ? '' : 's' }} on the floor. {{ pace == 'guided' ? 'Each lead works from the same checklist, so a visitor can see what happens next.' : 'Leads move between benches; the triage desk keeps track of who is waiting.' }} {{ toolKit ? 'The shared tool kit sits in the middle of the room.' : 'Each station brings its own tools.' }}
 
-<const name="statisticsBudgets" value="{{ [150, 200, 220, 120] }}">
-<computed name="statisticsExpenses" value="{{ [statisticsContent, statisticsVisual, statisticsInteraction, statisticsTesting] }}">
-<computed name="statisticsBudget" value="{{ sum(statisticsBudgets) }}">
-<computed name="statisticsTotal" value="{{ sum(statisticsExpenses) }}">
-<computed name="statisticsRemaining" value="{{ statisticsBudget - statisticsTotal }}">
-
-## One budget, several views
-
-Raise Visual from 230 to 300. The total reaches the {{ formatCurrency(statisticsBudget, 'USD', 2, 'en-US') }} budget; increase it again to see the overspend warning. Every view reads the same four expense parameters.
-
-<grid>
-<card>
-<panel title="Workshop expenses">
-<number bind="statisticsContent" label="Content expense" initial="120" min="0" max="1000" step="10">
-<number bind="statisticsVisual" label="Visual expense" initial="230" min="0" max="1000" step="10">
-<number bind="statisticsInteraction" label="Interaction expense" initial="180" min="0" max="1000" step="10">
-<number bind="statisticsTesting" label="Testing expense" initial="90" min="0" max="1000" step="10">
-</panel>
-</card>
-<card>
-<grid>
-<card title="Total spent">**{{ formatCurrency(statisticsTotal, 'USD', 2, 'en-US') }}**</card>
-<card title="Budget remaining">**{{ formatCurrency(statisticsRemaining, 'USD', 2, 'en-US') }}**</card>
-</grid>
-
-<badge tone="{{ statisticsRemaining >= 0 ? 'success' : 'warning' }}">Budget used: {{ formatPercent(statisticsTotal / statisticsBudget, 1, 'en-US') }}</badge>
-
-Average item **{{ formatCurrency(average(statisticsExpenses), 'USD', 2, 'en-US') }}**; smallest **{{ formatCurrency(minOf(statisticsExpenses), 'USD', 2, 'en-US') }}**, largest **{{ formatCurrency(maxOf(statisticsExpenses), 'USD', 2, 'en-US') }}**.
-
-<if when="{{ statisticsTotal > statisticsBudget }}">
-<alert tone="warning" title="Over budget">Reduce expenses by **{{ formatCurrency(statisticsTotal - statisticsBudget, 'USD', 2, 'en-US') }}** to return to the {{ formatCurrency(statisticsBudget, 'USD', 2, 'en-US') }} budget.</alert>
+<if when="{{ contains(stations, 'electronics') }}">
+<alert tone="warning" title="Book the PAT tester">Electronics need a portable appliance test before they reach the bench.</alert>
+</if>
+<if when="{{ contains(stations, 'textiles') }}">
+<alert title="Thread the machines early">Textile repairs stall when three people wait for one working bobbin.</alert>
+</if>
+<if when="{{ stationCount == 0 }}">
+<alert title="Pick at least one station">An empty programme leaves visitors with nothing to join.</alert>
 </if>
 
-<chart bind="statisticsSelectedExpense" key="Category" title="Actual against budget" y-label="USD">
-| Category | Actual | Budget |
-| --- | ---: | ---: |
-| Content | {{ statisticsExpenses[0] }} | {{ statisticsBudgets[0] }} |
-| Visual | {{ statisticsExpenses[1] }} | {{ statisticsBudgets[1] }} |
-| Interaction | {{ statisticsExpenses[2] }} | {{ statisticsBudgets[2] }} |
-| Testing | {{ statisticsExpenses[3] }} | {{ statisticsBudgets[3] }} |
-</chart>
-</card>
-</grid>
+## Balance the money
 
-### Inspect the data
+Venue, materials, promotion and refreshments share one limit. The turnout curve ties promotion reach to the number of visitors, and the chart, table and totals all read the same numbers.
 
-Search for a category, sort by Actual, or turn the page. Search filters this table; the charts continue to show all four categories.
+<panel title="Spending">
+<number bind="venueCost" label="Venue (USD)" initial="250" min="0" max="2000" step="10">
+<number bind="materialsCost" label="Materials (USD)" initial="120" min="0" max="2000" step="10">
+<slider bind="promoReach" label="Promotion reach (hundreds)" initial="12" min="0" max="40">
+<validation when="{{ budgetUsed <= budgetLimit }}" message="Spending exceeds the limit by {{ formatCurrency(budgetUsed - budgetLimit, 'USD', 2, 'en-US') }}; trim a cost or raise the limit." fields="budgetLimit venueCost materialsCost promoReach">
+</panel>
 
-<table bind="statisticsSelectedExpense" key="Category" initial="Content" label="Expense details" page-size="2">
-| Category | Actual | Budget |
-| --- | ---: | ---: |
-| Content | {{ statisticsExpenses[0] }} | {{ statisticsBudgets[0] }} |
-| Visual | {{ statisticsExpenses[1] }} | {{ statisticsBudgets[1] }} |
-| Interaction | {{ statisticsExpenses[2] }} | {{ statisticsBudgets[2] }} |
-| Testing | {{ statisticsExpenses[3] }} | {{ statisticsBudgets[3] }} |
-</table>
+Spending is **{{ formatCurrency(budgetUsed, 'USD', 2, 'en-US') }}** of the **{{ formatCurrency(budgetLimit, 'USD', 2, 'en-US') }}** limit.
 
-Selected expense: **{{ statisticsSelectedExpense }}**. Choose a row or chart mark to select the same category in the other views. Searching, sorting and paging preserve the selection.
+<badge tone="{{ budgetLeft >= 0 ? 'success' : 'warning' }}">{{ budgetLeft >= 0 ? formatCurrency(budgetLeft, 'USD', 2, 'en-US') + ' left' : formatCurrency(-budgetLeft, 'USD', 2, 'en-US') + ' over' }}</badge>
 
-### Change the perspective
+<progress label="Budget used" value="{{ budgetLimit == 0 ? 100 : budgetUsed / budgetLimit * 100 }}" color="#167875">
 
-<tabs label="Budget perspectives">
-<tab label="Share of expenses">
-<chart bind="statisticsSelectedExpense" key="Category" kind="donut" title="Where the money goes">
-| Category | Actual |
+<if when="{{ budgetUsed > budgetLimit }}">
+<alert tone="warning" title="Over budget">Cut **{{ formatCurrency(budgetUsed - budgetLimit, 'USD', 2, 'en-US') }}** before the plan goes to the venue.</alert>
+</if>
+
+At **{{ formatNumber(promoReach * 100, 0, 'en-US') }}** flyers, the model expects **{{ expectedVisitors }}** visitors: **{{ formatPercent(expectedVisitors / capacity, 0, 'en-US') }}** of the room. Promotion costs **{{ formatCurrency(promoSpend, 'USD', 2, 'en-US') }}**; refreshments add **{{ formatCurrency(refreshmentSpend, 'USD', 2, 'en-US') }}** for {{ refreshments ? 'the planned cups' : 'nothing, because the switch is off' }}.
+
+<grid columns="2">
+<card title="Chart view">
+<chart bind="costRow" key="Item" kind="bar" title="Spending by item" y-label="USD">
+| Item | Cost |
 | --- | ---: |
-| Content | {{ statisticsExpenses[0] }} |
-| Visual | {{ statisticsExpenses[1] }} |
-| Interaction | {{ statisticsExpenses[2] }} |
-| Testing | {{ statisticsExpenses[3] }} |
+| Venue | {{ venueCost }} |
+| Materials | {{ materialsCost }} |
+| Promotion | {{ promoSpend }} |
+| Refreshments | {{ refreshmentSpend }} |
 </chart>
-</tab>
-<tab label="Budget and actual">
-<chart bind="statisticsSelectedExpense" key="Category" kind="scatter" title="Budget versus actual" x="Budget" y="Actual" x-label="Budget" y-label="Actual">
-| Category | Actual | Budget |
-| --- | ---: | ---: |
-| Content | {{ statisticsExpenses[0] }} | {{ statisticsBudgets[0] }} |
-| Visual | {{ statisticsExpenses[1] }} | {{ statisticsBudgets[1] }} |
-| Interaction | {{ statisticsExpenses[2] }} | {{ statisticsBudgets[2] }} |
-| Testing | {{ statisticsExpenses[3] }} | {{ statisticsBudgets[3] }} |
-</chart>
-</tab>
-</tabs>
+</card>
+<card title="Detail table">
+<table bind="costRow" key="Item" initial="Venue" label="Cost detail" page-size="2">
+| Item | Cost |
+| --- | ---: |
+| Venue | {{ venueCost }} |
+| Materials | {{ materialsCost }} |
+| Promotion | {{ promoSpend }} |
+| Refreshments | {{ refreshmentSpend }} |
+</table>
+</card>
+</grid>
 
-### How it is written
+The chart and the detail table share one selection: **{{ costRow }}**. Sorting or paging the table does not change the chart.
 
-<accordion>
-<disclosure label="Show the key source">
+<plot min="0" max="40" label="Expected turnout against promotion reach" x-label="Promotion reach (hundreds)" y-label="Visitors">
+$$ y = \mathrm{capacity}\frac{x}{\mathrm{promoHalf}+x} $$
+</plot>
 
-```markdown
-<const name="budgets" value="{{ [150, 200, 220, 120] }}">
-<number bind="content" label="Content expense" initial="120" min="0" max="1000">
-<number bind="visual" label="Visual expense" initial="230" min="0" max="1000">
-<number bind="interaction" label="Interaction expense" initial="180" min="0" max="1000">
-<number bind="testing" label="Testing expense" initial="90" min="0" max="1000">
-<computed name="expenses" value="{{ [content, visual, interaction, testing] }}">
-<computed name="total" value="{{ sum(expenses) }}">
-Total: {{ formatCurrency(total, 'USD', 2, 'en-US') }}
+The curve flattens as it approaches the room capacity. Drag the promotion slider and read your place on the curve; doubling the flyers rarely doubles the crowd.
 
-<chart title="Actual against budget">
-| Category | Actual | Budget |
-| --- | ---: | ---: |
-| Visual | {{ expenses[1] }} | {{ budgets[1] }} |
-</chart>
-```
+## Lay out the room
 
-</disclosure>
-</accordion>
+The entrance is the origin of a ten-metre square. Put the welcome desk somewhere visible; its walking distance and the quiet window decide how the side room gets used.
 
-<const name="layoutWorkshopDay" value="{{ '2026-11-01' }}">
-<computed name="layoutReadingPhase" value="{{ layoutReadingDate == '' ? 'undated' : dateCompare(layoutReadingDate, layoutWorkshopDay) < 0 ? 'before' : dateCompare(layoutReadingDate, layoutWorkshopDay) == 0 ? 'during' : 'after' }}">
-<computed name="layoutDaysUntil" value="{{ layoutReadingDate == '' ? null : dateDiff(layoutWorkshopDay, layoutReadingDate) }}">
+<anchor id="layout">
 
-## A workshop guide at every reading depth
+<panel title="Welcome desk">
+<coordinate label="Desk position (metres)" bind-x="deskX" bind-y="deskY" initial-x="3" initial-y="4" x-min="0" x-max="10" y-min="0" y-max="10" step="0.5" color="#2563eb">
+</panel>
 
-Compare the cards, then move the reading date to workshop day or later and watch the guidance change. Switch reading roles and expand a question to find the detail you need.
+The desk sits **{{ formatNumber(deskDistance, 1, 'en-US') }}** metres from the entrance. A desk near the door keeps the queue outside and leaves the repair benches free.
 
-<anchor id="reading-start">
+<quiz type="number" label="Place the desk at (3, 4). How far is it from the entrance?" answer="5" tolerance="0.01" explanation="Use the Pythagorean theorem: the square root of 3² + 4² is 5.">
+</quiz>
+
+<panel title="Quiet hours">
+<range-slider label="Quiet room window" bind-start="quietStart" bind-end="quietEnd" initial-start="13" initial-end="15" min="9" max="18" step="1" color="#7c3aed">
+</panel>
+
+The side room is quiet for **{{ quietLength }}** hours, from **{{ quietStart }}:00** to **{{ quietEnd }}:00**.
+
+<if when="{{ quietLength >= 2 }}">
+<alert tone="success" title="Book the side room">Two hours is enough for listening help and a slow textile repair.</alert>
+</if>
+<if when="{{ quietLength < 2 }}">
+<alert tone="warning" title="Keep the side room short">Use the window for one appointment at a time and move listening help to the foyer.</alert>
+</if>
 
 <section color="#45536f">
-Find the level of detail you need. <text color="#a2273a">**Keep important reminders in view.**</text> Paragraphs can share a color while a few words carry their own emphasis.
+Keep the entrance clear and mark the desk with a number. <text color="#a2273a">**A visitor should see the queue before joining it.**</text>
 </section>
 
-<jump to="reading-details" appearance="button" color="#2563eb">Jump to the questions</jump>
+<anchor id="runbook">
 
-<panel title="Reading date">
-<date bind="layoutReadingDate" label="When are you reading?" initial="2026-10-24">
-</panel>
+## Run the day
 
-<badge tone="{{ layoutReadingPhase == 'before' ? 'neutral' : layoutReadingPhase == 'undated' ? 'warning' : 'success' }}">{{ layoutReadingPhase == 'before' ? 'Before: prepare' : layoutReadingPhase == 'during' ? 'Workshop day: explore' : layoutReadingPhase == 'after' ? 'After: reflect' : 'Choose a reading date' }}</badge>
+The page becomes the runbook. Select a stop on the visitor route, work through the opening sequence, then use the checklist, timer and timetable while the doors are open.
 
-<if when="{{ layoutReadingPhase == 'before' }}">
-The workshop is on **{{ layoutWorkshopDay }}**, with **{{ layoutDaysUntil }}** days to prepare. Start with the preparation card.
-</if>
-<if when="{{ layoutReadingPhase == 'after' }}">
-The workshop was **{{ layoutDaysUntil == null ? 0 : -layoutDaysUntil }}** days ago. Revisit a useful exploration and share it with a partner.
-</if>
-
-<grid>
-<card title="Before the workshop">
-Bring a short Markdown document and one idea you want readers to explore.
-
-<badge>Preparation</badge>
-</card>
-<card title="During the workshop">
-Turn an input into a live explanation, then share what changes when you adjust it.
-
-<badge tone="success">Hands-on</badge>
-</card>
-</grid>
-
-### Choose your reading role
-
-<tabs label="Workshop roles">
-<tab label="Participant">
-#### Make one idea interactive
-
-1. Start with a number readers can change.
-2. Connect it to a sentence or a chart.
-3. Ask a partner to explore the result.
-
-A <tooltip text="A named input lets prose and visualizations read its current value.">reactive binding</tooltip> keeps the explanation connected to the input.
-</tab>
-<tab label="Facilitator">
-#### Guide the exploration
-
-Show the result first. Invite one clear change, ask what happened, then open the source to explain the relationship.
-
-> Useful prompt: What changes if we double this value?
-</tab>
-</tabs>
-
-<anchor id="reading-details">
-
-### Open the detail you need
-
-<accordion label="Workshop questions">
-<disclosure label="What should I prepare?" open>
-A browser, a short document and a concrete question are enough to begin.
-</disclosure>
-<disclosure label="How do these layouts work together?">
-Cards compare related ideas, tabs separate reading contexts, and disclosures keep optional details within reach.
-</disclosure>
-</accordion>
-
-<alert title="Keep the reading path clear">Place the main explanation first and let readers choose when to open supporting detail.</alert>
-
-<jump to="reading-start" appearance="button" color="#2563eb">Return to the overview</jump>
-
-### How it is written
-
-<accordion>
-<disclosure label="Show the key source">
-
-```markdown
-<const name="workshopDay" value="{{ '2026-11-01' }}">
-<date bind="readingDate" label="Reading date" initial="2026-10-24">
-<computed name="daysUntil" value="{{ readingDate == '' ? null : dateDiff(workshopDay, readingDate) }}">
-<grid>
-<card title="Workshop date">{{ workshopDay }}</card>
-<card title="Days until workshop">{{ daysUntil }}</card>
-</grid>
-<accordion>
-<disclosure label="Read more">Supporting detail goes here.</disclosure>
-</accordion>
-```
-
-</disclosure>
-</accordion>
-
-<const name="flowRate" value="{{ 80 }}">
-<computed name="flowTotal" value="{{ flowPeople * flowRate }}">
-
-## Follow a value through a document
-
-Change the headcount, then select Input, Compute and Display in the diagram. Follow the same value from the control to the final explanation.
-
-<panel title="Try a value">
-<slider bind="flowPeople" label="Headcount" initial="4" min="1" max="12">
-</panel>
-
-<diagram bind="flowSelected" initial="input" label="From input to explanation">
-<node id="input" label="Input: {{ flowPeople }}">
-The slider names its value people. Its current value is **{{ flowPeople }}**.
+<diagram bind="stop" initial="checkin" label="Visitor route">
+<node id="checkin" label="Welcome: {{ organizer }}">
+The desk checks the booking, gives each visitor a number and points to the triage bench.
 </node>
-<node id="compute" label="Compute: {{ flowPeople }} × {{ flowRate }}">
-Each participant costs 80, so the total is **{{ flowPeople }} × {{ flowRate }} = {{ flowTotal }}**.
+<node id="triage" label="Triage: {{ stationCount }} station{{ stationCount == 1 ? '' : 's' }}">
+A volunteer asks what is broken, what the visitor has tried and whether the item can stay for an hour.
 </node>
-<node id="view" label="Display: {{ flowTotal }}">
-The prose reads the read-only total: the workshop costs **{{ formatCurrency(flowTotal, 'USD', 2, 'en-US') }}**. The calculation node and explanations share this result.
+<node id="repair" label="Repair: {{ expectedVisitors }}">
+The bench decides whether the item leaves fixed, needs a part, or goes home with advice.
 </node>
-<edge from="input" to="compute" label="Value changes">
-<edge from="compute" to="view" label="Result updates">
+<edge from="checkin" to="triage" label="Queue">
+<edge from="triage" to="repair" label="Assign">
 </diagram>
 
-You are exploring: **{{ flowSelected == 'input' ? 'Input' : flowSelected == 'compute' ? 'Compute' : 'Display' }}**.
+Selected stop: **{{ stop == 'checkin' ? 'welcome' : stop == 'triage' ? 'triage' : 'repair' }}**.
 
-<if when="{{ flowSelected == 'input' }}">
-<alert title="Start with what readers can change">Try 6 people, then select Compute to follow the calculation.</alert>
+<if when="{{ stop == 'checkin' }}">
+<alert title="Keep the door moving">Two volunteers at the desk: one greets, one checks the list.</alert>
 </if>
-<if when="{{ flowSelected == 'compute' }}">
-<alert title="Make the relationship visible">The named calculation total = people * rate gives **{{ flowTotal }}**.</alert>
+<if when="{{ stop == 'triage' }}">
+<alert title="Ask three questions">What is broken, what have you tried, and can you leave it for an hour?</alert>
 </if>
-<if when="{{ flowSelected == 'view' }}">
-<alert tone="success" title="The document now explains the result">For {{ flowPeople }} people, the total is **{{ flowTotal }}**.</alert>
+<if when="{{ stop == 'repair' }}">
+<alert tone="success" title="Record the outcome">A short note per repair feeds the closing debrief.</alert>
 </if>
 
-### Explore with the keyboard
+### Walk through the opening
 
-Tab to a diagram node, move focus with the arrow keys, then press Enter or Space to select it. The selected explanation and the text below the diagram stay in sync.
-
-### Explain the flow one step at a time
-
-<steps label="Explanation path" bind="flowLesson">
-<step label="Read the input" value="observe">
-Start at the Input node: the current headcount is **{{ flowPeople }}**.
+<steps label="Opening sequence" bind="openingStep" initial="unlock">
+<step label="Unlock and set up" value="unlock">
+Open the room, set out the shared tool kit and test every bench before the first visitor arrives.
 </step>
-<step label="Check the calculation" value="calculate">
-Select Compute. Each participant costs 80, giving **{{ flowPeople }} × {{ flowRate }} = {{ flowTotal }}**.
-</step>
-<step label="Explain the result" value="practice">
-Select Display and explain why the total changes when headcount changes.
+<step label="Brief the team" value="brief">
+Walk through the route, the triage questions and the quiet-room window.
 
-<quiz type="choice" label="Which expression calculates the total?" answer="total" explanation="Multiply headcount by the cost per participant.">
-<option value="total">people × 80</option>
-<option value="sum">people + 80</option>
-<option value="fixed">80</option>
+<counter bind="volunteersBriefed" label="Volunteers briefed" initial="0" min="0" max="12">
+
+<quiz type="choice" label="A visitor arrives with a broken lamp and no booking. Where do they go first?" answer="triage" explanation="Every visitor passes triage before a station, booked or not.">
+<option value="triage">The triage bench</option>
+<option value="repair">The nearest repair station</option>
+<option value="desk">Back to the door</option>
 </quiz>
-
-<counter label="Practice rounds" initial="0" min="0" max="10">
+</step>
+<step label="Open the doors" value="open">
+Start the bench timer for the first repair slot and let the queue in.
 </step>
 </steps>
 
-Current step: **{{ flowLesson }}**. After explaining the result to a partner, count one practice round.
+Current step: **{{ openingStep == 'unlock' ? 'Unlock and set up' : openingStep == 'brief' ? 'Brief the team' : 'Open the doors' }}**. **{{ volunteersBriefed }}** volunteers have heard the briefing.
 
-### How it is written
-
-<accordion>
-<disclosure label="Show the key source">
-
-```markdown
-<const name="rate" value="{{ 80 }}">
-<computed name="total" value="{{ people * rate }}">
-<slider bind="people" label="Headcount" initial="4" min="1" max="12">
-<diagram bind="selected" initial="input" label="A short flow">
-<node id="input" label="Input: {{ people }}">Read headcount.</node>
-<node id="compute" label="Compute: {{ total }}">{{ people }} × {{ rate }} = {{ total }}</node>
-<node id="view" label="Display: {{ total }}">{{ formatCurrency(total, 'USD', 2, 'en-US') }}</node>
-<edge from="input" to="compute">
-<edge from="compute" to="view">
-</diagram>
-Selected node: {{ selected }}
-```
-
-</disclosure>
-</accordion>
-
-<const name="tasksPreparationCount" value="{{ 3 }}">
-<computed name="tasksReadyCount" value="{{ len(tasksDone) }}">
-<computed name="tasksCompletion" value="{{ tasksReadyCount / tasksPreparationCount }}">
-<computed name="tasksReadyToShare" value="{{ tasksReadyCount == tasksPreparationCount }}">
-
-## Run a focused workshop
-
-Check off the preparation steps, count the participants and start a short focus timer. This page keeps the plan, progress and timing together.
-
-<panel title="Workshop readiness">
-<checklist color="#167875" bind="tasksDone" label="Prepare together">
-- [x] Choose one question to explore
-- [ ] Open the document and adjust a parameter
-- [ ] Explain the result to a partner
+<grid columns="2">
+<card title="Repair slot">
+<timer label="Bench timer" duration="45">
+Start the clock when a repair begins. Reset it between visitors.
+</card>
+<card title="Opening checklist">
+<panel title="Before the doors open">
+<checklist bind="openingDone" label="Opening checks" color="#167875">
+- [x] Set out the tool kit
+- [ ] Test the PAT bench
+- [ ] Thread the sewing machines
+- [ ] Mark the welcome desk
 </checklist>
 
-Ready: **{{ tasksReadyCount }} / {{ tasksPreparationCount }}**. Checking an item adds its reflection prompt below.
-
-<progress color="#167875" label="Preparation progress" value="{{ tasksCompletion * 100 }}">
-
-<badge tone="{{ tasksReadyToShare ? 'success' : 'neutral' }}">{{ formatPercent(tasksCompletion, 0, 'en-US') }} complete</badge>
-
-<data-table label="Completed preparation" rows="{{ tasksDone }}" key="{{ item }}" max-rows="3">
-<column label="Task" value="{{ item == 'item-1' ? 'Choose a question' : item == 'item-2' ? 'Adjust a parameter' : 'Explain to a partner' }}">
-<column label="Reflection" value="{{ item == 'item-1' ? 'What do we want to learn?' : item == 'item-2' ? 'What changed?' : 'How can we explain it?' }}">
-</data-table>
-
-<if when="{{ tasksReadyToShare }}">
-<alert tone="success" title="Ready to share">Everyone has a question, a working example and a result to discuss.</alert>
-</if>
+<progress label="Opening readiness" value="{{ openingCompletion * 100 }}" color="#167875">
 </panel>
-
-<grid>
-<card title="People in the room">
-<counter bind="tasksCount" label="Participants present" initial="0" min="0" max="20">
-Present: **{{ tasksCount }}**.
-</card>
-<card title="One minute to explore">
-<timer label="Focus timer" duration="60">
-Start when you are ready. Pause to discuss a result, or reset for another round.
 </card>
 </grid>
 
-### See the whole session
+Ready: **{{ openingDoneCount }} / 4**.
 
-<timeline title="A 45-minute workshop">
-| Task | Start | Duration | Notes |
-| --- | ---: | ---: | --- |
-| Choose a question | 0 | 10 | Agree on one thing to explore |
-| Build and explore | 10 | 25 | Try the controls and compare results |
-| Collect observations | 15 | 15 | Take notes while exploring |
-| Share back | 35 | 10 | Explain one useful finding |
-</timeline>
+<badge tone="{{ openingReady ? 'success' : 'neutral' }}">{{ formatPercent(openingCompletion, 0, 'en-US') }} complete</badge>
 
-Reset Workshop readiness to restore its checklist. The participant counter and timer are outside that panel and keep their own state.
-
-### Keep track of the follow-up
-
-Checked tasks are crossed out. Hide and reopen this list to see that your completed items stay checked.
-
-<toggle bind="tasksFollowUp" label="Show follow-up tasks" initial="true">
-<if when="{{ tasksFollowUp }}">
-<checklist label="After sharing" color="#167875">
-- [ ] Save a useful observation
-- [ ] Share the document with a partner
-</checklist>
+<if when="{{ openingReady }}">
+<alert tone="success" title="Doors open">Every opening check is done; start the bench timer when the first visitor sits down.</alert>
 </if>
 
-### How it is written
-
-<accordion>
-<disclosure label="Show the key source">
-
-```markdown
-<checklist bind="done" label="Preparation">
-- [x] Choose a question
-- [ ] Explore a result
-</checklist>
-<computed name="completion" value="{{ len(done) / 2 }}">
-<progress label="Progress" value="{{ completion * 100 }}">
-{{ formatPercent(completion, 0) }}
-
-<data-table label="Completed tasks" rows="{{ done }}" key="{{ item }}" max-rows="2">
-<column label="Task" value="{{ item == 'item-1' ? 'Choose a question' : 'Explore a result' }}">
+<data-table label="Finished opening checks" rows="{{ openingDone }}" key="{{ item }}" max-rows="4">
+<column label="Check" value="{{ item == 'item-1' ? 'Set out the tool kit' : item == 'item-2' ? 'Test the PAT bench' : item == 'item-3' ? 'Thread the sewing machines' : 'Mark the welcome desk' }}">
+<column label="Why it matters" value="{{ item == 'item-1' ? 'Volunteers stop hunting for tools' : item == 'item-2' ? 'Electronics stay safe to test' : item == 'item-3' ? 'Textile repairs start without a wait' : 'Visitors find the queue' }}">
 </data-table>
-```
 
+The checklist panel resets the opening checks; the timer and the volunteer counter keep their own state.
+
+### See the whole session
+
+<timeline title="Saturday timetable">
+| Task | Start | Duration | Notes |
+| --- | ---: | ---: | --- |
+| Set up and brief | 0 | 60 | Benches tested, volunteers briefed |
+| Doors open | 60 | 15 | Welcome desk runs the queue |
+| Morning repairs | 75 | 120 | Three stations in parallel |
+| Lunch | 195 | 45 | Volunteers rotate |
+| Afternoon repairs | 240 | 90 | Listening corner in the side room |
+| Close and debrief | 330 | 30 | Record outcomes and missing parts |
+</timeline>
+
+## Hand over the runbook
+
+Three people read the same page: a visitor deciding whether to come, a volunteer preparing a bench, and the organizer closing the day. Choose a role; each tab keeps its own notes and controls.
+
+<tabs label="Who is reading?">
+<tab label="Visitor">
+Bring the item, a spare part if you have one, and <tooltip text="A short note about what you have already tried saves time at triage.">a note about what you have tried</tooltip>. Booking is **{{ booking == 'form' ? 'online' : booking == 'dropin' ? 'not required' : 'through a partner' }}**; doors open at ten.
+
+<if when="{{ booking == 'form' }}">
+<alert title="Watch the deadline">Registration closes on **{{ signupClose }}**; after that, ask at the door.</alert>
+</if>
+</tab>
+<tab label="Volunteer">
+Your bench is ready when the **{{ pace == 'guided' ? 'guided checklist' : 'roaming brief' }}** is done. Read the **{{ stop == 'triage' ? 'triage' : 'welcome' }}** stop, then start the bench timer.
+
+<badge tone="{{ toolKit ? 'success' : 'warning' }}">{{ toolKit ? 'Shared tool kit is out' : 'Bring your own tools' }}</badge>
+</tab>
+<tab label="Organizer">
+The budget has **{{ budgetLeft >= 0 ? formatCurrency(budgetLeft, 'USD', 2, 'en-US') : formatCurrency(-budgetLeft, 'USD', 2, 'en-US') }}** {{ budgetLeft >= 0 ? 'left' : 'overspent' }}, and **{{ expectedVisitors }}** visitors are expected. Check the route and the timetable before unlocking.
+
+<jump to="layout" appearance="link" color="#2563eb">Review the room plan</jump>
+<jump to="runbook" appearance="button" color="#2563eb">Return to the runbook</jump>
+</tab>
+</tabs>
+
+<accordion label="Handover questions">
+<disclosure label="What if more visitors arrive than the room allows?" open>
+Seats are **{{ visitorSeats }}**; the model expects **{{ expectedVisitors }}**. Hand out timed return slots rather than turning people away, and keep the door count at capacity.
+</disclosure>
+<disclosure label="When do we cancel a station?">
+When a lead cannot come, drop that station from the programme and redistribute its visitors at triage. The station count is **{{ stationCount }}**.
 </disclosure>
 </accordion>
+
+<alert title="Leave a note for next time">Record missing parts, repairs that needed a second visit and the busiest hour. Next year's brief starts from these notes.</alert>
+
+<jump to="top" appearance="button" color="#2563eb">Back to the brief</jump>
