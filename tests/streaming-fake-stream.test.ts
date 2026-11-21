@@ -32,8 +32,11 @@ function compiled(
   } as unknown as LocalCompileResult;
 }
 
-function wellFormed(value: string): boolean {
-  for (let index = 0; index < value.length; index += 1) {
+function failed(diagnostics: Diagnostic[]): LocalCompileResult {
+  return { ok: false, diagnostics } as LocalCompileResult;
+}
+
+function wellFormed(value: string): boolean {  for (let index = 0; index < value.length; index += 1) {
     const code = value.charCodeAt(index);
     if (code >= 0xd800 && code <= 0xdbff) {
       const low = value.charCodeAt(index + 1);
@@ -177,6 +180,25 @@ describe('character-paced fake stream', () => {
     })).toBe(true);
     expect(controller.getSnapshot().status).toBe('done');
     expect(controller.getSnapshot().finalDiagnostics).toEqual([finalIssue]);
+  });
+
+  it('keeps a failed final snapshot as a readable fallback state', () => {
+    const { controller } = setup('example', 20);
+    controller.editSource('broken <panel');
+    controller.finalizeSource();
+    const issue = warning('local.tag.unclosed');
+    expect(controller.applyOutcome({
+      source: 'broken <panel',
+      sourcePhase: 'final',
+      result: failed([issue]),
+    })).toBe(true);
+    expect(controller.getSnapshot()).toMatchObject({
+      status: 'failed',
+      finalFailed: true,
+      running: false,
+      source: 'broken <panel',
+    });
+    expect(controller.getSnapshot().finalDiagnostics).toEqual([issue]);
   });
 
   it('returns to the built-in example only through restoreExample', () => {

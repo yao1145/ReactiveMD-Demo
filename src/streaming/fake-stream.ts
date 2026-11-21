@@ -45,7 +45,7 @@ export const STREAM_SPEED_STEP_CPS = 10;
 /** Reveal cadence; the number of characters per tick follows the speed. */
 export const STREAM_TICK_MS = 100;
 
-export type StreamStatus = 'idle' | 'draft' | 'streaming' | 'finalizing' | 'done' | 'cancelled';
+export type StreamStatus = 'idle' | 'draft' | 'streaming' | 'finalizing' | 'done' | 'failed' | 'cancelled';
 /** `example` streams the built-in source; `custom` streams the host text. */
 export type StreamMode = 'example' | 'custom';
 
@@ -61,6 +61,8 @@ export interface StreamState {
   /** Source revealed so far and submitted to the compiler. */
   readonly source: string;
   readonly running: boolean;
+  /** The final snapshot failed; the preview keeps the streaming fallback. */
+  readonly finalFailed: boolean;
   /** Fixable issues reported by the latest accepted snapshot. */
   readonly transient: readonly Diagnostic[];
   /** Non-transient issues for the current snapshot before finalization. */
@@ -143,6 +145,7 @@ export class FakeStreamController {
   private revealIndex = 0;
   private status: StreamStatus = 'idle';
   private running = false;
+  private finalFailed = false;
   private speedCps: number;
   private transient: Diagnostic[] = [];
   private streamingDiagnostics: Diagnostic[] = [];
@@ -187,6 +190,7 @@ export class FakeStreamController {
     this.source = '';
     this.running = true;
     this.status = 'streaming';
+    this.finalFailed = false;
     this.transient = [];
     this.streamingDiagnostics = [];
     this.finalDiagnostics = [];
@@ -235,6 +239,7 @@ export class FakeStreamController {
     this.source = source;
     this.revealIndex = source.length;
     this.running = false;
+    this.finalFailed = false;
     this.transient = [];
     this.streamingDiagnostics = [];
     this.finalDiagnostics = [];
@@ -258,6 +263,7 @@ export class FakeStreamController {
     this.source = this.targetSource;
     this.revealIndex = this.source.length;
     this.status = 'finalizing';
+    this.finalFailed = false;
     this.submit(this.source, 'final');
     this.publish();
   };
@@ -298,7 +304,8 @@ export class FakeStreamController {
       // A final snapshot retracts provisional issues, even when the result
       // carries no diagnostics of its own.
       this.transient = [];
-      this.status = 'done';
+      this.finalFailed = !result.ok;
+      this.status = result.ok ? 'done' : 'failed';
       this.running = false;
     } else {
       this.transient = (result.transientDiagnostics ?? []).slice();
@@ -359,6 +366,7 @@ export class FakeStreamController {
       targetSource: this.targetSource,
       source: this.source,
       running: this.running,
+      finalFailed: this.finalFailed,
       transient: this.transient,
       streamingDiagnostics: this.streamingDiagnostics,
       finalDiagnostics: this.finalDiagnostics,

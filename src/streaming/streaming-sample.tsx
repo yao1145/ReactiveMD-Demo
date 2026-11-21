@@ -100,20 +100,24 @@ export function StreamingSample() {
     streaming: copy.statusStreaming,
     finalizing: copy.statusFinalizing,
     done: copy.statusDone,
+    failed: copy.statusFailed,
     cancelled: copy.statusCancelled,
   };
   const busy = state.running;
+  const finished = state.status === 'done' || state.status === 'failed';
   const final = state.status === 'done';
   const editorValue = state.running ? state.source : state.targetSource;
-  const diagnostics = final ? state.finalDiagnostics : state.streamingDiagnostics;
-  const diagnosticsHeading = final ? copy.finalHeading : copy.diagnosticsHeading;
-  const diagnosticsHint = final ? copy.finalHint : copy.diagnosticsHint;
+  const diagnostics = finished ? state.finalDiagnostics : state.streamingDiagnostics;
+  const diagnosticsHeading = finished ? copy.finalHeading : copy.diagnosticsHeading;
+  const diagnosticsHint = finished ? copy.finalHint : copy.diagnosticsHint;
   const previewNote = state.status === 'cancelled'
     ? copy.previewCancelled
-    : state.source
-      ? copy.previewNote
-      : copy.previewIdle;
-  const chipState = state.status === 'done' ? '' : state.status === 'cancelled' || state.snapshotStatus === 'failed' ? ' is-error' : ' is-pending';
+    : state.status === 'failed'
+      ? copy.previewFailed
+      : state.source
+        ? copy.previewNote
+        : copy.previewIdle;
+  const chipState = state.status === 'done' ? '' : state.status === 'cancelled' || state.status === 'failed' || state.snapshotStatus === 'failed' ? ' is-error' : ' is-pending';
 
   return (
     <section className="streaming-view" aria-label={copy.region}>

@@ -203,6 +203,7 @@ export interface DemoCopy {
     statusStreaming: string;
     statusFinalizing: string;
     statusDone: string;
+    statusFailed: string;
     statusCancelled: string;
     snapshot: (status: string, phase: string) => string;
     duration: (milliseconds: number) => string;
@@ -214,6 +215,7 @@ export interface DemoCopy {
     previewHeading: string;
     previewNote: string;
     previewCancelled: string;
+    previewFailed: string;
     previewIdle: string;
     transientHeading: string;
     transientHint: string;
@@ -452,6 +454,7 @@ const ENGLISH: DemoCopy = {
     statusStreaming: 'Streaming',
     statusFinalizing: 'Applying final snapshot',
     statusDone: 'Complete',
+    statusFailed: 'Final failed',
     statusCancelled: 'Cancelled',
     snapshot: (status, phase) => `Latest result: ${status} (${phase})`,
     duration: (milliseconds) => `${milliseconds} ms`,
@@ -465,6 +468,8 @@ const ENGLISH: DemoCopy = {
       'Streaming snapshots render in static mode: controls are read-only and side effects wait for the final snapshot.',
     previewCancelled:
       'The run was cancelled. The revealed prefix stays read-only; the full source is back in the editor.',
+    previewFailed:
+      'The final snapshot failed. Incomplete syntax is shown as text and the final diagnostics remain below.',
     previewIdle: 'Start a run to reveal the current source by character.',
     transientHeading: 'Provisional diagnostics',
     transientHint:
@@ -697,6 +702,7 @@ const CHINESE: DemoCopy = {
     statusStreaming: '流式生成中',
     statusFinalizing: '正在应用最终快照',
     statusDone: '已完成',
+    statusFailed: '最终快照失败',
     statusCancelled: '已取消',
     snapshot: (status, phase) => `最新结果：${status}（${phase}）`,
     duration: (milliseconds) => `${milliseconds} ms`,
@@ -708,6 +714,7 @@ const CHINESE: DemoCopy = {
     previewHeading: '实时预览',
     previewNote: '流式快照以静态模式渲染：控件只读，副作用等待最终快照。',
     previewCancelled: '运行已取消，已显示的片段保持只读；完整源码已回到编辑器。',
+    previewFailed: '最终快照失败；未完成的语法已按原文显示，最终诊断保留在下方。',
     previewIdle: '开始后按字符逐步显示当前源码。',
     transientHeading: '临时诊断',
     transientHint: '当前快照中可修复的问题，不会进入最终诊断。',
