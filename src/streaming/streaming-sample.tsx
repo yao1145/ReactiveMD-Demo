@@ -8,7 +8,7 @@ import {
 } from 'reactive-md';
 import { LocalReactiveDocument } from 'reactive-md/react';
 import { useCopy, useLanguage } from '../ui/i18n';
-import { FakeStreamController, STREAM_CHUNKS, STREAM_INTERVAL_MS, STREAM_SPEED_MAX_MS, STREAM_SPEED_MIN_MS, STREAM_SPEED_STEP_MS, type StreamStatus } from './fake-stream';
+import { FakeStreamController, STREAM_SOURCE, STREAM_SPEED_MAX_CPS, STREAM_SPEED_MIN_CPS, STREAM_SPEED_STEP_CPS, type StreamStatus } from './fake-stream';
 import './streaming-sample.css';
 
 /** Same defaults the Playground uses for this source, so both compiles agree. */
@@ -43,9 +43,10 @@ function DiagnosticItems({ diagnostics, testId }: { diagnostics: readonly Diagno
 }
 
 /**
- * Deterministic streaming sample. A fixed chunk list is replayed on a timer
- * into LocalCompileScheduler; the panel renders the growing snapshot through
- * LocalReactiveDocument. It never touches the Playground editor state.
+ * Deterministic streaming sample. The current source is revealed by character
+ * at the chosen rate into LocalCompileScheduler; the panel renders the growing
+ * snapshot through LocalReactiveDocument. It never touches the Playground
+ * editor state.
  */
 export function StreamingSample() {
   const copy = useCopy().streaming;
@@ -59,7 +60,8 @@ export function StreamingSample() {
     const current = controllerRef.current;
     schedulerRef.current = new LocalCompileScheduler({
       createWorker: createStreamWorker,
-      delay: 120,
+      // Shorter than one character tick so each revealed prefix can settle.
+      delay: 60,
       onResult: (outcome) => {
         current?.applyOutcome({
           source: outcome.source,
@@ -72,8 +74,7 @@ export function StreamingSample() {
   };
   const [controller] = useState(() => {
     const created = new FakeStreamController({
-      chunks: STREAM_CHUNKS,
-      intervalMs: STREAM_INTERVAL_MS,
+      source: STREAM_SOURCE,
       submit: (source, phase) => {
         schedulerRef.current?.schedule(source, STREAM_COMPILE_OPTIONS, undefined, phase);
       },
@@ -95,13 +96,15 @@ export function StreamingSample() {
 
   const statusLabels: Record<StreamStatus, string> = {
     idle: copy.statusIdle,
+    draft: copy.statusDraft,
     streaming: copy.statusStreaming,
     finalizing: copy.statusFinalizing,
     done: copy.statusDone,
     cancelled: copy.statusCancelled,
   };
-  const busy = state.status === 'streaming' || state.status === 'finalizing';
+  const busy = state.running;
   const final = state.status === 'done';
+  const editorValue = state.running ? state.source : state.targetSource;
   const diagnostics = final ? state.finalDiagnostics : state.streamingDiagnostics;
   const diagnosticsHeading = final ? copy.finalHeading : copy.diagnosticsHeading;
   const diagnosticsHint = final ? copy.finalHint : copy.diagnosticsHint;
@@ -133,19 +136,20 @@ export function StreamingSample() {
       <div className="streaming-toolbar">
         <div className="streaming-controls" role="group" aria-label={copy.controls}>
           <button type="button" className="button button-primary" onClick={controller.start}
-            disabled={state.mode === 'scripted' && busy} data-testid="streaming-start">
+            disabled={state.running || !state.targetSource} data-testid="streaming-start">
             {copy.start}
           </button>
           <button type="button" className="button" onClick={controller.cancel}
-            disabled={!busy} data-testid="streaming-cancel">
+            disabled={!state.running} data-testid="streaming-cancel">
             {copy.cancel}
           </button>
-          <button type="button" className="button" onClick={controller.restart} data-testid="streaming-restart">
-            {copy.restart}
+          <button type="button" className="button" onClick={controller.restoreExample}
+            data-testid="streaming-restore">
+            {copy.restore}
           </button>
-          {state.mode === 'manual' ? (
-            <button type="button" className="button" onClick={controller.finalizeManual}
-              disabled={!state.source || state.status === 'finalizing' || state.status === 'done'}
+          {state.mode === 'custom' ? (
+            <button type="button" className="button" onClick={controller.finalizeSource}
+              disabled={state.running || !state.targetSource || state.status === 'finalizing' || state.status === 'done'}
               data-testid="streaming-finalize">
               {copy.finalize}
             </button>
@@ -153,18 +157,17 @@ export function StreamingSample() {
         </div>
         <label className="streaming-speed">
           <span>{copy.speedLabel}</span>
-          <input type="range" min={STREAM_SPEED_MIN_MS} max={STREAM_SPEED_MAX_MS}
-            step={STREAM_SPEED_STEP_MS} value={state.speedMs}
-            disabled={state.mode === 'manual'}
+          <input type="range" min={STREAM_SPEED_MIN_CPS} max={STREAM_SPEED_MAX_CPS}
+            step={STREAM_SPEED_STEP_CPS} value={state.speedCps}
             onChange={(event) => controller.setSpeed(Number(event.target.value))}
             data-testid="streaming-speed" />
-          <output data-testid="streaming-speed-value">{copy.speedValue(state.speedMs)}</output>
+          <output data-testid="streaming-speed-value">{copy.speedValue(state.speedCps)}</output>
         </label>
         <ul className="streaming-meta">
           <li data-testid="streaming-mode">
-            {state.mode === 'manual' ? copy.modeManual : copy.modeScripted}
+            {state.mode === 'custom' ? copy.modeCustom : copy.modeExample}
           </li>
-          <li>{copy.runMeta(state.generation, state.chunks, state.totalChunks)}</li>
+          <li>{copy.progress(state.source.length, state.targetSource.length)}</li>
           {state.snapshotStatus ? <li>{copy.snapshot(state.snapshotStatus, state.snapshotPhase ?? 'streaming')}</li> : null}
           {state.durationMs > 0 ? <li>{copy.duration(Math.round(state.durationMs))}</li> : null}
           <li data-testid="streaming-discarded">{copy.discarded(state.discarded)}</li>
@@ -175,10 +178,11 @@ export function StreamingSample() {
         <article className="streaming-panel" aria-labelledby="streaming-source-heading">
           <header className="streaming-panel-head">
             <h3 id="streaming-source-heading">{copy.sourceHeading}</h3>
-            <span className="streaming-panel-meta">{copy.sourceMeta(state.source.length)}</span>
+            <span className="streaming-panel-meta">{copy.sourceMeta(state.targetSource.length)}</span>
           </header>
           <p className="streaming-hint">{copy.sourceHint}</p>
-          <textarea className="streaming-source" value={state.source} spellCheck={false}
+          <textarea className="streaming-source" value={editorValue} spellCheck={false}
+            readOnly={state.running}
             aria-label={copy.sourceHeading} placeholder={copy.sourceEmpty}
             onChange={(event) => controller.editSource(event.target.value)}
             data-testid="streaming-source" />

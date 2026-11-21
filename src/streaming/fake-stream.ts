@@ -6,40 +6,42 @@ import type {
 } from 'reactive-md';
 
 /**
- * Fixed chunks for the streaming sample. Each entry continues the previous
- * one; a compile always receives the concatenation so far. The second and
- * fifth chunks end mid-expression and mid-tag, which exercises the transient
- * diagnostics a growing source produces.
+ * Fixed example source. Streaming reveals it by character, so structural
+ * boundaries are not tied to any hard-coded chunk list.
  */
 export const STREAM_CHUNKS: readonly string[] = [
   '# Streaming notes\n\n<number bind="hours" label="Hours this week" initial="6" min="0" max="40" step="1">\n\n',
   '<checkbox bind="focus" label="Protect a focus block">\n\n## This week\n\nWriting **{{ ho',
   'urs }}** hours{{ focus ? \' with a protected focus block\' : \'\' }}.\n\n<computed name="reading" value="{{ round(hours * 0.4) }}">\n',
   '<computed name="practice" value="{{ round(hours * 0.6) }}">\n\n| Block | Hours |\n| --- | ---: |\n| Reading | {{ reading }} |\n| Practice | {{ practice }} |\n| Total | {{ hours }} |\n\n',
-  '<alert tone="info">\n\nThis paragraph arrived from a fixed chunk list. No model, network or credentials are involved.\n\n',
+  '<alert tone="info">\n\nThis paragraph arrived from a fixed example. No model, network or credentials are involved.\n\n',
   '</alert>\n\n> Finished at {{ hours }} hours.\n',
 ];
+export const STREAM_SOURCE = STREAM_CHUNKS.join('');
 
-/** Gap between chunks. Kept above the scheduler window so each snapshot compiles. */
-export const STREAM_INTERVAL_MS = 520;
-export const STREAM_SPEED_MIN_MS = 80;
-export const STREAM_SPEED_MAX_MS = 2000;
-export const STREAM_SPEED_STEP_MS = 20;
+export const STREAM_DEFAULT_CPS = 100;
+export const STREAM_SPEED_MIN_CPS = 10;
+export const STREAM_SPEED_MAX_CPS = 300;
+export const STREAM_SPEED_STEP_CPS = 10;
+/** Reveal cadence; the number of characters per tick follows the speed. */
+export const STREAM_TICK_MS = 100;
 
-export type StreamStatus = 'idle' | 'streaming' | 'finalizing' | 'done' | 'cancelled';
-/** Scripted runs replay the fixed chunks; manual runs follow the host text. */
-export type StreamMode = 'scripted' | 'manual';
+export type StreamStatus = 'idle' | 'draft' | 'streaming' | 'finalizing' | 'done' | 'cancelled';
+/** `example` streams the built-in source; `custom` streams the host text. */
+export type StreamMode = 'example' | 'custom';
 
 /** What the panel renders. Rebuilt on every accepted change. */
 export interface StreamState {
   readonly status: StreamStatus;
   readonly mode: StreamMode;
-  /** Delay between scripted chunks, in milliseconds. */
-  readonly speedMs: number;
+  /** Characters revealed per second for the next ticks. */
+  readonly speedCps: number;
   readonly generation: number;
+  /** Complete source for the current mode. */
+  readonly targetSource: string;
+  /** Source revealed so far and submitted to the compiler. */
   readonly source: string;
-  readonly chunks: number;
-  readonly totalChunks: number;
+  readonly running: boolean;
   /** Fixable issues reported by the latest accepted snapshot. */
   readonly transient: readonly Diagnostic[];
   /** Non-transient issues for the current snapshot before finalization. */
@@ -63,56 +65,66 @@ export interface StreamOutcome {
 }
 
 export interface FakeStreamOptions {
-  chunks?: readonly string[];
-  intervalMs?: number;
-  /** Called once per complete snapshot, in order, with its phase. */
+  /** Built-in source used by the example mode. */
+  source?: string;
+  speedCps?: number;
+  /** Called once per revealed prefix and for the final snapshot. */
   submit(source: string, phase: LocalSourcePhase): void;
   /**
-   * Called before a new generation submits its first snapshot. The host should
-   * replace its compile transport so results from older generations cannot be
-   * delivered under the new generation.
+   * Called before a new run starts. The host should replace its compile
+   * transport so results from older generations cannot be delivered under the
+   * new generation.
    */
   resetTransport?(generation: number): void;
-}
-
-interface Submission {
-  generation: number;
-  phase: LocalSourcePhase;
 }
 
 type Timer = ReturnType<typeof setTimeout>;
 
 function clampSpeed(value: number): number {
-  if (!Number.isFinite(value)) return STREAM_INTERVAL_MS;
-  const stepped = Math.round(value / STREAM_SPEED_STEP_MS) * STREAM_SPEED_STEP_MS;
-  return Math.min(STREAM_SPEED_MAX_MS, Math.max(STREAM_SPEED_MIN_MS, stepped));
+  if (!Number.isFinite(value)) return STREAM_DEFAULT_CPS;
+  const stepped = Math.round(value / STREAM_SPEED_STEP_CPS) * STREAM_SPEED_STEP_CPS;
+  return Math.min(STREAM_SPEED_MAX_CPS, Math.max(STREAM_SPEED_MIN_CPS, stepped));
+}
+
+/** Advance by code points so a surrogate pair is never split mid-snapshot. */
+function advanceByCharacters(text: string, index: number, count: number): number {
+  let next = index;
+  for (let step = 0; step < count && next < text.length; step += 1) {
+    const code = text.charCodeAt(next);
+    next += 1;
+    if (code >= 0xd800 && code <= 0xdbff && next < text.length) {
+      const low = text.charCodeAt(next);
+      if (low >= 0xdc00 && low <= 0xdfff) next += 1;
+    }
+  }
+  return next;
 }
 
 /**
- * Deterministic fake stream: it owns the chunk list, the timer and the run
- * generation, and tags every snapshot it submits. Compilation stays the
- * caller's job; results come back through `applyOutcome`, which drops anything
- * that belongs to a generation that is no longer active.
+ * Character-paced fake stream. It owns the complete source, the revealed
+ * prefix, the timer and the run generation. Compilation stays the caller's
+ * job; results come back through `applyOutcome`, which ignores stale prefixes
+ * and results from older generations.
  *
- * The engine reports outcomes by source text only. `resetTransport` lets the
- * host replace its scheduler per generation, and `applyOutcome` accepts the
- * generation that produced the result. A late result from a cancelled run is
- * therefore discarded by generation even when its text matches the next run's
- * first snapshot.
+ * The example runs the built-in source. Editing switches to a custom source;
+ * Start then streams that text, and Restore example returns to the built-in
+ * script. Only a new run increments the generation, so editing reuses the
+ * current runtime.
  */
 export class FakeStreamController {
-  private readonly chunks: readonly string[];
+  private readonly exampleSource: string;
   private readonly submitSnapshot: FakeStreamOptions['submit'];
   private readonly resetTransport: FakeStreamOptions['resetTransport'];
-  private readonly ledger = new Map<string, Submission[]>();
   private readonly listeners = new Set<() => void>();
   private timer: Timer | null = null;
   private generation = 0;
-  private chunkIndex = 0;
+  private mode: StreamMode = 'example';
+  private targetSource: string;
   private source = '';
+  private revealIndex = 0;
   private status: StreamStatus = 'idle';
-  private mode: StreamMode = 'scripted';
-  private speedMs: number;
+  private running = false;
+  private speedCps: number;
   private transient: Diagnostic[] = [];
   private streamingDiagnostics: Diagnostic[] = [];
   private finalDiagnostics: Diagnostic[] = [];
@@ -124,8 +136,9 @@ export class FakeStreamController {
   private state: StreamState;
 
   constructor(options: FakeStreamOptions) {
-    this.chunks = options.chunks ?? STREAM_CHUNKS;
-    this.speedMs = clampSpeed(options.intervalMs ?? STREAM_INTERVAL_MS);
+    this.exampleSource = options.source ?? STREAM_SOURCE;
+    this.targetSource = this.exampleSource;
+    this.speedCps = clampSpeed(options.speedCps ?? STREAM_DEFAULT_CPS);
     this.submitSnapshot = options.submit;
     this.resetTransport = options.resetTransport;
     this.state = this.describe();
@@ -140,13 +153,20 @@ export class FakeStreamController {
 
   readonly getSnapshot = (): StreamState => this.state;
 
-  /** Begin a new scripted generation, submitting the first chunk immediately. */
+  /** Stream the complete source for the current mode from the beginning. */
   readonly start = (): void => {
     this.stopTimer();
+    if (this.mode === 'example') this.targetSource = this.exampleSource;
+    if (!this.targetSource) {
+      this.running = false;
+      this.status = 'idle';
+      this.publish();
+      return;
+    }
     this.generation += 1;
-    this.mode = 'scripted';
-    this.chunkIndex = 0;
+    this.revealIndex = 0;
     this.source = '';
+    this.running = true;
     this.status = 'streaming';
     this.transient = [];
     this.streamingDiagnostics = [];
@@ -155,51 +175,47 @@ export class FakeStreamController {
     this.snapshotPhase = null;
     this.accepted = 0;
     this.durationMs = 0;
-    // A new generation owns a fresh transport. Results from the previous
-    // generation may still be in flight, so the ledger also starts empty; any
-    // late outcome is matched by its explicit generation and discarded.
-    this.ledger.clear();
     this.resetTransport?.(this.generation);
-    this.appendChunk();
+    this.revealNext();
   };
 
-  /** Stop the run. Results already in flight become stale. */
+  /** Stop revealing characters. The host source stays available for editing. */
   readonly cancel = (): void => {
-    if (this.status !== 'streaming' && this.status !== 'finalizing') return;
+    if (!this.running) return;
     this.stopTimer();
+    this.running = false;
     this.status = 'cancelled';
     this.publish();
   };
 
-  readonly restart = (): void => {
+  /** Switch back to the built-in example and stream it again. */
+  readonly restoreExample = (): void => {
+    this.stopTimer();
+    this.mode = 'example';
+    this.targetSource = this.exampleSource;
     this.start();
   };
 
-  /** Change the scripted chunk interval; the next chunk uses the new speed. */
-  readonly setSpeed = (milliseconds: number): void => {
-    const next = clampSpeed(milliseconds);
-    if (next === this.speedMs) return;
-    this.speedMs = next;
-    if (this.mode === 'scripted' && this.status === 'streaming' && this.timer !== null) {
-      this.scheduleNext();
-    }
+  /** Change the character rate; the next tick uses the new value. */
+  readonly setSpeed = (charactersPerSecond: number): void => {
+    const next = clampSpeed(charactersPerSecond);
+    if (next === this.speedCps) return;
+    this.speedCps = next;
     this.publish();
   };
 
   /**
-   * Take over the stream with host-authored text. The first edit replaces the
-   * scripted transport; every edit previews as a streaming snapshot, and
-   * `finalizeManual` applies the completed source.
+   * Replace the source with host-authored text. Allowed while stopped; the
+   * text becomes a streaming draft and Start streams it from the beginning.
    */
   readonly editSource = (source: string): void => {
-    const enteredManual = this.mode !== 'manual';
+    if (this.running) return;
     this.stopTimer();
-    if (enteredManual) {
-      this.mode = 'manual';
-      this.ledger.clear();
-      this.resetTransport?.(this.generation);
-    }
+    this.mode = 'custom';
+    this.targetSource = source;
     this.source = source;
+    this.revealIndex = source.length;
+    this.running = false;
     this.transient = [];
     this.streamingDiagnostics = [];
     this.finalDiagnostics = [];
@@ -210,16 +226,18 @@ export class FakeStreamController {
       this.publish();
       return;
     }
-    this.status = 'streaming';
+    this.status = 'draft';
     this.submit(source, 'streaming');
     this.publish();
   };
 
-  /** Submit the current manual source as the final snapshot. */
-  readonly finalizeManual = (): void => {
-    if (this.mode !== 'manual' || !this.source) return;
+  /** Submit the complete custom source as the final snapshot. */
+  readonly finalizeSource = (): void => {
+    if (this.running || this.mode !== 'custom' || !this.targetSource) return;
     if (this.status === 'finalizing' || this.status === 'done') return;
     this.stopTimer();
+    this.source = this.targetSource;
+    this.revealIndex = this.source.length;
     this.status = 'finalizing';
     this.submit(this.source, 'final');
     this.publish();
@@ -232,35 +250,24 @@ export class FakeStreamController {
   };
 
   /**
-   * Apply a compile outcome. `generation` defaults to the active run, but a
-   * host that keeps an old transport alive passes the generation captured when
-   * the snapshot was submitted. Returns whether it belongs to the active run;
-   * stale results only increment the discarded counter.
+   * Apply a compile outcome. Only a result for the current prefix and the
+   * active generation is accepted; older prefixes are ignored and results from
+   * a previous run count as discarded.
    */
   readonly applyOutcome = (outcome: StreamOutcome, generation: number = this.generation): boolean => {
-    const active = this.status === 'streaming' || this.status === 'finalizing';
-    if (!active || generation !== this.generation) {
+    if (generation !== this.generation) {
       this.discarded += 1;
       this.publish();
       return false;
     }
-    let phase: LocalSourcePhase;
-    if (this.mode === 'manual') {
-      // Manual edits supersede each other inside one generation. A result for
-      // an older text is ignored without polluting the stale-result counter.
-      if (outcome.source !== this.source) return false;
-      phase = outcome.sourcePhase ?? 'streaming';
-    } else {
-      const queue = this.ledger.get(outcome.source);
-      const index = queue?.findIndex((entry) => entry.generation === generation) ?? -1;
-      if (index < 0) {
-        this.discarded += 1;
-        this.publish();
-        return false;
-      }
-      const [entry] = queue!.splice(index, 1);
-      phase = outcome.sourcePhase ?? entry.phase;
+    const active = this.running || this.status === 'draft' || this.status === 'finalizing';
+    if (!active) {
+      this.discarded += 1;
+      this.publish();
+      return false;
     }
+    if (outcome.source !== this.source) return false;
+    const phase = outcome.sourcePhase ?? (this.status === 'finalizing' ? 'final' : 'streaming');
     const result = outcome.result;
     this.accepted += 1;
     this.snapshotStatus = result.status ?? (result.ok ? 'valid' : 'failed');
@@ -273,6 +280,7 @@ export class FakeStreamController {
       // carries no diagnostics of its own.
       this.transient = [];
       this.status = 'done';
+      this.running = false;
     } else {
       this.transient = (result.transientDiagnostics ?? []).slice();
       this.streamingDiagnostics = result.diagnostics.slice();
@@ -281,14 +289,17 @@ export class FakeStreamController {
     return true;
   };
 
-  private appendChunk(): void {
-    this.source += this.chunks[this.chunkIndex] ?? '';
-    this.chunkIndex += 1;
+  private revealNext(): void {
+    if (!this.running) return;
+    const count = Math.max(1, Math.round(this.speedCps * STREAM_TICK_MS / 1000));
+    this.revealIndex = advanceByCharacters(this.targetSource, this.revealIndex, count);
+    this.source = this.targetSource.slice(0, this.revealIndex);
     this.submit(this.source, 'streaming');
-    if (this.chunkIndex >= this.chunks.length) {
+    if (this.revealIndex >= this.targetSource.length) {
       this.stopTimer();
+      this.running = false;
       this.status = 'finalizing';
-      this.submit(this.source, 'final');
+      this.submit(this.targetSource, 'final');
       this.publish();
       return;
     }
@@ -296,21 +307,15 @@ export class FakeStreamController {
     this.publish();
   }
 
-  /** Schedule the next scripted chunk at the current speed. */
   private scheduleNext(): void {
     this.stopTimer();
     this.timer = setTimeout(() => {
       this.timer = null;
-      if (this.status === 'streaming' && this.mode === 'scripted') this.appendChunk();
-    }, this.speedMs);
+      if (this.running && this.status === 'streaming') this.revealNext();
+    }, STREAM_TICK_MS);
   }
 
   private submit(source: string, phase: LocalSourcePhase): void {
-    if (this.mode === 'scripted') {
-      const queue = this.ledger.get(source) ?? [];
-      queue.push({ generation: this.generation, phase });
-      this.ledger.set(source, queue);
-    }
     this.submitSnapshot(source, phase);
   }
 
@@ -330,11 +335,11 @@ export class FakeStreamController {
     return {
       status: this.status,
       mode: this.mode,
-      speedMs: this.speedMs,
+      speedCps: this.speedCps,
       generation: this.generation,
+      targetSource: this.targetSource,
       source: this.source,
-      chunks: this.chunkIndex,
-      totalChunks: this.chunks.length,
+      running: this.running,
       transient: this.transient,
       streamingDiagnostics: this.streamingDiagnostics,
       finalDiagnostics: this.finalDiagnostics,

@@ -24,7 +24,7 @@
 | `images/` | `image-assets.ts`、`image-assets-panel.tsx`、`image-copy.ts`、`use-document-images.ts` | 图片校验与限额、IndexedDB 存储、图片面板及其文案。 |
 | `export/` | `export-dialog.tsx`、`export-html.ts` | 导出对话框和可分享 HTML 的生成。 |
 | `preview/` | `preview-fullscreen.tsx`、`preview-fullscreen.css` | 预览全屏开关、原生 Fullscreen API 处理以及视口回退覆盖层。 |
-| `streaming/` | `fake-stream.ts`、`streaming-sample.tsx`、`streaming-sample.css` | 确定性的流式示例：可调分片间隔、可编辑宿主源码、按运行代次记录过期结果，并提供实时流式预览面板。 |
+| `streaming/` | `fake-stream.ts`、`streaming-sample.tsx`、`streaming-sample.css` | 确定性的流式示例：按每秒字符数播放、示例或宿主源码、过期结果统计，并提供实时流式预览面板。 |
 | `content/` | `examples.ts`、`guide-examples.tsx`、`guide-code.css` | 示例目录、指南渲染和指南代码样式。Markdown 源文件仍位于顶层 `content/examples/` 和 `content/guides/`。 |
 | `ui/` | `i18n.tsx`、`icons.tsx`、`use-editor-height.ts`、`use-scroll-container.ts` | 共享的中英文文案类型、图标集和布局 hook。 |
 | `settings/` | `html-options.ts`、`html-compatibility.tsx` | HTML 能力模型及其开关控件。 |
