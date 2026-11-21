@@ -141,6 +141,39 @@ describe('fake streaming controller', () => {
     expect(controller.getSnapshot().source).toBe('a');
   });
 
+  it('discards a late result tagged with the cancelled generation', () => {
+    const { controller } = setup();
+    controller.start();
+    controller.cancel();
+
+    controller.restart();
+    // The cancelled run's "a" result shares its text with the new run's first
+    // snapshot, but its generation still identifies it as stale.
+    expect(controller.applyOutcome({ source: 'a', sourcePhase: 'streaming', result: compiled() }, 1)).toBe(false);
+    expect(controller.getSnapshot().discarded).toBe(1);
+    expect(controller.getSnapshot().accepted).toBe(0);
+
+    // The new run's own result is accepted.
+    expect(controller.applyOutcome({ source: 'a', sourcePhase: 'streaming', result: compiled() }, 2)).toBe(true);
+    expect(controller.getSnapshot().accepted).toBe(1);
+    expect(controller.getSnapshot().discarded).toBe(1);
+  });
+
+  it('resets the transport at every generation boundary', () => {
+    const generations: number[] = [];
+    const controller = new FakeStreamController({
+      chunks: ['a'],
+      intervalMs: 100,
+      submit: () => {},
+      resetTransport: (generation) => generations.push(generation),
+    });
+    controller.start();
+    expect(generations).toEqual([1]);
+    controller.cancel();
+    controller.restart();
+    expect(generations).toEqual([1, 2]);
+  });
+
   it('keeps transient diagnostics out of final diagnostics', () => {
     const { controller } = setup();
     controller.start();

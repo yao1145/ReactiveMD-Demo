@@ -51,33 +51,44 @@ export function StreamingSample() {
   const copy = useCopy().streaming;
   const language = useLanguage();
   const schedulerRef = useRef<LocalCompileScheduler | null>(null);
-  const [controller] = useState(() => new FakeStreamController({
-    chunks: STREAM_CHUNKS,
-    intervalMs: STREAM_INTERVAL_MS,
-    submit: (source, phase) => {
-      schedulerRef.current?.schedule(source, STREAM_COMPILE_OPTIONS, undefined, phase);
-    },
-  }));
-  const state = useSyncExternalStore(controller.subscribe, controller.getSnapshot);
-
-  useEffect(() => {
-    const scheduler = new LocalCompileScheduler({
+  const controllerRef = useRef<FakeStreamController | null>(null);
+  // Each generation owns a scheduler, so results from a cancelled run cannot
+  // arrive under the next generation. The generation travels with each result.
+  const createScheduler = (generation: number): void => {
+    schedulerRef.current?.dispose();
+    const current = controllerRef.current;
+    schedulerRef.current = new LocalCompileScheduler({
       createWorker: createStreamWorker,
       delay: 120,
       onResult: (outcome) => {
-        controller.applyOutcome({
+        current?.applyOutcome({
           source: outcome.source,
           sourcePhase: outcome.sourcePhase,
           result: outcome.result,
           duration: outcome.duration,
-        });
+        }, generation);
       },
     });
-    schedulerRef.current = scheduler;
+  };
+  const [controller] = useState(() => {
+    const created = new FakeStreamController({
+      chunks: STREAM_CHUNKS,
+      intervalMs: STREAM_INTERVAL_MS,
+      submit: (source, phase) => {
+        schedulerRef.current?.schedule(source, STREAM_COMPILE_OPTIONS, undefined, phase);
+      },
+      resetTransport: (generation) => createScheduler(generation),
+    });
+    controllerRef.current = created;
+    return created;
+  });
+  const state = useSyncExternalStore(controller.subscribe, controller.getSnapshot);
+
+  useEffect(() => {
     controller.start();
     return () => {
+      schedulerRef.current?.dispose();
       schedulerRef.current = null;
-      scheduler.dispose();
       controller.dispose();
     };
   }, [controller]);

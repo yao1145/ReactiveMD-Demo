@@ -59,6 +59,12 @@ export interface FakeStreamOptions {
   intervalMs?: number;
   /** Called once per complete snapshot, in order, with its phase. */
   submit(source: string, phase: LocalSourcePhase): void;
+  /**
+   * Called before a new generation submits its first snapshot. The host should
+   * replace its compile transport so results from older generations cannot be
+   * delivered under the new generation.
+   */
+  resetTransport?(generation: number): void;
 }
 
 interface Submission {
@@ -74,16 +80,17 @@ type Timer = ReturnType<typeof setTimeout>;
  * caller's job; results come back through `applyOutcome`, which drops anything
  * that belongs to a generation that is no longer active.
  *
- * The engine reports outcomes by source text only, so a result is attributed
- * to the oldest unclaimed submission with that exact text. Identical snapshots
- * across runs are therefore matched in submission order; cancelling or
- * restarting still invalidates the old generation before its results arrive in
- * every normal case.
+ * The engine reports outcomes by source text only. `resetTransport` lets the
+ * host replace its scheduler per generation, and `applyOutcome` accepts the
+ * generation that produced the result. A late result from a cancelled run is
+ * therefore discarded by generation even when its text matches the next run's
+ * first snapshot.
  */
 export class FakeStreamController {
   private readonly chunks: readonly string[];
   private readonly intervalMs: number;
   private readonly submitSnapshot: FakeStreamOptions['submit'];
+  private readonly resetTransport: FakeStreamOptions['resetTransport'];
   private readonly ledger = new Map<string, Submission[]>();
   private readonly listeners = new Set<() => void>();
   private timer: Timer | null = null;
@@ -105,6 +112,7 @@ export class FakeStreamController {
     this.chunks = options.chunks ?? STREAM_CHUNKS;
     this.intervalMs = options.intervalMs ?? STREAM_INTERVAL_MS;
     this.submitSnapshot = options.submit;
+    this.resetTransport = options.resetTransport;
     this.state = this.describe();
   }
 
@@ -131,7 +139,11 @@ export class FakeStreamController {
     this.snapshotPhase = null;
     this.accepted = 0;
     this.durationMs = 0;
+    // A new generation owns a fresh transport. Results from the previous
+    // generation may still be in flight, so the ledger also starts empty; any
+    // late outcome is matched by its explicit generation and discarded.
     this.ledger.clear();
+    this.resetTransport?.(this.generation);
     this.appendChunk();
   };
 
@@ -154,17 +166,26 @@ export class FakeStreamController {
   };
 
   /**
-   * Apply a compile outcome. Returns whether it belongs to the active
-   * generation; stale results only increment the discarded counter.
+   * Apply a compile outcome. `generation` defaults to the active run, but a
+   * host that keeps an old transport alive passes the generation captured when
+   * the snapshot was submitted. Returns whether it belongs to the active run;
+   * stale results only increment the discarded counter.
    */
-  readonly applyOutcome = (outcome: StreamOutcome): boolean => {
-    const entry = this.ledger.get(outcome.source)?.shift();
+  readonly applyOutcome = (outcome: StreamOutcome, generation: number = this.generation): boolean => {
     const active = this.status === 'streaming' || this.status === 'finalizing';
-    if (!entry || !active || entry.generation !== this.generation) {
+    if (!active || generation !== this.generation) {
       this.discarded += 1;
       this.publish();
       return false;
     }
+    const queue = this.ledger.get(outcome.source);
+    const index = queue?.findIndex((entry) => entry.generation === generation) ?? -1;
+    if (index < 0) {
+      this.discarded += 1;
+      this.publish();
+      return false;
+    }
+    const [entry] = queue!.splice(index, 1);
     const phase = outcome.sourcePhase ?? entry.phase;
     const result = outcome.result;
     this.accepted += 1;
