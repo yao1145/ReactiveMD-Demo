@@ -254,6 +254,16 @@ describe('preview script grants', () => {
     expect(samePreviewScripts(document, SCRIPT_SOURCE.replace('</javascript>', ''))).toBe(false);
   });
 
+  it('pauses a stale script when indentation opens a Markdown fence', () => {
+    const source = SCRIPT_SOURCE.replace('<javascript>', '    ~~~\n\n<javascript>');
+    const edited = source.replace('    ~~~', '   ~~~');
+    const options = toCompileOptions({ enableJavaScript: true });
+    const document = compile(source, options);
+    expect(recordsJavaScript(document)).toBe(true);
+    expect(recordsJavaScript(compile(edited, options))).toBe(false);
+    expect(samePreviewScripts(document, edited)).toBe(false);
+  });
+
   it('does not restrict the grant when the document has no script', () => {
     const document = compile('<slider bind="people" label="People" initial="2" min="1" max="20">',
       toCompileOptions({ enableJavaScript: true }));
