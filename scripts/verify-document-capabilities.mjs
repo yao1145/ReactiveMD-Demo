@@ -20,8 +20,9 @@ try {
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   const workers = [];
   page.on('worker', worker => workers.push(worker.url()));
-  const url = process.env.DEMO_URL ?? server.resolvedUrls.local[0];
-  await openWorkbench(page, url);
+  const url = new URL(process.env.DEMO_URL ?? server.resolvedUrls.local[0]);
+  url.searchParams.set('example', 'sci-fi-theme');
+  await openWorkbench(page, url.href);
   await viewModeButton(page, 'edit').click();
   await replaceWorkbenchSource(page, SOURCE);
   await viewModeButton(page, 'split').click();
@@ -76,9 +77,13 @@ try {
   const scratch = await mkdtemp(join(tmpdir(), 'rmd-demo-capabilities-'));
   const file = join(scratch, 'mixed.html');
   const reopenExport = async (initialValue, hasCss, hasIframe) => {
-    await page.getByRole('button', { name: 'Export', exact: true }).first().click();
-    const dialog = page.getByRole('dialog', { name: 'Export document' });
-    await dialog.getByRole('radio', { name: /^Current preview state/ }).check();
+    const exportCard = await openDeveloperCard(page, /^Export/);
+    await exportCard.getByRole('button', { name: 'Open export dialog' }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    const current = dialog.locator('input[value=current]');
+    await expect(current).toBeEnabled();
+    await current.check();
     const [download] = await Promise.all([
       page.waitForEvent('download'),
       dialog.getByRole('button', { name: 'Export HTML', exact: true }).click(),
