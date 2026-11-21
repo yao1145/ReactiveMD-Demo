@@ -28,6 +28,7 @@
     "test:workbench": "node scripts/verify-compact-workbench.mjs"
   },
   "dependencies": {
+    "gpt-tokenizer": "^4.1.2",
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "reactive-md": "file:vendor/reactive-md-0.9.0-dba5ed514f91.tgz",

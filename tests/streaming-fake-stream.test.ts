@@ -1,6 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Diagnostic, LocalCompileResult, LocalSourcePhase } from 'reactive-md';
-import { FakeStreamController, STREAM_SOURCE } from '../src/streaming/fake-stream';
+import {
+  FakeStreamController,
+  STREAM_SOURCE,
+  STREAM_SPEED_MAX_TPS,
+  STREAM_SPEED_MIN_TPS,
+  sliderPositionToTps,
+  tpsToSliderPosition,
+  type StreamTokenizer,
+} from '../src/streaming/fake-stream';
 
 interface Submission {
   source: string;
@@ -49,12 +57,18 @@ function wellFormed(value: string): boolean {  for (let index = 0; index < value
   return true;
 }
 
-function setup(source = 'abcdefghij', speedTps = 20) {
+const CHARACTER_TOKENIZER: StreamTokenizer = {
+  encode: (source) => Array.from(source).map((character) => character.codePointAt(0)!),
+  decode: (tokens) => String.fromCodePoint(...tokens),
+};
+
+function setup(source = 'abcdefghij', speedTps = 20, tokenizer: StreamTokenizer = CHARACTER_TOKENIZER) {
   const submissions: Submission[] = [];
   const generations: number[] = [];
   const controller = new FakeStreamController({
     source,
     speedTps,
+    tokenizer,
     submit: (snapshot, phase) => submissions.push({ source: snapshot, phase }),
     resetTransport: (generation) => generations.push(generation),
   });
@@ -70,7 +84,7 @@ afterEach(() => {
 });
 
 describe('character-paced fake stream', () => {
-  it('reveals the source by character at the selected speed', () => {
+  it('reveals the source by token at the selected rate', () => {
     const { controller, submissions } = setup('abcdefghij', 20);
     controller.start();
 
@@ -81,6 +95,8 @@ describe('character-paced fake stream', () => {
       speedTps: 20,
       source: 'ab',
       targetSource: 'abcdefghij',
+      revealedTokens: 2,
+      totalTokens: 10,
     });
     expect(submissions).toEqual([{ source: 'ab', phase: 'streaming' }]);
 
@@ -98,7 +114,18 @@ describe('character-paced fake stream', () => {
     expect(controller.getSnapshot().status).toBe('done');
   });
 
-  it('applies a new character rate to the next ticks', () => {
+  it('maps token speed logarithmically with 100 tps at the centre', () => {
+    expect(tpsToSliderPosition(STREAM_SPEED_MIN_TPS)).toBe(0);
+    expect(tpsToSliderPosition(100)).toBe(50);
+    expect(tpsToSliderPosition(STREAM_SPEED_MAX_TPS)).toBe(100);
+    expect(sliderPositionToTps(0)).toBe(STREAM_SPEED_MIN_TPS);
+    expect(sliderPositionToTps(50)).toBe(100);
+    expect(sliderPositionToTps(100)).toBe(STREAM_SPEED_MAX_TPS);
+    expect(tpsToSliderPosition(200)).toBeGreaterThan(50);
+    expect(tpsToSliderPosition(200)).toBeLessThan(100);
+  });
+
+  it('applies a new token rate to the next ticks', () => {
     const { controller } = setup('abcdefghij', 20);
     controller.start();
     expect(controller.getSnapshot().source).toBe('ab');
@@ -113,6 +140,24 @@ describe('character-paced fake stream', () => {
     expect(controller.getSnapshot().speedTps).toBe(10);
     controller.setSpeed(10_000);
     expect(controller.getSnapshot().speedTps).toBe(1000);
+  });
+
+  it('uses the GPT-4o tokenizer by default', () => {
+    const submissions: Submission[] = [];
+    const controller = new FakeStreamController({
+      source: 'hello world',
+      speedTps: 1000,
+      submit: (source, phase) => submissions.push({ source, phase }),
+    });
+    controller.start();
+    const state = controller.getSnapshot();
+    expect(state.totalTokens).toBe(2);
+    expect(state.revealedTokens).toBe(2);
+    expect(state.source).toBe('hello world');
+    expect(submissions).toEqual([
+      { source: 'hello world', phase: 'streaming' },
+      { source: 'hello world', phase: 'final' },
+    ]);
   });
 
   it('keeps the revealed prefix on cancel while restoring the full target', () => {

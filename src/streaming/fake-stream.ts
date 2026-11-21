@@ -1,3 +1,4 @@
+import { decode as decodeGpt4o, encode as encodeGpt4o } from 'gpt-tokenizer/model/gpt-4o';
 import type {
   Diagnostic,
   LocalCompileResult,
@@ -41,9 +42,21 @@ This paragraph arrived from a fixed example. No model, network or credentials ar
 export const STREAM_DEFAULT_TPS = 100;
 export const STREAM_SPEED_MIN_TPS = 10;
 export const STREAM_SPEED_MAX_TPS = 1000;
-export const STREAM_SPEED_STEP_TPS = 10;
+/** Log-scale slider positions; 50 is the centre. */
+export const STREAM_SPEED_SLIDER_MAX = 100;
 /** Reveal cadence; the number of tokens per tick follows the speed. */
 export const STREAM_TICK_MS = 100;
+
+/** Tokenizer contract; the default implementation is the GPT-4o encoding. */
+export interface StreamTokenizer {
+  encode(source: string): readonly number[];
+  decode(tokens: readonly number[]): string;
+}
+
+const GPT4O_TOKENIZER: StreamTokenizer = {
+  encode: (source) => encodeGpt4o(source),
+  decode: (tokens) => decodeGpt4o(tokens),
+};
 
 export type StreamStatus = 'idle' | 'draft' | 'streaming' | 'finalizing' | 'done' | 'failed' | 'cancelled';
 /** `example` streams the built-in source; `custom` streams the host text. */
@@ -60,6 +73,8 @@ export interface StreamState {
   readonly targetSource: string;
   /** Source revealed so far and submitted to the compiler. */
   readonly source: string;
+  readonly revealedTokens: number;
+  readonly totalTokens: number;
   readonly running: boolean;
   /** The final snapshot failed; the preview keeps the streaming fallback. */
   readonly finalFailed: boolean;
@@ -89,6 +104,8 @@ export interface FakeStreamOptions {
   /** Built-in source used by the example mode. */
   source?: string;
   speedTps?: number;
+  /** Tokenizer override; defaults to the GPT-4o model encoding. */
+  tokenizer?: StreamTokenizer;
   /** Called once per revealed prefix and for the final snapshot. */
   submit(source: string, phase: LocalSourcePhase): void;
   /**
@@ -103,22 +120,25 @@ type Timer = ReturnType<typeof setTimeout>;
 
 function clampSpeed(value: number): number {
   if (!Number.isFinite(value)) return STREAM_DEFAULT_TPS;
-  const stepped = Math.round(value / STREAM_SPEED_STEP_TPS) * STREAM_SPEED_STEP_TPS;
-  return Math.min(STREAM_SPEED_MAX_TPS, Math.max(STREAM_SPEED_MIN_TPS, stepped));
+  return Math.min(STREAM_SPEED_MAX_TPS, Math.max(STREAM_SPEED_MIN_TPS, Math.round(value)));
 }
 
-/** Advance by code points so a surrogate pair is never split mid-snapshot. */
-function advanceByCharacters(text: string, index: number, count: number): number {
-  let next = index;
-  for (let step = 0; step < count && next < text.length; step += 1) {
-    const code = text.charCodeAt(next);
-    next += 1;
-    if (code >= 0xd800 && code <= 0xdbff && next < text.length) {
-      const low = text.charCodeAt(next);
-      if (low >= 0xdc00 && low <= 0xdfff) next += 1;
-    }
-  }
-  return next;
+/** Map a token rate onto a logarithmic slider; 100 tps sits at the centre. */
+export function tpsToSliderPosition(tps: number): number {
+  const clamped = clampSpeed(tps);
+  const logMin = Math.log10(STREAM_SPEED_MIN_TPS);
+  const logMax = Math.log10(STREAM_SPEED_MAX_TPS);
+  return Math.round((Math.log10(clamped) - logMin) / (logMax - logMin) * STREAM_SPEED_SLIDER_MAX);
+}
+
+/** Map a logarithmic slider position back to a token rate. */
+export function sliderPositionToTps(position: number): number {
+  const safe = Number.isFinite(position)
+    ? Math.min(STREAM_SPEED_SLIDER_MAX, Math.max(0, position))
+    : STREAM_SPEED_SLIDER_MAX / 2;
+  const logMin = Math.log10(STREAM_SPEED_MIN_TPS);
+  const logMax = Math.log10(STREAM_SPEED_MAX_TPS);
+  return clampSpeed(Math.round(10 ** (logMin + (logMax - logMin) * safe / STREAM_SPEED_SLIDER_MAX)));
 }
 
 /**
@@ -136,13 +156,16 @@ export class FakeStreamController {
   private readonly exampleSource: string;
   private readonly submitSnapshot: FakeStreamOptions['submit'];
   private readonly resetTransport: FakeStreamOptions['resetTransport'];
+  private readonly tokenizer: StreamTokenizer;
   private readonly listeners = new Set<() => void>();
   private timer: Timer | null = null;
   private generation = 0;
   private mode: StreamMode = 'example';
   private targetSource: string;
   private source = '';
-  private revealIndex = 0;
+  private tokenizedSource = '';
+  private tokens: readonly number[] = [];
+  private revealedTokens = 0;
   private status: StreamStatus = 'idle';
   private running = false;
   private finalFailed = false;
@@ -161,8 +184,10 @@ export class FakeStreamController {
     this.exampleSource = options.source ?? STREAM_SOURCE;
     this.targetSource = this.exampleSource;
     this.speedTps = clampSpeed(options.speedTps ?? STREAM_DEFAULT_TPS);
+    this.tokenizer = options.tokenizer ?? GPT4O_TOKENIZER;
     this.submitSnapshot = options.submit;
     this.resetTransport = options.resetTransport;
+    this.tokenizeTarget();
     this.state = this.describe();
   }
 
@@ -185,8 +210,9 @@ export class FakeStreamController {
       this.publish();
       return;
     }
+    this.tokenizeTarget();
     this.generation += 1;
-    this.revealIndex = 0;
+    this.revealedTokens = 0;
     this.source = '';
     this.running = true;
     this.status = 'streaming';
@@ -236,8 +262,9 @@ export class FakeStreamController {
     this.stopTimer();
     this.mode = 'custom';
     this.targetSource = source;
+    this.tokenizeTarget();
     this.source = source;
-    this.revealIndex = source.length;
+    this.revealedTokens = this.tokens.length;
     this.running = false;
     this.finalFailed = false;
     this.transient = [];
@@ -261,7 +288,7 @@ export class FakeStreamController {
     if (this.status === 'finalizing' || this.status === 'done') return;
     this.stopTimer();
     this.source = this.targetSource;
-    this.revealIndex = this.source.length;
+    this.revealedTokens = this.tokens.length;
     this.status = 'finalizing';
     this.finalFailed = false;
     this.submit(this.source, 'final');
@@ -318,10 +345,10 @@ export class FakeStreamController {
   private revealNext(): void {
     if (!this.running) return;
     const count = Math.max(1, Math.round(this.speedTps * STREAM_TICK_MS / 1000));
-    this.revealIndex = advanceByCharacters(this.targetSource, this.revealIndex, count);
-    this.source = this.targetSource.slice(0, this.revealIndex);
+    this.revealedTokens = Math.min(this.tokens.length, this.revealedTokens + count);
+    this.source = this.tokenizer.decode(this.tokens.slice(0, this.revealedTokens));
     this.submit(this.source, 'streaming');
-    if (this.revealIndex >= this.targetSource.length) {
+    if (this.revealedTokens >= this.tokens.length) {
       this.stopTimer();
       this.running = false;
       this.status = 'finalizing';
@@ -331,6 +358,13 @@ export class FakeStreamController {
     }
     this.scheduleNext();
     this.publish();
+  }
+
+  /** Tokenize the current target once per distinct text. */
+  private tokenizeTarget(): void {
+    if (this.tokenizedSource === this.targetSource) return;
+    this.tokenizedSource = this.targetSource;
+    this.tokens = this.tokenizer.encode(this.targetSource);
   }
 
   private scheduleNext(): void {
@@ -365,6 +399,8 @@ export class FakeStreamController {
       generation: this.generation,
       targetSource: this.targetSource,
       source: this.source,
+      revealedTokens: this.revealedTokens,
+      totalTokens: this.tokens.length,
       running: this.running,
       finalFailed: this.finalFailed,
       transient: this.transient,

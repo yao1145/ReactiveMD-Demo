@@ -8,7 +8,7 @@ import {
 } from 'reactive-md';
 import { LocalReactiveDocument } from 'reactive-md/react';
 import { useCopy, useLanguage } from '../ui/i18n';
-import { FakeStreamController, STREAM_SOURCE, STREAM_SPEED_MAX_TPS, STREAM_SPEED_MIN_TPS, STREAM_SPEED_STEP_TPS, type StreamStatus } from './fake-stream';
+import { FakeStreamController, STREAM_SOURCE, STREAM_SPEED_SLIDER_MAX, sliderPositionToTps, tpsToSliderPosition, type StreamStatus } from './fake-stream';
 import './streaming-sample.css';
 
 /** Same defaults the Playground uses for this source, so both compiles agree. */
@@ -156,14 +156,14 @@ export function StreamingSample() {
         </div>
         <label className="streaming-speed">
           <span>{copy.speedLabel}</span>
-          <input type="range" min={STREAM_SPEED_MIN_TPS} max={STREAM_SPEED_MAX_TPS}
-            step={STREAM_SPEED_STEP_TPS} value={state.speedTps}
-            onChange={(event) => controller.setSpeed(Number(event.target.value))}
+          <input type="range" min={0} max={STREAM_SPEED_SLIDER_MAX}
+            step={1} value={tpsToSliderPosition(state.speedTps)}
+            onChange={(event) => controller.setSpeed(sliderPositionToTps(Number(event.target.value)))}
             data-testid="streaming-speed" />
           <output data-testid="streaming-speed-value">{copy.speedValue(state.speedTps)}</output>
         </label>
         <ul className="streaming-meta">
-          <li>{copy.progress(state.source.length, state.targetSource.length)}</li>
+          <li>{copy.progress(state.revealedTokens, state.totalTokens)}</li>
         </ul>
       </div>
 
