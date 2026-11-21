@@ -38,11 +38,11 @@ This paragraph arrived from a fixed example. No model, network or credentials ar
 > Finished at {{ hours }} hours.
 `;
 
-export const STREAM_DEFAULT_CPS = 100;
-export const STREAM_SPEED_MIN_CPS = 10;
-export const STREAM_SPEED_MAX_CPS = 300;
-export const STREAM_SPEED_STEP_CPS = 10;
-/** Reveal cadence; the number of characters per tick follows the speed. */
+export const STREAM_DEFAULT_TPS = 100;
+export const STREAM_SPEED_MIN_TPS = 10;
+export const STREAM_SPEED_MAX_TPS = 1000;
+export const STREAM_SPEED_STEP_TPS = 10;
+/** Reveal cadence; the number of tokens per tick follows the speed. */
 export const STREAM_TICK_MS = 100;
 
 export type StreamStatus = 'idle' | 'draft' | 'streaming' | 'finalizing' | 'done' | 'failed' | 'cancelled';
@@ -53,8 +53,8 @@ export type StreamMode = 'example' | 'custom';
 export interface StreamState {
   readonly status: StreamStatus;
   readonly mode: StreamMode;
-  /** Characters revealed per second for the next ticks. */
-  readonly speedCps: number;
+  /** Tokens revealed per second for the next ticks. */
+  readonly speedTps: number;
   readonly generation: number;
   /** Complete source for the current mode. */
   readonly targetSource: string;
@@ -88,7 +88,7 @@ export interface StreamOutcome {
 export interface FakeStreamOptions {
   /** Built-in source used by the example mode. */
   source?: string;
-  speedCps?: number;
+  speedTps?: number;
   /** Called once per revealed prefix and for the final snapshot. */
   submit(source: string, phase: LocalSourcePhase): void;
   /**
@@ -102,9 +102,9 @@ export interface FakeStreamOptions {
 type Timer = ReturnType<typeof setTimeout>;
 
 function clampSpeed(value: number): number {
-  if (!Number.isFinite(value)) return STREAM_DEFAULT_CPS;
-  const stepped = Math.round(value / STREAM_SPEED_STEP_CPS) * STREAM_SPEED_STEP_CPS;
-  return Math.min(STREAM_SPEED_MAX_CPS, Math.max(STREAM_SPEED_MIN_CPS, stepped));
+  if (!Number.isFinite(value)) return STREAM_DEFAULT_TPS;
+  const stepped = Math.round(value / STREAM_SPEED_STEP_TPS) * STREAM_SPEED_STEP_TPS;
+  return Math.min(STREAM_SPEED_MAX_TPS, Math.max(STREAM_SPEED_MIN_TPS, stepped));
 }
 
 /** Advance by code points so a surrogate pair is never split mid-snapshot. */
@@ -146,7 +146,7 @@ export class FakeStreamController {
   private status: StreamStatus = 'idle';
   private running = false;
   private finalFailed = false;
-  private speedCps: number;
+  private speedTps: number;
   private transient: Diagnostic[] = [];
   private streamingDiagnostics: Diagnostic[] = [];
   private finalDiagnostics: Diagnostic[] = [];
@@ -160,7 +160,7 @@ export class FakeStreamController {
   constructor(options: FakeStreamOptions) {
     this.exampleSource = options.source ?? STREAM_SOURCE;
     this.targetSource = this.exampleSource;
-    this.speedCps = clampSpeed(options.speedCps ?? STREAM_DEFAULT_CPS);
+    this.speedTps = clampSpeed(options.speedTps ?? STREAM_DEFAULT_TPS);
     this.submitSnapshot = options.submit;
     this.resetTransport = options.resetTransport;
     this.state = this.describe();
@@ -219,11 +219,11 @@ export class FakeStreamController {
     this.start();
   };
 
-  /** Change the character rate; the next tick uses the new value. */
-  readonly setSpeed = (charactersPerSecond: number): void => {
-    const next = clampSpeed(charactersPerSecond);
-    if (next === this.speedCps) return;
-    this.speedCps = next;
+  /** Change the token rate; the next tick uses the new value. */
+  readonly setSpeed = (tokensPerSecond: number): void => {
+    const next = clampSpeed(tokensPerSecond);
+    if (next === this.speedTps) return;
+    this.speedTps = next;
     this.publish();
   };
 
@@ -317,7 +317,7 @@ export class FakeStreamController {
 
   private revealNext(): void {
     if (!this.running) return;
-    const count = Math.max(1, Math.round(this.speedCps * STREAM_TICK_MS / 1000));
+    const count = Math.max(1, Math.round(this.speedTps * STREAM_TICK_MS / 1000));
     this.revealIndex = advanceByCharacters(this.targetSource, this.revealIndex, count);
     this.source = this.targetSource.slice(0, this.revealIndex);
     this.submit(this.source, 'streaming');
@@ -361,7 +361,7 @@ export class FakeStreamController {
     return {
       status: this.status,
       mode: this.mode,
-      speedCps: this.speedCps,
+      speedTps: this.speedTps,
       generation: this.generation,
       targetSource: this.targetSource,
       source: this.source,

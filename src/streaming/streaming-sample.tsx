@@ -8,7 +8,7 @@ import {
 } from 'reactive-md';
 import { LocalReactiveDocument } from 'reactive-md/react';
 import { useCopy, useLanguage } from '../ui/i18n';
-import { FakeStreamController, STREAM_SOURCE, STREAM_SPEED_MAX_CPS, STREAM_SPEED_MIN_CPS, STREAM_SPEED_STEP_CPS, type StreamStatus } from './fake-stream';
+import { FakeStreamController, STREAM_SOURCE, STREAM_SPEED_MAX_TPS, STREAM_SPEED_MIN_TPS, STREAM_SPEED_STEP_TPS, type StreamStatus } from './fake-stream';
 import './streaming-sample.css';
 
 /** Same defaults the Playground uses for this source, so both compiles agree. */
@@ -86,7 +86,9 @@ export function StreamingSample() {
   const state = useSyncExternalStore(controller.subscribe, controller.getSnapshot);
 
   useEffect(() => {
-    controller.start();
+    // Keep a transport ready for edits made before the first Start, but do not
+    // reveal any source until the user asks for it.
+    createScheduler(controller.getSnapshot().generation);
     return () => {
       schedulerRef.current?.dispose();
       schedulerRef.current = null;
@@ -165,11 +167,11 @@ export function StreamingSample() {
         </div>
         <label className="streaming-speed">
           <span>{copy.speedLabel}</span>
-          <input type="range" min={STREAM_SPEED_MIN_CPS} max={STREAM_SPEED_MAX_CPS}
-            step={STREAM_SPEED_STEP_CPS} value={state.speedCps}
+          <input type="range" min={STREAM_SPEED_MIN_TPS} max={STREAM_SPEED_MAX_TPS}
+            step={STREAM_SPEED_STEP_TPS} value={state.speedTps}
             onChange={(event) => controller.setSpeed(Number(event.target.value))}
             data-testid="streaming-speed" />
-          <output data-testid="streaming-speed-value">{copy.speedValue(state.speedCps)}</output>
+          <output data-testid="streaming-speed-value">{copy.speedValue(state.speedTps)}</output>
         </label>
         <ul className="streaming-meta">
           <li data-testid="streaming-mode">

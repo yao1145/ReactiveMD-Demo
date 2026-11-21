@@ -194,7 +194,7 @@ export interface DemoCopy {
     modeExample: string;
     modeCustom: string;
     speedLabel: string;
-    speedValue: (charactersPerSecond: number) => string;
+    speedValue: (tokensPerSecond: number) => string;
     progress: (revealed: number, total: number) => string;
     sourceHint: string;
     statusLabel: string;
@@ -434,7 +434,7 @@ const ENGLISH: DemoCopy = {
     nav: 'Streaming',
     title: 'Streaming source sample',
     subtitle:
-      'Watch the example source stream by character at the selected speed, or edit the text and start your own source.',
+      'Watch the example source stream token by token at the selected rate, or edit the text and start your own source.',
     region: 'Streaming source sample',
     controls: 'Streaming run controls',
     start: 'Start',
@@ -444,10 +444,10 @@ const ENGLISH: DemoCopy = {
     modeExample: 'Example script',
     modeCustom: 'Your source',
     speedLabel: 'Streaming speed',
-    speedValue: (charactersPerSecond) => `${charactersPerSecond} chars/s`,
-    progress: (revealed, total) => `Revealed ${revealed} / ${total} characters`,
+    speedValue: (tokensPerSecond) => `${tokensPerSecond} tps`,
+    progress: (revealed, total) => `Revealed ${revealed} / ${total} tokens`,
     sourceHint:
-      'Start streams the current source by character. Edit while stopped to use your own text; Restore example returns to the built-in script.',
+      'Start streams the current source token by token. Edit while stopped to use your own text; Restore example returns to the built-in script.',
     statusLabel: 'Run status',
     statusIdle: 'Idle',
     statusDraft: 'Draft',
@@ -683,7 +683,7 @@ const CHINESE: DemoCopy = {
   streaming: {
     nav: '流式',
     title: '流式源码示例',
-    subtitle: '观察示例源码按所选字符速率逐步显示，或编辑文本并用你自己的源码重新开始。',
+    subtitle: '观察示例源码按所选 token 速率逐步显示，或编辑文本并用你自己的源码重新开始。',
     region: '流式源码示例',
     controls: '流式运行控制',
     start: '开始',
@@ -693,9 +693,9 @@ const CHINESE: DemoCopy = {
     modeExample: '示例脚本',
     modeCustom: '你的源码',
     speedLabel: '流式速度',
-    speedValue: (charactersPerSecond) => `${charactersPerSecond} 字/秒`,
-    progress: (revealed, total) => `已显示 ${revealed} / ${total} 字`,
-    sourceHint: '开始会按字符速率播放当前源码。停止后可直接编辑并用自己的文本重新开始；只有恢复示例才回到内置脚本。',
+    speedValue: (tokensPerSecond) => `${tokensPerSecond} tps`,
+    progress: (revealed, total) => `已显示 ${revealed} / ${total} token`,
+    sourceHint: '开始会按 token 速率播放当前源码。停止后可直接编辑并用自己的文本重新开始；只有恢复示例才回到内置脚本。',
     statusLabel: '运行状态',
     statusIdle: '空闲',
     statusDraft: '草稿',

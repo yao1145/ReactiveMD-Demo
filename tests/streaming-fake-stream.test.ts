@@ -49,12 +49,12 @@ function wellFormed(value: string): boolean {  for (let index = 0; index < value
   return true;
 }
 
-function setup(source = 'abcdefghij', speedCps = 20) {
+function setup(source = 'abcdefghij', speedTps = 20) {
   const submissions: Submission[] = [];
   const generations: number[] = [];
   const controller = new FakeStreamController({
     source,
-    speedCps,
+    speedTps,
     submit: (snapshot, phase) => submissions.push({ source: snapshot, phase }),
     resetTransport: (generation) => generations.push(generation),
   });
@@ -78,7 +78,7 @@ describe('character-paced fake stream', () => {
       status: 'streaming',
       mode: 'example',
       running: true,
-      speedCps: 20,
+      speedTps: 20,
       source: 'ab',
       targetSource: 'abcdefghij',
     });
@@ -104,15 +104,15 @@ describe('character-paced fake stream', () => {
     expect(controller.getSnapshot().source).toBe('ab');
 
     controller.setSpeed(100);
-    expect(controller.getSnapshot().speedCps).toBe(100);
+    expect(controller.getSnapshot().speedTps).toBe(100);
     vi.advanceTimersByTime(100);
     expect(controller.getSnapshot().source).toBe('abcdefghij');
     expect(controller.getSnapshot().status).toBe('finalizing');
 
     controller.setSpeed(1);
-    expect(controller.getSnapshot().speedCps).toBe(10);
+    expect(controller.getSnapshot().speedTps).toBe(10);
     controller.setSpeed(10_000);
-    expect(controller.getSnapshot().speedCps).toBe(300);
+    expect(controller.getSnapshot().speedTps).toBe(1000);
   });
 
   it('keeps the revealed prefix on cancel while restoring the full target', () => {
