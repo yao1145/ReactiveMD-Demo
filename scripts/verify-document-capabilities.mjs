@@ -134,6 +134,16 @@ try {
     await rmdir(scratch);
   }
   console.log('PASS Playground Worker matrix, retained state, and configured offline exports with grants on and off');
+  await page.getByRole('button', { name: 'Streaming', exact: true }).click();
+  await page.getByTestId('streaming-start').click();
+  const stream = page.getByTestId('streaming-preview');
+  await expect(stream.locator('article[data-render-mode=interactive]')).toBeVisible({ timeout: 15_000 });
+  const hours = stream.getByLabel('Hours this week', { exact: true });
+  await expect(hours).toHaveValue('6');
+  await hours.fill('9');
+  await hours.blur();
+  await expect(stream.getByText('Finished at 9 hours.', { exact: true })).toBeVisible();
+  console.log('PASS Streaming Worker reaches the final interactive snapshot in the merged Playground');
 } finally {
   await browser.close();
   await server?.close();

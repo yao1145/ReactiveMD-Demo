@@ -1,6 +1,7 @@
 import { LocalPreview } from '../preview/local-preview';
 export { LocalPreview } from '../preview/local-preview';
 import { GuideView } from '../content/guide-view';
+import { StreamingSample } from '../streaming/streaming-sample';
 import { DiagnosticList } from '../compilation/diagnostic-list';
 import { dedupeDiagnostics } from '../compilation/diagnostics';
 import { DEFAULT_EXAMPLE, SELECTION_KEY, browserStorage, savedItem, initialLanguage, initialExampleId, savedSource, writeLibraryMode } from '../documents/workspace-storage';
@@ -93,7 +94,7 @@ function GitHubIcon() {
 }
 
 export default function App() {
-  const [view, setView] = useState<'playground' | 'guide'>('playground');
+  const [view, setView] = useState<'playground' | 'streaming' | 'guide'>('playground');
   const [language, setLanguage] = useState<Language>(initialLanguage);
   const [library] = useState(() => new DocumentLibrary({ storage: browserStorage }));
   const libraryState = useSyncExternalStore(library.subscribe, library.getSnapshot);
@@ -719,6 +720,10 @@ export default function App() {
                       onClick={() => { setView('playground'); setMobileMenuOpen(false); }}>
                       {copy.masthead.playground}
                     </button>
+                    <button type="button" role="menuitem" className="mobile-menu-item" aria-pressed={view === 'streaming'}
+                      onClick={() => { setView('streaming'); setMobileMenuOpen(false); }}>
+                      {copy.streaming.nav}
+                    </button>
                     <button type="button" role="menuitem" className="mobile-menu-item" aria-pressed={view === 'guide'}
                       onClick={() => { setView('guide'); setMobileMenuOpen(false); }}>
                       {copy.masthead.guide}
@@ -738,6 +743,13 @@ export default function App() {
             </button>
             <button
               type="button"
+              aria-pressed={view === 'streaming'}
+              onClick={() => setView('streaming')}
+            >
+              {copy.streaming.nav}
+            </button>
+            <button
+              type="button"
               aria-pressed={view === 'guide'}
               onClick={() => setView('guide')}
             >
@@ -748,6 +760,8 @@ export default function App() {
 
         {view === 'guide' ? (
           <GuideView onBack={() => setView('playground')} />
+        ) : view === 'streaming' ? (
+          <StreamingSample />
         ) : (
         <main className="workbench">
           <MobileDocBar

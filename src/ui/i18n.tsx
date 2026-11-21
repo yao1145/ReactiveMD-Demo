@@ -175,6 +175,34 @@ export interface DemoCopy {
     showActions: string;
     hideActions: string;
   };
+  streaming: {
+    nav: string;
+    title: string;
+    region: string;
+    controls: string;
+    start: string;
+    cancel: string;
+    restore: string;
+    finalize: string;
+    speedLabel: string;
+    speedValue: (tokensPerSecond: number) => string;
+    progress: (revealed: number, total: number) => string;
+    statusLabel: string;
+    statusIdle: string;
+    statusDraft: string;
+    statusStreaming: string;
+    statusFinalizing: string;
+    statusDone: string;
+    statusFailed: string;
+    statusCancelled: string;
+    count: (count: number) => string;
+    sourceHeading: string;
+    previewHeading: string;
+    transientHeading: string;
+    diagnosticsHeading: string;
+    finalHeading: string;
+    none: string;
+  };
   status: {
     compileFailed: string;
     compiled: (diagnostics: number, duration: number, fallback: boolean) => string;
@@ -373,6 +401,34 @@ const ENGLISH: DemoCopy = {
     showActions: 'Show preview actions',
     hideActions: 'Hide preview actions',
   },
+  streaming: {
+    nav: 'Streaming',
+    title: 'Streaming source sample',
+    region: 'Streaming source sample',
+    controls: 'Streaming run controls',
+    start: 'Start',
+    cancel: 'Cancel',
+    restore: 'Restore example',
+    finalize: 'Finalize snapshot',
+    speedLabel: 'Streaming speed',
+    speedValue: (tokensPerSecond) => `${tokensPerSecond} tps`,
+    progress: (revealed, total) => `Revealed ${revealed} / ${total} tokens`,
+    statusLabel: 'Run status',
+    statusIdle: 'Idle',
+    statusDraft: 'Draft',
+    statusStreaming: 'Streaming',
+    statusFinalizing: 'Applying final snapshot',
+    statusDone: 'Complete',
+    statusFailed: 'Final failed',
+    statusCancelled: 'Cancelled',
+    count: (count) => `${count}`,
+    sourceHeading: 'Source',
+    previewHeading: 'Live preview',
+    transientHeading: 'Provisional diagnostics',
+    diagnosticsHeading: 'Snapshot diagnostics',
+    finalHeading: 'Final diagnostics',
+    none: 'None',
+  },
   status: {
     compileFailed: 'Compile failed',
     compiled: (diagnostics, duration, fallback) => {
@@ -564,6 +620,34 @@ const CHINESE: DemoCopy = {
     exitFullscreen: '退出全屏',
     showActions: '显示预览操作',
     hideActions: '隐藏预览操作',
+  },
+  streaming: {
+    nav: '流式',
+    title: '流式源码示例',
+    region: '流式源码示例',
+    controls: '流式运行控制',
+    start: '开始',
+    cancel: '取消',
+    restore: '恢复示例',
+    finalize: '提交最终快照',
+    speedLabel: '流式速度',
+    speedValue: (tokensPerSecond) => `${tokensPerSecond} tps`,
+    progress: (revealed, total) => `已显示 ${revealed} / ${total} token`,
+    statusLabel: '运行状态',
+    statusIdle: '空闲',
+    statusDraft: '草稿',
+    statusStreaming: '流式生成中',
+    statusFinalizing: '正在应用最终快照',
+    statusDone: '已完成',
+    statusFailed: '最终快照失败',
+    statusCancelled: '已取消',
+    count: (count) => `${count}`,
+    sourceHeading: '源码',
+    previewHeading: '实时预览',
+    transientHeading: '临时诊断',
+    diagnosticsHeading: '快照诊断',
+    finalHeading: '最终诊断',
+    none: '无',
   },
   status: {
     compileFailed: '编译失败',

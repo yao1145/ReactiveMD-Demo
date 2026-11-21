@@ -24,6 +24,7 @@ These three paths are stable anchors. `index.html`, `embed.html`, the `vite.conf
 | `images/` | `image-assets.ts`, `image-assets-panel.tsx`, `image-copy.ts`, `use-document-images.ts` | Image validation and limits, IndexedDB storage, the image panel and its labels. |
 | `export/` | `export-dialog.tsx`, `export-html.ts` | Export dialog and shareable HTML generation. |
 | `preview/` | `preview-fullscreen.tsx`, `preview-fullscreen.css` | Fullscreen preview toggle, native Fullscreen API handling and the viewport fallback overlay. |
+| `streaming/` | `fake-stream.ts`, `streaming-sample.tsx`, `streaming-sample.css` | Deterministic streaming sample: tokens-per-second pacing, example or host-authored source, stale-result accounting, and a live streaming preview panel. |
 | `content/` | `examples.ts`, `guide-examples.tsx`, `guide-code.css` | Example catalog, guide rendering and guide code styles. Markdown sources stay in the top-level `content/examples/` and `content/guides/` directories. |
 | `ui/` | `i18n.tsx`, `icons.tsx`, `use-editor-height.ts`, `use-scroll-container.ts` | Shared typed copy, the icon set and layout hooks. |
 | `settings/` | `html-options.ts`, `html-compatibility.tsx` | HTML capability model and its controls. |

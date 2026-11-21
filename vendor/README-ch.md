@@ -18,8 +18,8 @@ Demo 通过 tarball 安装的依赖都放在本目录。引擎和编辑器快照
 
 | 文件 | 包 | 版本 |
 | --- | --- | --- |
-| `reactive-md-0.9.0-3bae7b2f7187.tgz` | `reactive-md` | `0.9.0` |
-| `reactive-md-editor-0.2.0-738f8462b9a9.tgz` | `reactive-md-editor` | `0.2.0` |
+| `reactive-md-0.9.0-2d03687e2647.tgz` | `reactive-md` | `0.9.0` |
+| `reactive-md-editor-0.2.0-7cc2ae5e80f4.tgz` | `reactive-md-editor` | `0.2.0` |
 | `reactive-md-sci-fi-theme-1.0.0-525cab7ab93f.tgz` | `reactive-md-sci-fi-theme` | `1.0.0` |
 | `reactive-md-tetris-package-0.1.0-fc1fa620038f.tgz` | `reactive-md-tetris-package` | `0.1.0` |
 | `reactive-md-game-2048-package-0.1.0-ce931218c317.tgz` | `reactive-md-game-2048-package` | `0.1.0` |
@@ -38,8 +38,8 @@ Demo 通过 tarball 安装的依赖都放在本目录。引擎和编辑器快照
 
 在包所属仓库中构建，使用带版本号和内容哈希的文件名复制到这里，更新 `package.json` 中的 `file:` 路径并重新生成 lockfile。当前的引擎与编辑器更新流程见 [docs/candidate-package-updates-ch.md](../docs/candidate-package-updates-ch.md)。
 
-引擎 tarball 是包含独立作者能力的 0.9.0 候选包。SHA256 为 `3bae7b2f7187b111a491a48a90c4fc36875d3e9838d4743dac4a221273588387`。
+引擎 tarball 是包含流式编译和独立作者能力的 0.9.0 候选包。SHA256 为 `2d03687e2647cb1cb195c869e30629e70d4af25187e064b6313915c8b9f1b39f`。
 
-Editor 0.2.0 候选包的分析 Worker 使用同一份引擎。SHA256 为 `738f8462b9a954605cdae0c98fde5aff5c9316039ae9c50eacae84b952a75134`。
+Editor 0.2.0 候选包的分析 Worker 使用同一份引擎。SHA256 为 `7cc2ae5e80f4ab54c5ca41b2996467697654369af6305f9cd697f166429569ab`。
 
 主题夹具由提交 `351b341` 构建，SHA256 为 `525cab7ab93fda6331e8fd5260c2c85aec5935559032bc951ad0ed827f7d4277`。
