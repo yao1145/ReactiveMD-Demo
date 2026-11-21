@@ -115,23 +115,12 @@ export function StreamingSample() {
   const provisionalDiagnostics = state.transient;
   const snapshotDiagnostics = finished ? state.finalDiagnostics : state.streamingDiagnostics;
   const diagnosticsHeading = finished ? copy.finalHeading : copy.diagnosticsHeading;
-  const diagnosticsHint = finished ? copy.finalHint : copy.diagnosticsHint;
-  const previewNote = state.status === 'cancelled'
-    ? copy.previewCancelled
-    : state.status === 'failed'
-      ? copy.previewFailed
-      : state.source
-        ? copy.previewNote
-        : copy.previewIdle;
   const chipState = state.status === 'done' ? '' : state.status === 'cancelled' || state.status === 'failed' || state.snapshotStatus === 'failed' ? ' is-error' : ' is-pending';
 
   return (
     <section className="streaming-view" aria-label={copy.region}>
       <header className="streaming-hero">
-        <div>
-          <h2>{copy.title}</h2>
-          <p>{copy.subtitle}</p>
-        </div>
+        <h2>{copy.title}</h2>
         <span
           className={`status-chip streaming-status${chipState}`}
           role="status"
@@ -174,13 +163,7 @@ export function StreamingSample() {
           <output data-testid="streaming-speed-value">{copy.speedValue(state.speedTps)}</output>
         </label>
         <ul className="streaming-meta">
-          <li data-testid="streaming-mode">
-            {state.mode === 'custom' ? copy.modeCustom : copy.modeExample}
-          </li>
           <li>{copy.progress(state.source.length, state.targetSource.length)}</li>
-          {state.snapshotStatus ? <li>{copy.snapshot(state.snapshotStatus, state.snapshotPhase ?? 'streaming')}</li> : null}
-          {state.durationMs > 0 ? <li>{copy.duration(Math.round(state.durationMs))}</li> : null}
-          <li data-testid="streaming-discarded">{copy.discarded(state.discarded)}</li>
         </ul>
       </div>
 
@@ -188,12 +171,10 @@ export function StreamingSample() {
         <article className="streaming-panel" aria-labelledby="streaming-source-heading">
           <header className="streaming-panel-head">
             <h3 id="streaming-source-heading">{copy.sourceHeading}</h3>
-            <span className="streaming-panel-meta">{copy.sourceMeta(state.targetSource.length)}</span>
           </header>
-          <p className="streaming-hint">{copy.sourceHint}</p>
           <textarea className="streaming-source" value={editorValue} spellCheck={false}
             readOnly={state.running}
-            aria-label={copy.sourceHeading} placeholder={copy.sourceEmpty}
+            aria-label={copy.sourceHeading}
             onChange={(event) => controller.editSource(event.target.value)}
             data-testid="streaming-source" />
         </article>
@@ -202,7 +183,6 @@ export function StreamingSample() {
           <header className="streaming-panel-head">
             <h3 id="streaming-preview-heading">{copy.previewHeading}</h3>
           </header>
-          <p className="streaming-hint">{previewNote}</p>
           <div className="streaming-preview" data-testid="streaming-preview" aria-busy={busy}>
             {state.source ? (
               <LocalReactiveDocument
@@ -212,7 +192,7 @@ export function StreamingSample() {
                 compileOptions={STREAM_COMPILE_OPTIONS}
                 locale={language}
               />
-            ) : <p className="streaming-placeholder">{copy.previewIdle}</p>}
+            ) : null}
           </div>
         </article>
       </div>
@@ -223,7 +203,6 @@ export function StreamingSample() {
             <h3 id="streaming-transient-heading">{copy.transientHeading}</h3>
             <span className="streaming-panel-meta">{provisionalDiagnostics.length ? copy.count(provisionalDiagnostics.length) : copy.none}</span>
           </header>
-          <p className="streaming-hint">{copy.transientHint}</p>
           <DiagnosticItems diagnostics={provisionalDiagnostics} testId="streaming-transient" />
         </section>
         <section className="streaming-panel" aria-labelledby="streaming-diagnostics-heading">
@@ -231,7 +210,6 @@ export function StreamingSample() {
             <h3 id="streaming-diagnostics-heading">{diagnosticsHeading}</h3>
             <span className="streaming-panel-meta">{snapshotDiagnostics.length ? copy.count(snapshotDiagnostics.length) : copy.none}</span>
           </header>
-          <p className="streaming-hint">{diagnosticsHint}</p>
           <DiagnosticItems diagnostics={snapshotDiagnostics} testId="streaming-final" />
         </section>
       </div>

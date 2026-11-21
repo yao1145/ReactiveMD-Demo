@@ -184,19 +184,15 @@ export interface DemoCopy {
   streaming: {
     nav: string;
     title: string;
-    subtitle: string;
     region: string;
     controls: string;
     start: string;
     cancel: string;
     restore: string;
     finalize: string;
-    modeExample: string;
-    modeCustom: string;
     speedLabel: string;
     speedValue: (tokensPerSecond: number) => string;
     progress: (revealed: number, total: number) => string;
-    sourceHint: string;
     statusLabel: string;
     statusIdle: string;
     statusDraft: string;
@@ -205,24 +201,12 @@ export interface DemoCopy {
     statusDone: string;
     statusFailed: string;
     statusCancelled: string;
-    snapshot: (status: string, phase: string) => string;
-    duration: (milliseconds: number) => string;
-    discarded: (count: number) => string;
     count: (count: number) => string;
     sourceHeading: string;
-    sourceMeta: (characters: number) => string;
-    sourceEmpty: string;
     previewHeading: string;
-    previewNote: string;
-    previewCancelled: string;
-    previewFailed: string;
-    previewIdle: string;
     transientHeading: string;
-    transientHint: string;
     diagnosticsHeading: string;
-    diagnosticsHint: string;
     finalHeading: string;
-    finalHint: string;
     none: string;
   };
   status: {
@@ -433,21 +417,15 @@ const ENGLISH: DemoCopy = {
   streaming: {
     nav: 'Streaming',
     title: 'Streaming source sample',
-    subtitle:
-      'Watch the example source stream token by token at the selected rate, or edit the text and start your own source.',
     region: 'Streaming source sample',
     controls: 'Streaming run controls',
     start: 'Start',
     cancel: 'Cancel',
     restore: 'Restore example',
     finalize: 'Finalize snapshot',
-    modeExample: 'Example script',
-    modeCustom: 'Your source',
     speedLabel: 'Streaming speed',
     speedValue: (tokensPerSecond) => `${tokensPerSecond} tps`,
     progress: (revealed, total) => `Revealed ${revealed} / ${total} tokens`,
-    sourceHint:
-      'Start streams the current source token by token. Edit while stopped to use your own text; Restore example returns to the built-in script.',
     statusLabel: 'Run status',
     statusIdle: 'Idle',
     statusDraft: 'Draft',
@@ -456,29 +434,12 @@ const ENGLISH: DemoCopy = {
     statusDone: 'Complete',
     statusFailed: 'Final failed',
     statusCancelled: 'Cancelled',
-    snapshot: (status, phase) => `Latest result: ${status} (${phase})`,
-    duration: (milliseconds) => `${milliseconds} ms`,
-    discarded: (count) => `Discarded stale results: ${count}`,
     count: (count) => `${count}`,
-    sourceHeading: 'Source (editable when stopped)',
-    sourceMeta: (characters) => `${characters} characters`,
-    sourceEmpty: 'No source yet. Type text or restore the example.',
+    sourceHeading: 'Source',
     previewHeading: 'Live preview',
-    previewNote:
-      'Streaming snapshots render in static mode: controls are read-only and side effects wait for the final snapshot.',
-    previewCancelled:
-      'The run was cancelled. The revealed prefix stays read-only; the full source is back in the editor.',
-    previewFailed:
-      'The final snapshot failed. Incomplete syntax is shown as text and the final diagnostics remain below.',
-    previewIdle: 'Start a run to reveal the current source by character.',
     transientHeading: 'Provisional diagnostics',
-    transientHint:
-      'Repairable issues from the current snapshot. They never enter final diagnostics.',
     diagnosticsHeading: 'Snapshot diagnostics',
-    diagnosticsHint: 'Non-transient issues in the current snapshot.',
     finalHeading: 'Final diagnostics',
-    finalHint:
-      'Issues from the completed source. Finalization clears the provisional issues.',
     none: 'None',
   },
   status: {
@@ -683,19 +644,15 @@ const CHINESE: DemoCopy = {
   streaming: {
     nav: '流式',
     title: '流式源码示例',
-    subtitle: '观察示例源码按所选 token 速率逐步显示，或编辑文本并用你自己的源码重新开始。',
     region: '流式源码示例',
     controls: '流式运行控制',
     start: '开始',
     cancel: '取消',
     restore: '恢复示例',
     finalize: '提交最终快照',
-    modeExample: '示例脚本',
-    modeCustom: '你的源码',
     speedLabel: '流式速度',
     speedValue: (tokensPerSecond) => `${tokensPerSecond} tps`,
     progress: (revealed, total) => `已显示 ${revealed} / ${total} token`,
-    sourceHint: '开始会按 token 速率播放当前源码。停止后可直接编辑并用自己的文本重新开始；只有恢复示例才回到内置脚本。',
     statusLabel: '运行状态',
     statusIdle: '空闲',
     statusDraft: '草稿',
@@ -704,24 +661,12 @@ const CHINESE: DemoCopy = {
     statusDone: '已完成',
     statusFailed: '最终快照失败',
     statusCancelled: '已取消',
-    snapshot: (status, phase) => `最新结果：${status}（${phase}）`,
-    duration: (milliseconds) => `${milliseconds} ms`,
-    discarded: (count) => `已丢弃过期结果：${count}`,
     count: (count) => `${count}`,
-    sourceHeading: '源码（停止时可编辑）',
-    sourceMeta: (characters) => `${characters} 个字符`,
-    sourceEmpty: '还没有源码。输入文本或恢复示例。',
+    sourceHeading: '源码',
     previewHeading: '实时预览',
-    previewNote: '流式快照以静态模式渲染：控件只读，副作用等待最终快照。',
-    previewCancelled: '运行已取消，已显示的片段保持只读；完整源码已回到编辑器。',
-    previewFailed: '最终快照失败；未完成的语法已按原文显示，最终诊断保留在下方。',
-    previewIdle: '开始后按字符逐步显示当前源码。',
     transientHeading: '临时诊断',
-    transientHint: '当前快照中可修复的问题，不会进入最终诊断。',
     diagnosticsHeading: '快照诊断',
-    diagnosticsHint: '当前快照中的非临时问题。',
     finalHeading: '最终诊断',
-    finalHint: '完整源码的问题；最终化会清空临时诊断。',
     none: '无',
   },
   status: {
