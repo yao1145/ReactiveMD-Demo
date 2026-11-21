@@ -465,7 +465,7 @@ const ENGLISH: DemoCopy = {
       'Streaming snapshots render in static mode: controls are read-only and side effects wait for the final snapshot.',
     previewCancelled:
       'The run was cancelled. The revealed prefix stays read-only; the full source is back in the editor.',
-    previewIdle: 'Start a run to build the document chunk by chunk.',
+    previewIdle: 'Start a run to reveal the current source by character.',
     transientHeading: 'Provisional diagnostics',
     transientHint:
       'Repairable issues from the current snapshot. They never enter final diagnostics.',
@@ -708,7 +708,7 @@ const CHINESE: DemoCopy = {
     previewHeading: '实时预览',
     previewNote: '流式快照以静态模式渲染：控件只读，副作用等待最终快照。',
     previewCancelled: '运行已取消，已显示的片段保持只读；完整源码已回到编辑器。',
-    previewIdle: '开始运行，逐片生成文档。',
+    previewIdle: '开始后按字符逐步显示当前源码。',
     transientHeading: '临时诊断',
     transientHint: '当前快照中可修复的问题，不会进入最终诊断。',
     diagnosticsHeading: '快照诊断',

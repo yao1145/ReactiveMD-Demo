@@ -6,18 +6,37 @@ import type {
 } from 'reactive-md';
 
 /**
- * Fixed example source. Streaming reveals it by character, so structural
- * boundaries are not tied to any hard-coded chunk list.
+ * Fixed example source. Streaming reveals it by character at the configured
+ * rate, so structural boundaries are independent of any segmentation.
  */
-export const STREAM_CHUNKS: readonly string[] = [
-  '# Streaming notes\n\n<number bind="hours" label="Hours this week" initial="6" min="0" max="40" step="1">\n\n',
-  '<checkbox bind="focus" label="Protect a focus block">\n\n## This week\n\nWriting **{{ ho',
-  'urs }}** hours{{ focus ? \' with a protected focus block\' : \'\' }}.\n\n<computed name="reading" value="{{ round(hours * 0.4) }}">\n',
-  '<computed name="practice" value="{{ round(hours * 0.6) }}">\n\n| Block | Hours |\n| --- | ---: |\n| Reading | {{ reading }} |\n| Practice | {{ practice }} |\n| Total | {{ hours }} |\n\n',
-  '<alert tone="info">\n\nThis paragraph arrived from a fixed example. No model, network or credentials are involved.\n\n',
-  '</alert>\n\n> Finished at {{ hours }} hours.\n',
-];
-export const STREAM_SOURCE = STREAM_CHUNKS.join('');
+export const STREAM_SOURCE = `# Streaming notes
+
+<number bind="hours" label="Hours this week" initial="6" min="0" max="40" step="1">
+
+<checkbox bind="focus" label="Protect a focus block">
+
+## This week
+
+Writing **{{ hours }}** hours{{ focus ? ' with a protected focus block' : '' }}.
+
+<computed name="reading" value="{{ round(hours * 0.4) }}">
+
+<computed name="practice" value="{{ round(hours * 0.6) }}">
+
+| Block | Hours |
+| --- | ---: |
+| Reading | {{ reading }} |
+| Practice | {{ practice }} |
+| Total | {{ hours }} |
+
+<alert tone="info">
+
+This paragraph arrived from a fixed example. No model, network or credentials are involved.
+
+</alert>
+
+> Finished at {{ hours }} hours.
+`;
 
 export const STREAM_DEFAULT_CPS = 100;
 export const STREAM_SPEED_MIN_CPS = 10;
