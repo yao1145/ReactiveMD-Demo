@@ -1,4 +1,3 @@
-import { samePreviewScripts } from '../compilation/capability-preview';
 import { LocalPreview } from '../preview/local-preview';
 export { LocalPreview } from '../preview/local-preview';
 import { GuideView } from '../content/guide-view';
@@ -874,10 +873,11 @@ export default function App() {
                       </div>
                     ) : previewDocument ? (
                       <LocalPreview key={`${componentMode}:${instanceKey}`} document={previewDocument}
+                        authorScriptPaused={previewDocument.source !== source}
                         session={previewSession} stateId={componentMode === 'minimal' ? `${documentKey}:minimal` : documentKey}
                         capabilityGrants={{
                           ...htmlOptions,
-                          enableJavaScript: htmlOptions.enableJavaScript && samePreviewScripts(previewDocument, source),
+                          enableJavaScript: htmlOptions.enableJavaScript,
                         }}
                         reactConfig={reactConfig} network={network} onDiagnostics={report} images={documentImages.assets}
                         onSourceNavigate={editorView === 'split' ? revealSource : undefined} />

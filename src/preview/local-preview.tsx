@@ -21,6 +21,7 @@ interface LocalPreviewProps {
    * permissions recorded at compile time; omitting them keeps the CSS default.
    */
   capabilityGrants?: LocalHtmlOptions;
+  authorScriptPaused?: boolean;
   onDiagnostics: (diagnostics: Diagnostic[]) => void;
   images: readonly ImageAsset[];
   reactConfig?: LocalReactConfig;
@@ -28,7 +29,7 @@ interface LocalPreviewProps {
   onSourceNavigate?(target: LocalSourceTarget): void;
 }
 
-export const LocalPreview = memo(function LocalPreview({ document, session, stateId, capabilityGrants, onDiagnostics, images, network, reactConfig = demoReactConfig, onSourceNavigate }: LocalPreviewProps) {
+export const LocalPreview = memo(function LocalPreview({ document, session, stateId, capabilityGrants, authorScriptPaused, onDiagnostics, images, network, reactConfig = demoReactConfig, onSourceNavigate }: LocalPreviewProps) {
   const language = useLanguage();
   const copy = useCopy();
   const imageProps = useMemo(() => imagePolicy(Object.fromEntries(images.map(a => [a.url, a.dataUrl]))), [images]);
@@ -110,6 +111,7 @@ export const LocalPreview = memo(function LocalPreview({ document, session, stat
       document={instance.document}
       runtime={instance.runtime}
       capabilityGrants={capabilityGrants}
+      authorScriptPaused={authorScriptPaused || instance.document !== document}
       onDiagnostics={onDiagnostics}
       locale={language}
       onSourceNavigate={onSourceNavigate}

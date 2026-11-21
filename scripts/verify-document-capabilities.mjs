@@ -9,9 +9,12 @@ import { openDeveloperCard, openWorkbench, replaceWorkbenchSource, viewModeButto
 const SOURCE = [
   '<theme name="sci-fi">', '', '<css>', 'h2 { color: #24549a; }', '</css>', '', '## People', '',
   '<slider bind="people" label="People" initial="2" min="1" max="20" css="max-width: 24rem; margin-block: 1rem">',
-  '', 'People: {{ people }}', '',
+  '',
+  '<counter bind="scriptStarts" label="Script starts" initial="0">',
+  '', 'People: {{ people }}', '', 'Script initializations: {{ scriptStarts }}', '',
   '<iframe title="Example" srcdoc="<p>Embedded example</p>"></iframe>', '',
-  '<javascript>', 'await rmd.set("people", 10);', '</javascript>',
+  '<javascript>', 'await rmd.set("people", 10);',
+  'await rmd.set("scriptStarts", (await rmd.get("scriptStarts")) + 1);', '</javascript>',
 ].join('\n');
 const server = process.env.DEMO_URL ? null : await createServer({ server: { host: '127.0.0.1', port: 0, watch: null } });
 await server?.listen();
@@ -67,6 +70,20 @@ try {
     else await expect(preview.getByRole('heading', { name: 'People' })).not.toHaveCSS('color', 'rgb(36, 84, 154)');
     for (let step = start; step < 12; step++) await slider.press('ArrowRight');
     await expect(preview.getByText('People: 12', { exact: true })).toBeVisible();
+  }
+  const initializations = preview.locator('p').filter({ hasText: /^Script initializations:/ });
+  const initialCount = 'Script initializations: 4';
+  await expect(initializations).toHaveText(initialCount);
+  const titleEdit = SOURCE.replace('## People', '## People count');
+  const addedParagraph = titleEdit.replace('People: {{ people }}', 'Ordinary new paragraph.\n\nPeople: {{ people }}');
+  for (const edited of [titleEdit, addedParagraph, titleEdit, SOURCE]) {
+    await replaceWorkbenchSource(page, edited);
+    await waitForPreview();
+    const title = edited === SOURCE ? 'People' : 'People count';
+    await expect(preview.getByRole('heading', { name: title, exact: true })).toBeVisible();
+    await expect(preview.getByText('Ordinary new paragraph.', { exact: true })).toHaveCount(Number(edited === addedParagraph));
+    await expect(slider).toHaveAttribute('aria-valuenow', '12');
+    await expect(initializations).toHaveText(initialCount);
   }
   await set(css, false);
   await set(extended, false);

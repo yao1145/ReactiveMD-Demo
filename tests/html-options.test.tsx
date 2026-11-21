@@ -8,7 +8,6 @@ import {
   type LocalNode,
 } from 'reactive-md';
 import { ExportDialog } from '../src/export/export-dialog';
-import { samePreviewScripts } from '../src/compilation/capability-preview';
 import { PreviewStateSession } from '../src/compilation/preview-state';
 import { HtmlCompatibilityControls } from '../src/settings/html-compatibility';
 import {
@@ -225,50 +224,6 @@ describe('capability switches in the preview session', () => {
     const next = session.open(withheld);
     expect(next.runtime.snapshot().state.people).toBe(12);
     next.release();
-  });
-});
-
-describe('preview script grants', () => {
-  const SCRIPT_SOURCE = [
-    '<slider bind="people" label="People" initial="2" min="1" max="20">',
-    '',
-    '## Notes',
-    '',
-    'Prose before the script.',
-    '',
-    '<javascript>',
-    'await rmd.set("people", 10)',
-    '</javascript>',
-  ].join('\n');
-
-  it('keeps the grant while an uncompiled prose edit leaves the script intact', () => {
-    const document = compile(SCRIPT_SOURCE, toCompileOptions({ enableJavaScript: true }));
-    expect(recordsJavaScript(document)).toBe(true);
-    expect(samePreviewScripts(document, SCRIPT_SOURCE.replace('Prose', 'Edited prose'))).toBe(true);
-  });
-
-  it('withdraws the grant as soon as the edit touches the script or its tag', () => {
-    const document = compile(SCRIPT_SOURCE, toCompileOptions({ enableJavaScript: true }));
-    expect(samePreviewScripts(document, SCRIPT_SOURCE.replace('10', '11'))).toBe(false);
-    expect(samePreviewScripts(document, SCRIPT_SOURCE.replace('<javascript>', '<javascript >'))).toBe(false);
-    expect(samePreviewScripts(document, SCRIPT_SOURCE.replace('</javascript>', ''))).toBe(false);
-  });
-
-  it('pauses a stale script when indentation opens a Markdown fence', () => {
-    const source = SCRIPT_SOURCE.replace('<javascript>', '    ~~~\n\n<javascript>');
-    const edited = source.replace('    ~~~', '   ~~~');
-    const options = toCompileOptions({ enableJavaScript: true });
-    const document = compile(source, options);
-    expect(recordsJavaScript(document)).toBe(true);
-    expect(recordsJavaScript(compile(edited, options))).toBe(false);
-    expect(samePreviewScripts(document, edited)).toBe(false);
-  });
-
-  it('does not restrict the grant when the document has no script', () => {
-    const document = compile('<slider bind="people" label="People" initial="2" min="1" max="20">',
-      toCompileOptions({ enableJavaScript: true }));
-    expect(recordsJavaScript(document)).toBe(false);
-    expect(samePreviewScripts(document, 'anything at all')).toBe(true);
   });
 });
 
