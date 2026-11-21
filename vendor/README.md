@@ -18,8 +18,8 @@ The site renders the local extension source in [plugin/](../plugin/README.md) an
 
 | File | Package | Version |
 | --- | --- | --- |
-| `reactive-md-0.9.0-65f58d49c8b2.tgz` | `reactive-md` | `0.9.0` |
-| `reactive-md-editor-0.2.0-7cc2ae5e80f4.tgz` | `reactive-md-editor` | `0.2.0` |
+| `reactive-md-0.9.0-028c57f21f2c.tgz` | `reactive-md` | `0.9.0` |
+| `reactive-md-editor-0.2.0-8cee1beed712.tgz` | `reactive-md-editor` | `0.2.0` |
 | `reactive-md-sci-fi-theme-1.0.0-525cab7ab93f.tgz` | `reactive-md-sci-fi-theme` | `1.0.0` |
 | `reactive-md-tetris-package-0.1.0-fc1fa620038f.tgz` | `reactive-md-tetris-package` | `0.1.0` |
 | `reactive-md-game-2048-package-0.1.0-ce931218c317.tgz` | `reactive-md-game-2048-package` | `0.1.0` |
@@ -38,8 +38,8 @@ The game packages declare a `reactive-md` peer range of `^0.8.0-next.0` and a Re
 
 Build the package in its own repository, copy the output here with the versioned, content-addressed filename, update the `file:` path in `package.json` and regenerate the lockfile. [docs/candidate-package-updates-en.md](../docs/candidate-package-updates-en.md) records the current engine and editor procedure.
 
-The engine tarball is the 0.9.0 candidate with streaming compilation, independent author capabilities and document-scoped jump scrolling. SHA256 is `65f58d49c8b299e47440d23f1785af266554923bbde07267b5b5090dd887bed9`.
+The engine tarball is the 0.9.0 candidate with streaming compilation, independent author capabilities and document-scoped jump scrolling. SHA256 is `028c57f21f2cd836ff32bcd46d0611c1e96d19b546d2c7d35a0baa6237aa15bb`.
 
-The Editor 0.2.0 candidate bundles the same engine in its analysis Worker. SHA256 is `7cc2ae5e80f4ab54c5ca41b2996467697654369af6305f9cd697f166429569ab`.
+The Editor 0.2.0 candidate bundles the same engine in its analysis Worker. SHA256 is `8cee1beed71271d61f3829e332d5a1f023bacffeb7e89855ca49f5cf37b11763`.
 
 The theme fixture was built from commit `351b341` and has SHA256 `525cab7ab93fda6331e8fd5260c2c85aec5935559032bc951ad0ed827f7d4277`.

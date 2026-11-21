@@ -315,3 +315,19 @@ describe('character-paced fake stream', () => {
     expect(submissions.at(-1)).toEqual({ source: 'a😀b', phase: 'final' });
   });
 });
+
+it.each(['Text <|endoftext|> here.', 'Text \uD800 here.'])('streams special source %j and accepts its exact final response', source => {
+  const submissions: Submission[] = [];
+  const controller = new FakeStreamController({
+    speedTps: STREAM_SPEED_MAX_TPS,
+    submit: (snapshot, phase) => submissions.push({ source: snapshot, phase }),
+  });
+  controller.editSource(source);
+  controller.start();
+  vi.runAllTimers();
+  expect(submissions.at(-1)).toEqual({ source, phase: 'final' });
+  expect(controller.getSnapshot().source).toBe(source);
+  expect(controller.applyOutcome({ source, sourcePhase: 'final', result: compiled() })).toBe(true);
+  expect(controller.getSnapshot().status).toBe('done');
+  controller.dispose();
+});

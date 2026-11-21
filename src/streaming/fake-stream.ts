@@ -54,7 +54,7 @@ export interface StreamTokenizer {
 }
 
 const GPT4O_TOKENIZER: StreamTokenizer = {
-  encode: (source) => encodeGpt4o(source),
+  encode: (source) => encodeGpt4o(source, { disallowedSpecial: new Set() }),
   decode: (tokens) => decodeGpt4o(tokens),
 };
 
@@ -346,13 +346,14 @@ export class FakeStreamController {
     if (!this.running) return;
     const count = Math.max(1, Math.round(this.speedTps * STREAM_TICK_MS / 1000));
     this.revealedTokens = Math.min(this.tokens.length, this.revealedTokens + count);
-    this.source = this.tokenizer.decode(this.tokens.slice(0, this.revealedTokens));
+    const complete = this.revealedTokens >= this.tokens.length;
+    this.source = complete ? this.targetSource : this.tokenizer.decode(this.tokens.slice(0, this.revealedTokens));
     this.submit(this.source, 'streaming');
-    if (this.revealedTokens >= this.tokens.length) {
+    if (complete) {
       this.stopTimer();
       this.running = false;
       this.status = 'finalizing';
-      this.submit(this.targetSource, 'final');
+      this.submit(this.source, 'final');
       this.publish();
       return;
     }
@@ -363,8 +364,8 @@ export class FakeStreamController {
   /** Tokenize the current target once per distinct text. */
   private tokenizeTarget(): void {
     if (this.tokenizedSource === this.targetSource) return;
-    this.tokenizedSource = this.targetSource;
     this.tokens = this.tokenizer.encode(this.targetSource);
+    this.tokenizedSource = this.targetSource;
   }
 
   private scheduleNext(): void {

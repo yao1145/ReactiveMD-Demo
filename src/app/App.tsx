@@ -9,6 +9,7 @@ import { useDraftPersistence } from '../documents/use-draft-persistence';
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -92,6 +93,8 @@ function GitHubIcon() {
     <path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.23-1.28-5.23-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11.1 11.1 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.43-2.69 5.41-5.25 5.69.41.35.77 1.05.77 2.12 0 1.53-.01 2.76-.01 3.14 0 .31.21.67.8.56A10.52 10.52 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z" />
   </svg>;
 }
+
+const isAuthorScriptDiagnostic = (diagnostic: Diagnostic) => diagnostic.code === 'local.author.javascript';
 
 export default function App() {
   const [view, setView] = useState<'playground' | 'streaming' | 'guide'>('playground');
@@ -307,7 +310,7 @@ export default function App() {
 
   const replaceSource = useCallback((next: string) => {
     setSource(next);
-    setRuntimeDiagnostics([]);
+    setRuntimeDiagnostics(previous => previous.filter(isAuthorScriptDiagnostic));
     if (libraryMode === 'documents') {
       const id = library.getSnapshot().selectedId;
       if (id) library.updateSource(id, next);
@@ -338,7 +341,7 @@ export default function App() {
   // its current runtime when the worker responds.
   const changeHtmlOptions = useCallback((next: DemoHtmlOptions) => {
     setHtmlOptions(next);
-    setRuntimeDiagnostics([]);
+    setRuntimeDiagnostics(previous => next.enableJavaScript ? previous.filter(isAuthorScriptDiagnostic) : []);
   }, []);
 
   // Imports always become a new personal document. The current example or
@@ -558,6 +561,28 @@ export default function App() {
   const previewDocument = compilation.previewDocument && previewSession.canPreview(compilation.previewDocument, source)
     ? compilation.previewDocument
     : null;
+  const previewScripts = htmlOptions.enableJavaScript ? previewDocument?.capabilities?.scripts : undefined;
+  const previewScriptKey = previewScripts?.length ? JSON.stringify(previewScripts.map(block => block.text)) : '';
+  const previousScriptView = useRef({ key: previewScriptKey, instanceKey, document: previewDocument });
+  useLayoutEffect(() => {
+    const previous = previousScriptView.current;
+    previousScriptView.current = { key: previewScriptKey, instanceKey, document: previewDocument };
+    if (previous.key !== previewScriptKey || previous.instanceKey !== instanceKey) {
+      setRuntimeDiagnostics(items => items.some(isAuthorScriptDiagnostic) ? items.filter(item => !isAuthorScriptDiagnostic(item)) : items);
+      return;
+    }
+    if (!previewScripts?.length || !previewDocument || !previous.document || previous.document === previewDocument) return;
+    const oldScripts = previous.document.capabilities?.scripts ?? [];
+    setRuntimeDiagnostics(items => items.some(isAuthorScriptDiagnostic) ? items.map(item => {
+      if (!isAuthorScriptDiagnostic(item)) return item;
+      const block = oldScripts.findIndex(script => script.range.start === item.range.start);
+      if (block < 0) return item;
+      const range = previewScripts[block].range;
+      const before = previewDocument.source.slice(0, range.start);
+      return { ...item, range, line: before.split('\n').length, column: range.start - before.lastIndexOf('\n') };
+    }) : items);
+  }, [previewScriptKey, instanceKey, previewDocument, previewScripts]);
+
   const exportDocument = compiled && compiled.ok ? compiled.document : null;
   const exportCurrentState = exportDocument ? previewSession.currentState(exportDocument) : null;
   const exportCompileError = compiled && !compiled.ok
@@ -881,13 +906,14 @@ export default function App() {
                   <div className="preview-stage" aria-busy={compiling}>
                     {previewFailed && compiled ? (
                       <div className="preview-error" role="alert">
-                        <h3>{copy.preview.disabledTitle}</h3>
-                        <p>{copy.preview.disabledBody}</p>
+                        <h3>{previewDocument ? copy.preview.staleTitle : copy.preview.disabledTitle}</h3>
+                        <p>{previewDocument ? copy.preview.staleBody : copy.preview.disabledBody}</p>
                         <DiagnosticList diagnostics={compiled.diagnostics} focusDiagnostic={focusDiagnostic} />
                       </div>
-                    ) : previewDocument ? (
+                    ) : null}
+                    {previewDocument ? (
                       <LocalPreview key={`${componentMode}:${instanceKey}`} document={previewDocument}
-                        authorScriptPaused={previewDocument.source !== source}
+                        authorScriptPaused={previewFailed || previewDocument.source !== source}
                         session={previewSession} stateId={componentMode === 'minimal' ? `${documentKey}:minimal` : documentKey}
                         capabilityGrants={{
                           ...htmlOptions,
@@ -895,7 +921,7 @@ export default function App() {
                         }}
                         reactConfig={reactConfig} network={network} onDiagnostics={report} images={documentImages.assets}
                         onSourceNavigate={editorView === 'split' ? revealSource : undefined} />
-                    ) : (
+                    ) : !previewFailed && (
                       <div className="preview-loading" role="status"><p>{copy.preview.preparing}</p></div>
                     )}
                   </div>

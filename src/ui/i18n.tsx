@@ -168,6 +168,8 @@ export interface DemoCopy {
     subtitle: string;
     startErrorTitle: string;
     preparing: string;
+    staleTitle: string;
+    staleBody: string;
     disabledTitle: string;
     disabledBody: string;
     enterFullscreen: string;
@@ -393,6 +395,8 @@ const ENGLISH: DemoCopy = {
     subtitle: 'A local document you can interact with directly',
     startErrorTitle: 'Could not start document',
     preparing: 'Preparing interactive document…',
+    staleTitle: 'Showing the last valid preview',
+    staleBody: 'Fix the source errors to update the preview and resume author scripts.',
     disabledTitle: 'Preview disabled',
     disabledBody:
       'Fix the errors marked on the left; the preview returns automatically once compilation succeeds.',
@@ -614,6 +618,8 @@ const CHINESE: DemoCopy = {
     subtitle: '可以直接操作的本地文档',
     startErrorTitle: '无法启动文档',
     preparing: '正在准备交互文档…',
+    staleTitle: '正在显示上次成功的预览',
+    staleBody: '修正源码错误后，预览会更新，作者脚本也会恢复。',
     disabledTitle: '预览已停用',
     disabledBody: '请修正左侧标记的错误，编译成功后预览会自动恢复。',
     enterFullscreen: '全屏预览',

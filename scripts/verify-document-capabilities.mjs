@@ -85,6 +85,14 @@ try {
     await expect(slider).toHaveAttribute('aria-valuenow', '12');
     await expect(initializations).toHaveText(initialCount);
   }
+  await replaceWorkbenchSource(page, SOURCE + '\n\n<slider bind="unfinished"');
+  await expect(preview.getByRole('alert')).toContainText('Showing the last valid preview');
+  await expect(initializations).toHaveText(initialCount);
+  await replaceWorkbenchSource(page, SOURCE + '\n\nThe source compiles again.');
+  await expect(preview.getByText('The source compiles again.', { exact: true })).toBeVisible();
+  await expect(preview.getByRole('alert')).toHaveCount(0);
+  await expect(initializations).toHaveText(initialCount);
+  await expect(slider).toHaveAttribute('aria-valuenow', '12');
   await set(css, false);
   await set(extended, false);
   await expect(slider).toHaveAttribute('aria-valuenow', '12');
@@ -134,6 +142,17 @@ try {
     await rmdir(scratch);
   }
   console.log('PASS Playground Worker matrix, retained state, and configured offline exports with grants on and off');
+  const failingScript = SOURCE.replace('await rmd.set("people", 10);', 'throw new Error("AuthorScriptFailureMarker");');
+  const failure = page.getByRole('region', { name: 'Compile and runtime diagnostics' }).getByText(/AuthorScriptFailureMarker/);
+  await replaceWorkbenchSource(page, failingScript);
+  await expect(failure).toBeVisible();
+  await replaceWorkbenchSource(page, failingScript + '\n\nText edit after script failure.');
+  await expect(preview.getByText('Text edit after script failure.', { exact: true })).toBeVisible();
+  await expect(failure).toBeVisible();
+  await set(css, false);
+  await expect(failure).toBeVisible();
+  await set(js, false);
+  await expect(failure).toHaveCount(0);
   await page.getByRole('button', { name: 'Streaming', exact: true }).click();
   await page.getByTestId('streaming-start').click();
   const stream = page.getByTestId('streaming-preview');
