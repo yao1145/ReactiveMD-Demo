@@ -32,7 +32,7 @@
     "gpt-tokenizer": "^4.1.2",
     "react": "19.3.1",
     "react-dom": "19.3.1",
-    "reactive-md": "file:vendor/reactive-md-0.9.0-2d03687e2647.tgz",
+    "reactive-md": "file:vendor/reactive-md-0.9.0-3a33c4e81f05.tgz",
     "reactive-md-editor": "file:vendor/reactive-md-editor-0.2.0-7cc2ae5e80f4.tgz"
   },
   "devDependencies": {
