@@ -53,6 +53,8 @@ export function StreamingSample() {
   const language = useLanguage();
   const schedulerRef = useRef<LocalCompileScheduler | null>(null);
   const controllerRef = useRef<FakeStreamController | null>(null);
+  const sourceRef = useRef<HTMLTextAreaElement | null>(null);
+  const previewRef = useRef<HTMLDivElement | null>(null);
   // Each generation owns a scheduler, so results from a cancelled run cannot
   // arrive under the next generation. The generation travels with each result.
   const createScheduler = (generation: number): void => {
@@ -95,6 +97,21 @@ export function StreamingSample() {
       controller.dispose();
     };
   }, [controller]);
+
+  useEffect(() => {
+    // Keep the source and preview windows on the newest content while the
+    // stream grows, then return both to the start of the completed document.
+    const sourcePane = sourceRef.current;
+    const previewPane = previewRef.current;
+    if (!sourcePane || !previewPane) return;
+    if (state.running || state.status === 'finalizing') {
+      sourcePane.scrollTop = sourcePane.scrollHeight;
+      previewPane.scrollTop = previewPane.scrollHeight;
+    } else if (state.status === 'done' || state.status === 'failed') {
+      sourcePane.scrollTop = 0;
+      previewPane.scrollTop = 0;
+    }
+  }, [state.source, state.status]);
 
   const statusLabels: Record<StreamStatus, string> = {
     idle: copy.statusIdle,
@@ -172,7 +189,7 @@ export function StreamingSample() {
           <header className="streaming-panel-head">
             <h3 id="streaming-source-heading">{copy.sourceHeading}</h3>
           </header>
-          <textarea className="streaming-source" value={editorValue} spellCheck={false}
+          <textarea ref={sourceRef} className="streaming-source" value={editorValue} spellCheck={false}
             readOnly={state.running}
             aria-label={copy.sourceHeading}
             onChange={(event) => controller.editSource(event.target.value)}
@@ -183,7 +200,7 @@ export function StreamingSample() {
           <header className="streaming-panel-head">
             <h3 id="streaming-preview-heading">{copy.previewHeading}</h3>
           </header>
-          <div className="streaming-preview" data-testid="streaming-preview" aria-busy={busy}>
+          <div ref={previewRef} className="streaming-preview" data-testid="streaming-preview" aria-busy={busy}>
             {state.source ? (
               <LocalReactiveDocument
                 key={`stream-generation-${state.generation}`}

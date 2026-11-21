@@ -81,6 +81,7 @@
 }
 
 .streaming-grid {
+  --streaming-pane-height: clamp(240px, 45vh, 460px);
   display: grid;
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
   align-items: start;
@@ -127,12 +128,13 @@
   display: block;
   box-sizing: border-box;
   width: 100%;
-  min-height: 220px;
-  max-height: 420px;
+  height: var(--streaming-pane-height);
+  min-height: 0;
+  max-height: none;
   margin: var(--space-2) 0 0;
   padding: var(--space-3);
   overflow: auto;
-  resize: vertical;
+  resize: none;
   background: var(--code-bg);
   border: 1px solid var(--line);
   border-radius: var(--radius-control);
@@ -150,9 +152,13 @@
 }
 
 .streaming-preview {
-  min-height: 260px;
+  box-sizing: border-box;
+  height: var(--streaming-pane-height);
+  min-height: 0;
+  max-height: none;
   margin-top: var(--space-2);
   padding: clamp(12px, 1.6vw, 22px);
+  overflow: auto;
   background: var(--document-bg);
   border-radius: var(--radius-control);
 }
