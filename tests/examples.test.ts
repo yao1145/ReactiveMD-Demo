@@ -3,7 +3,7 @@ import { compileLocal, createLocalRuntime } from 'reactive-md';
 import { EXAMPLES, DEFAULT_EXAMPLE_ID, localizedExample, localizedExamples } from '../src/content/examples';
 import { host, examples as extensionExamples } from '../extensions';
 
-const BUILTIN_COUNT = 9;
+const BUILTIN_COUNT = 12;
 
 function exampleSource(id: string) {
   const example = EXAMPLES.find((item) => item.id === id);
@@ -24,7 +24,7 @@ describe('playground local documents consumed through the public package', () =>
     expect(builtins.filter(example => example.section === 'scenario').map(example => example.id)).toEqual(['classroom', 'proposal', 'minimal-budget', 'survey', 'network-survey', 'blog']);
     expect(builtins.filter((example) => example.section === 'feature').map((example) => example.id))
       .toEqual(['features']);
-    expect(builtins.filter((example) => example.section === 'reference').map((example) => example.id)).toEqual(['sci-fi-theme']);
+    expect(builtins.filter((example) => example.section === 'reference').map((example) => example.id)).toEqual(['sci-fi-theme', 'author-css', 'author-javascript', 'extended-html']);
     expect(builtins.filter((example) => example.section === 'debug').map((example) => example.id)).toEqual(['diagnostics']);
     expect(EXAMPLES.some((example) => example.id === DEFAULT_EXAMPLE_ID)).toBe(true);
     for (const example of EXAMPLES) {
@@ -163,5 +163,37 @@ describe.each(['en', 'zh'] as const)('%s feature tour outcomes', (language) => {
         for (const name of Object.keys(result.document.computations ?? {})) expect(() => runtime.evaluate(name), example.id).not.toThrow();
       } finally { runtime.dispose(); }
     }
+  });
+});
+
+describe.each(['en', 'zh'] as const)('%s author capability examples', language => {
+  function compileExample(id: string, options?: Parameters<typeof compileLocal>[1]) {
+    const example = EXAMPLES.find(item => item.id === id);
+    if (!example) throw new Error(`Missing example ${id}`);
+    const result = compileLocal(localizedExample(example, language).source, { ...options, config: host.config });
+    if (!result.ok) throw new Error(JSON.stringify(result.diagnostics));
+    return result.document;
+  }
+
+  it('demonstrates document and component CSS with a bound slider', () => {
+    const document = compileExample('author-css');
+    expect(document.capabilities?.styles[0].text).toContain('h1');
+    expect(Object.values(document.capabilities?.componentStyles ?? {})).toEqual([
+      'max-width: 24rem; border-inline-start: 4px solid #0f766e; padding-inline-start: 1rem',
+    ]);
+    expect(document.bindings.copies.initial).toBe(2);
+  });
+
+  it('keeps JavaScript and extended HTML behind their own switches', () => {
+    expect(compileExample('author-javascript').capabilities?.scripts).toEqual([]);
+    const scripted = compileExample('author-javascript', { enableJavaScript: true });
+    expect(scripted.capabilities?.scripts[0].text).toContain('rmd.handleAction');
+    expect(scripted.capabilities?.actionTargets['stamp-card']).toBeDefined();
+    expect(scripted.bindings.stamps.initial).toBe(1);
+
+    expect(flatten(compileExample('extended-html').nodes).some(node => node.type === 'extendedHtml')).toBe(false);
+    const extended = compileExample('extended-html', { enableExtendedHtml: true });
+    expect(flatten(extended.nodes).filter(node => node.type === 'extendedHtml')).toHaveLength(2);
+    expect(extended.bindings.reminder.initial).toBe(false);
   });
 });

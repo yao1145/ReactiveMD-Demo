@@ -19,6 +19,12 @@ import blogSource from '../../content/examples/local/scenarios/blog.reactive.md?
 import blogZhSource from '../../content/examples/local/scenarios/blog-zh.reactive.md?raw';
 import sciFiThemeSource from '../../content/examples/local/showcase/sci-fi-theme.reactive.md?raw';
 import sciFiThemeZhSource from '../../content/examples/local/showcase/zh/sci-fi-theme.reactive.md?raw';
+import authorCssSource from '../../content/examples/local/showcase/author-css.reactive.md?raw';
+import authorCssZhSource from '../../content/examples/local/showcase/zh/author-css.reactive.md?raw';
+import authorJavaScriptSource from '../../content/examples/local/showcase/author-javascript.reactive.md?raw';
+import authorJavaScriptZhSource from '../../content/examples/local/showcase/zh/author-javascript.reactive.md?raw';
+import extendedHtmlSource from '../../content/examples/local/showcase/extended-html.reactive.md?raw';
+import extendedHtmlZhSource from '../../content/examples/local/showcase/zh/extended-html.reactive.md?raw';
 
 /** Source offsets address the exact text the editor holds. Vite's `?raw` import
  * keeps the file's line endings, and a Windows checkout is CRLF while
@@ -105,6 +111,27 @@ export const EXAMPLES: PlaygroundExample[] = [
     hint: 'Open a console-style document styled by the bundled sci-fi theme, then change its controls.',
     hintZh: '打开一篇由内置科幻主题渲染的控制台风格文档，并操作其中的控件。',
     source: lf(sciFiThemeSource), sourceZh: lf(sciFiThemeZhSource),
+  },
+  {
+    id: 'author-css', section: 'reference',
+    title: 'Author CSS', titleZh: '作者 CSS',
+    hint: 'Style a heading and a slider while keeping the print total reactive.',
+    hintZh: '给标题和滑块加上样式，拖动滑块即可更新印刷总价。',
+    source: lf(authorCssSource), sourceZh: lf(authorCssZhSource),
+  },
+  {
+    id: 'author-javascript', section: 'reference',
+    title: 'Author JavaScript', titleZh: '作者 JavaScript',
+    hint: 'Use JavaScript to set a bound value and take over one counter action.',
+    hintZh: '用 JavaScript 写入绑定值，并接管计数器的增加动作。',
+    source: lf(authorJavaScriptSource), sourceZh: lf(authorJavaScriptZhSource),
+  },
+  {
+    id: 'extended-html', section: 'reference',
+    title: 'Extended HTML', titleZh: '扩展 HTML',
+    hint: 'Render a definition list and a self-contained iframe beside an RMD switch.',
+    hintZh: '在 RMD 开关旁渲染定义列表和自包含 iframe。',
+    source: lf(extendedHtmlSource), sourceZh: lf(extendedHtmlZhSource),
   },
   {
     id: 'diagnostics',
