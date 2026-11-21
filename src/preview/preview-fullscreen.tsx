@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { Children, useCallback, useEffect, useId, useRef, useState } from 'react';
 import type { ReactNode, RefObject } from 'react';
 import { MaximizeIcon, MinimizeIcon } from '../ui/icons';
 import './preview-fullscreen.css';
@@ -132,6 +132,9 @@ export function PreviewOverlayControls({ children, showLabel, hideLabel }: {
 }) {
   const [open, setOpen] = useState(false);
   const actionsId = useId();
+  // The group overlays the document through a negative margin sized for the
+  // action buttons; without them it would pull the content above the pane.
+  if (Children.toArray(children).length === 0) return null;
   return (
     <div className="preview-overlay-controls" data-open={open}>
       <button
