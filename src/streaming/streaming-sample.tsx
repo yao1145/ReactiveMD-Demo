@@ -8,7 +8,7 @@ import {
 } from 'reactive-md';
 import { LocalReactiveDocument } from 'reactive-md/react';
 import { useCopy, useLanguage } from '../ui/i18n';
-import { FakeStreamController, STREAM_CHUNKS, STREAM_INTERVAL_MS, type StreamStatus } from './fake-stream';
+import { FakeStreamController, STREAM_CHUNKS, STREAM_INTERVAL_MS, STREAM_SPEED_MAX_MS, STREAM_SPEED_MIN_MS, STREAM_SPEED_STEP_MS, type StreamStatus } from './fake-stream';
 import './streaming-sample.css';
 
 /** Same defaults the Playground uses for this source, so both compiles agree. */
@@ -133,7 +133,7 @@ export function StreamingSample() {
       <div className="streaming-toolbar">
         <div className="streaming-controls" role="group" aria-label={copy.controls}>
           <button type="button" className="button button-primary" onClick={controller.start}
-            disabled={busy} data-testid="streaming-start">
+            disabled={state.mode === 'scripted' && busy} data-testid="streaming-start">
             {copy.start}
           </button>
           <button type="button" className="button" onClick={controller.cancel}
@@ -143,8 +143,27 @@ export function StreamingSample() {
           <button type="button" className="button" onClick={controller.restart} data-testid="streaming-restart">
             {copy.restart}
           </button>
+          {state.mode === 'manual' ? (
+            <button type="button" className="button" onClick={controller.finalizeManual}
+              disabled={!state.source || state.status === 'finalizing' || state.status === 'done'}
+              data-testid="streaming-finalize">
+              {copy.finalize}
+            </button>
+          ) : null}
         </div>
+        <label className="streaming-speed">
+          <span>{copy.speedLabel}</span>
+          <input type="range" min={STREAM_SPEED_MIN_MS} max={STREAM_SPEED_MAX_MS}
+            step={STREAM_SPEED_STEP_MS} value={state.speedMs}
+            disabled={state.mode === 'manual'}
+            onChange={(event) => controller.setSpeed(Number(event.target.value))}
+            data-testid="streaming-speed" />
+          <output data-testid="streaming-speed-value">{copy.speedValue(state.speedMs)}</output>
+        </label>
         <ul className="streaming-meta">
+          <li data-testid="streaming-mode">
+            {state.mode === 'manual' ? copy.modeManual : copy.modeScripted}
+          </li>
           <li>{copy.runMeta(state.generation, state.chunks, state.totalChunks)}</li>
           {state.snapshotStatus ? <li>{copy.snapshot(state.snapshotStatus, state.snapshotPhase ?? 'streaming')}</li> : null}
           {state.durationMs > 0 ? <li>{copy.duration(Math.round(state.durationMs))}</li> : null}
@@ -158,9 +177,11 @@ export function StreamingSample() {
             <h3 id="streaming-source-heading">{copy.sourceHeading}</h3>
             <span className="streaming-panel-meta">{copy.sourceMeta(state.source.length)}</span>
           </header>
-          <pre className="streaming-source" tabIndex={0} aria-label={copy.sourceHeading} data-testid="streaming-source">
-            {state.source || copy.sourceEmpty}
-          </pre>
+          <p className="streaming-hint">{copy.sourceHint}</p>
+          <textarea className="streaming-source" value={state.source} spellCheck={false}
+            aria-label={copy.sourceHeading} placeholder={copy.sourceEmpty}
+            onChange={(event) => controller.editSource(event.target.value)}
+            data-testid="streaming-source" />
         </article>
 
         <article className="streaming-panel" aria-labelledby="streaming-preview-heading">

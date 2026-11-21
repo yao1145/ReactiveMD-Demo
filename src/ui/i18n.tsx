@@ -190,6 +190,12 @@ export interface DemoCopy {
     start: string;
     cancel: string;
     restart: string;
+    finalize: string;
+    modeScripted: string;
+    modeManual: string;
+    speedLabel: string;
+    speedValue: (milliseconds: number) => string;
+    sourceHint: string;
     statusLabel: string;
     statusIdle: string;
     statusStreaming: string;
@@ -425,12 +431,19 @@ const ENGLISH: DemoCopy = {
     nav: 'Streaming',
     title: 'Streaming source sample',
     subtitle:
-      'Watch a fixed chunk list grow into a ReactiveMD document. Every snapshot compiles as it arrives, and the final snapshot restores interaction.',
+      'Watch a fixed chunk list grow into a ReactiveMD document. Adjust the chunk interval, or edit the text to take over.',
     region: 'Streaming source sample',
     controls: 'Streaming run controls',
     start: 'Start',
     cancel: 'Cancel',
     restart: 'Restart',
+    finalize: 'Finalize snapshot',
+    modeScripted: 'Scripted stream',
+    modeManual: 'Manual source',
+    speedLabel: 'Chunk interval',
+    speedValue: (milliseconds) => `${milliseconds} ms`,
+    sourceHint:
+      'Edit the text to take over: the scripted run stops and every change previews as a streaming snapshot.',
     statusLabel: 'Run status',
     statusIdle: 'Idle',
     statusStreaming: 'Streaming',
@@ -443,7 +456,7 @@ const ENGLISH: DemoCopy = {
     duration: (milliseconds) => `${milliseconds} ms`,
     discarded: (count) => `Discarded stale results: ${count}`,
     count: (count) => `${count}`,
-    sourceHeading: 'Generated source',
+    sourceHeading: 'Source (editable)',
     sourceMeta: (characters) => `${characters} characters so far`,
     sourceEmpty: 'No source yet. Start a run.',
     previewHeading: 'Live preview',
@@ -663,12 +676,18 @@ const CHINESE: DemoCopy = {
   streaming: {
     nav: '流式',
     title: '流式源码示例',
-    subtitle: '观察固定分片如何逐步生成一份 ReactiveMD 文档。每次快照到达即编译，最终快照恢复交互。',
+    subtitle: '观察固定分片如何逐步生成一份 ReactiveMD 文档。可调节分片间隔，或直接编辑文本接管生成。',
     region: '流式源码示例',
     controls: '流式运行控制',
     start: '开始',
     cancel: '取消',
     restart: '重新开始',
+    finalize: '提交最终快照',
+    modeScripted: '脚本流',
+    modeManual: '手动源码',
+    speedLabel: '分片间隔',
+    speedValue: (milliseconds) => `${milliseconds} ms`,
+    sourceHint: '直接修改文本即可接管：脚本流停止，每次修改都会作为流式快照预览。',
     statusLabel: '运行状态',
     statusIdle: '空闲',
     statusStreaming: '流式生成中',
@@ -680,7 +699,7 @@ const CHINESE: DemoCopy = {
     duration: (milliseconds) => `${milliseconds} ms`,
     discarded: (count) => `已丢弃过期结果：${count}`,
     count: (count) => `${count}`,
-    sourceHeading: '已生成源码',
+    sourceHeading: '源码（可编辑）',
     sourceMeta: (characters) => `当前 ${characters} 个字符`,
     sourceEmpty: '还没有源码。开始一次运行。',
     previewHeading: '实时预览',

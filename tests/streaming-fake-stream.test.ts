@@ -174,6 +174,72 @@ describe('fake streaming controller', () => {
     expect(generations).toEqual([1, 2]);
   });
 
+  it('changes the scripted chunk interval at runtime', () => {
+    const { controller, submissions } = setup(['a', 'b'], 1000);
+    controller.start();
+    expect(controller.getSnapshot().speedMs).toBe(1000);
+
+    controller.setSpeed(200);
+    expect(controller.getSnapshot().speedMs).toBe(200);
+    vi.advanceTimersByTime(199);
+    expect(submissions).toHaveLength(1);
+    vi.advanceTimersByTime(1);
+    expect(submissions.map((submission) => submission.phase)).toEqual(['streaming', 'streaming', 'final']);
+
+    controller.setSpeed(1);
+    expect(controller.getSnapshot().speedMs).toBe(80);
+  });
+
+  it('takes over with editable source and finalizes it', () => {
+    const { controller, submissions } = setup(['a', 'b', 'c'], 100);
+    controller.start();
+    controller.editSource('Manual {{ value');
+
+    expect(controller.getSnapshot()).toMatchObject({
+      mode: 'manual',
+      status: 'streaming',
+      source: 'Manual {{ value',
+    });
+    expect(submissions.at(-1)).toEqual({ source: 'Manual {{ value', phase: 'streaming' });
+
+    // The scripted timer stopped and the old scripted result cannot be applied.
+    vi.advanceTimersByTime(5_000);
+    expect(submissions).toHaveLength(2);
+    expect(controller.applyOutcome({ source: 'a', sourcePhase: 'streaming', result: compiled() })).toBe(false);
+    expect(controller.getSnapshot().discarded).toBe(0);
+
+    const transient = warning('local.interpolation');
+    expect(controller.applyOutcome({
+      source: 'Manual {{ value',
+      sourcePhase: 'streaming',
+      result: compiled([], [transient]),
+    })).toBe(true);
+    expect(controller.getSnapshot().transient).toEqual([transient]);
+
+    // An older manual edit is ignored without consuming the current preview.
+    controller.editSource('Manual {{ value }}');
+    expect(controller.applyOutcome({
+      source: 'Manual {{ value',
+      sourcePhase: 'streaming',
+      result: compiled([], [warning('local.tag.unclosed')]),
+    })).toBe(false);
+
+    controller.finalizeManual();
+    expect(submissions.at(-1)).toEqual({ source: 'Manual {{ value }}', phase: 'final' });
+    const finalIssue = warning('local.binding.unknown');
+    expect(controller.applyOutcome({
+      source: 'Manual {{ value }}',
+      sourcePhase: 'final',
+      result: compiled([finalIssue]),
+    })).toBe(true);
+    expect(controller.getSnapshot().status).toBe('done');
+    expect(controller.getSnapshot().transient).toEqual([]);
+    expect(controller.getSnapshot().finalDiagnostics).toEqual([finalIssue]);
+
+    controller.start();
+    expect(controller.getSnapshot()).toMatchObject({ mode: 'scripted', status: 'streaming', source: 'a' });
+  });
+
   it('keeps transient diagnostics out of final diagnostics', () => {
     const { controller } = setup();
     controller.start();
