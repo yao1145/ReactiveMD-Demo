@@ -70,8 +70,8 @@ export interface DemoCopy {
     javascriptHint: string;
     extendedHtml: string;
     extendedHtmlHint: string;
-    modeReactive: string;
-    modeHtml: string;
+    enabled: (active: string) => string;
+    none: string;
   };
   authorTools: {
     ariaLabel: string;
@@ -113,12 +113,6 @@ export interface DemoCopy {
     outputStatic: string;
     outputInitial: string;
     outputCurrent: string;
-    outputHtmlMode: (mode: string) => string;
-    htmlModeNotice: string;
-    htmlModeParameters: string;
-    htmlModeImages: string;
-    htmlModeStateNote: string;
-    exportStateHtmlMode: string;
     compilePending: string;
     compileFailed: (message: string) => string;
     compileUnavailable: string;
@@ -286,13 +280,13 @@ const ENGLISH: DemoCopy = {
     heading: 'HTML compatibility',
     legend: 'Allowed capabilities',
     css: 'CSS',
-    cssHint: 'Allow <style> blocks and style attributes.',
+    cssHint: 'Apply <css> blocks and component css attributes.',
     javascript: 'JavaScript',
-    javascriptHint: 'Allow <script> blocks and inline event handlers.',
+    javascriptHint: 'Run author <javascript> blocks in the preview.',
     extendedHtml: 'Extended HTML',
-    extendedHtmlHint: 'Allow elements and attributes beyond the safe HTML subset.',
-    modeReactive: 'Current mode: ReactiveMD + safe HTML',
-    modeHtml: 'Current mode: native HTML',
+    extendedHtmlHint: 'Render sanitized HTML fragments beyond the safe subset.',
+    enabled: (active) => `Enabled: ${active}`,
+    none: 'No capability enabled',
   },
   authorTools: {
     ariaLabel: 'Document tools',
@@ -340,13 +334,6 @@ const ENGLISH: DemoCopy = {
     outputStatic: 'static HTML',
     outputInitial: 'the author initial values',
     outputCurrent: 'the current preview state',
-    outputHtmlMode: (mode) => `Will export ${mode} in native HTML mode.`,
-    htmlModeNotice:
-      'Native HTML mode is active. The exported document keeps this routing; Markdown, formulas, and ReactiveMD bindings are not interpreted.',
-    htmlModeParameters: 'Native HTML mode: ReactiveMD parameters are not used.',
-    htmlModeImages: 'Native HTML mode: image references are not inspected or inlined by the demo.',
-    htmlModeStateNote: 'Starting values and state export do not apply in native HTML mode.',
-    exportStateHtmlMode: 'State export is unavailable in native HTML mode.',
     compilePending: 'Waiting for the current source to finish compiling…',
     compileFailed: (message) => `Resolve compilation errors before exporting. ${message}`,
     compileUnavailable:
@@ -523,13 +510,13 @@ const CHINESE: DemoCopy = {
     heading: 'HTML 兼容',
     legend: '允许的能力',
     css: 'CSS',
-    cssHint: '允许 <style> 块和 style 属性。',
+    cssHint: '应用 <css> 块和组件的 css 属性。',
     javascript: 'JavaScript',
-    javascriptHint: '允许 <script> 块和内联事件处理属性。',
+    javascriptHint: '在预览中运行作者的 <javascript> 块。',
     extendedHtml: '扩展 HTML',
-    extendedHtmlHint: '允许安全 HTML 子集之外的元素与属性。',
-    modeReactive: '当前模式：ReactiveMD + 安全 HTML',
-    modeHtml: '当前模式：原生 HTML',
+    extendedHtmlHint: '渲染安全子集之外的净化 HTML 片段。',
+    enabled: (active) => `已开启：${active}`,
+    none: '未开启任何能力',
   },
   authorTools: {
     ariaLabel: '文档工具',
@@ -571,13 +558,6 @@ const CHINESE: DemoCopy = {
     outputStatic: '静态 HTML',
     outputInitial: '作者初值',
     outputCurrent: '当前预览状态',
-    outputHtmlMode: (mode) => `将以原生 HTML 模式导出${mode}。`,
-    htmlModeNotice:
-      '当前为原生 HTML 模式。导出文件沿用这一路由；不再解析 Markdown、公式和 ReactiveMD 绑定。',
-    htmlModeParameters: '原生 HTML 模式：不使用 ReactiveMD 参数。',
-    htmlModeImages: '原生 HTML 模式：演示不会检查或内联图片引用。',
-    htmlModeStateNote: '原生 HTML 模式下不适用起始值和状态导出。',
-    exportStateHtmlMode: '原生 HTML 模式下无法导出状态。',
     compilePending: '正在等待当前源码编译完成…',
     compileFailed: (message) => `请修复编译错误后再导出。${message}`,
     compileUnavailable: '源码编译完成后即可导出。',

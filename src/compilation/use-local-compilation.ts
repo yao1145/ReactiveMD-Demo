@@ -30,7 +30,7 @@ interface CompilationState {
   result: LocalCompileResult | null;
   duration: number;
   previewDocument: LocalCompiledDocument | null;
-  previewOptionsKey: string | null;
+  previewKey: string | null;
   schedulerPending: boolean;
   mode: LocalCompileMode;
   failure: string | null;
@@ -51,6 +51,9 @@ export function useLocalCompilation(
   editHint?: LocalCompileEditHint,
 ): LocalCompilation {
   const optionsKey = localCompileOptionsKey(options);
+  const previewKey = localCompileOptionsKey({
+    ...options, enableCss: undefined, enableJavaScript: undefined, enableExtendedHtml: undefined,
+  });
   const [state, setState] = useState<CompilationState>(() => ({
     analysis: null,
     resultSource: null,
@@ -58,7 +61,7 @@ export function useLocalCompilation(
     result: null,
     duration: 0,
     previewDocument: null,
-    previewOptionsKey: null,
+    previewKey: null,
     schedulerPending: true,
     mode: 'worker',
     failure: null,
@@ -73,8 +76,7 @@ export function useLocalCompilation(
 
   // The scheduler captures the routing options for each request. Rebuilding it
   // when a permission primitive changes (rather than reusing it for the same
-  // source) means an older, more permissive result can never be delivered to
-  // the new route. The previous preview is discarded during render below.
+  // source) keeps stale results out of the current result and diagnostics.
   useEffect(() => {
     const scheduledOptionsKey = optionsKey;
     const scheduler = new LocalCompileScheduler({
@@ -99,7 +101,7 @@ export function useLocalCompilation(
             analysis: outcome.analysis ?? null,
             duration: outcome.duration,
             previewDocument: outcome.result.ok ? outcome.result.document : previous.previewDocument,
-            previewOptionsKey: outcome.result.ok ? outcomeOptionsKey : previous.previewOptionsKey,
+            previewKey: outcome.result.ok ? previewKey : previous.previewKey,
             mode: outcome.mode,
           };
         });
@@ -123,7 +125,7 @@ export function useLocalCompilation(
       schedulerRef.current = null;
       scheduler.dispose();
     };
-  }, [optionsKey, includeAuthorAnalysis]);
+  }, [optionsKey, previewKey, includeAuthorAnalysis]);
 
   useEffect(() => {
     schedulerRef.current?.schedule(source, optionsRef.current, editHint);
@@ -131,9 +133,9 @@ export function useLocalCompilation(
 
   const sameRoute = state.resultOptionsKey === optionsKey;
   const result = state.resultSource === source && sameRoute ? state.result : null;
-  // A preview compiled under another capability set is never shown, even for
-  // the frame before the recompile completes.
-  const previewDocument = state.previewOptionsKey === optionsKey ? state.previewDocument : null;
+  // Keep the runtime while capability-only compilation catches up. The
+  // preview applies the current mount grants to any retained document.
+  const previewDocument = state.previewKey === previewKey ? state.previewDocument : null;
   return {
     analysis: result && state.analysis ? {source, optionsKey, analysis: state.analysis} : null,
     result,

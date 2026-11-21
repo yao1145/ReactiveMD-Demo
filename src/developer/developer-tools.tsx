@@ -5,7 +5,7 @@ import * as authoringApi from 'reactive-md/authoring';
 import engineManifest from 'reactive-md/package.json';
 import editorManifest from 'reactive-md-editor/package.json';
 import type { EditorComponentMode, EditorViewMode } from 'reactive-md-editor';
-import { DEFAULT_HTML_OPTIONS, type DemoHtmlOptions } from '../settings/html-options';
+import { isDefaultHtmlOptions, type DemoHtmlOptions } from '../settings/html-options';
 import type { Language } from '../ui/i18n';
 import { useScrollContainer } from '../ui/use-scroll-container';
 import {
@@ -65,11 +65,11 @@ const COPY: Record<Language, DeveloperToolsCopy> = {
         title: 'HTML',
         subtitle: 'CSS, JavaScript and extended HTML',
         css: 'CSS',
-        cssHint: 'Allow style blocks and style attributes.',
+        cssHint: 'Apply <css> blocks and component css attributes.',
         javascript: 'JavaScript',
-        javascriptHint: 'Allow script blocks and inline handlers.',
+        javascriptHint: 'Run author <javascript> blocks in the preview.',
         extendedHtml: 'Extended HTML',
-        extendedHtmlHint: 'Allow elements outside the safe subset.',
+        extendedHtmlHint: 'Render sanitized HTML fragments beyond the safe subset.',
       },
       editor: {
         title: 'Editor',
@@ -145,11 +145,11 @@ const COPY: Record<Language, DeveloperToolsCopy> = {
         title: 'HTML',
         subtitle: 'CSS、JavaScript 与扩展 HTML',
         css: 'CSS',
-        cssHint: '允许 style 块和 style 属性。',
+        cssHint: '应用 <css> 块和组件的 css 属性。',
         javascript: 'JavaScript',
-        javascriptHint: '允许 script 块和内联事件处理属性。',
+        javascriptHint: '在预览中运行作者的 <javascript> 块。',
         extendedHtml: '扩展 HTML',
-        extendedHtmlHint: '允许安全子集之外的元素与属性。',
+        extendedHtmlHint: '渲染安全子集之外的净化 HTML 片段。',
       },
       editor: {
         title: '编辑器',
@@ -318,7 +318,7 @@ export function DeveloperTools(props: DeveloperToolsProps) {
   const [copied, setCopied] = useState<string | null>(null);
   const [openGroups, setOpenGroups] = useState<ReadonlySet<string>>(() => new Set(['engine']));
   const totalApis = API_GROUPS.reduce((sum, group) => sum + group.names.length, 0);
-  const htmlDefault = JSON.stringify(props.htmlOptions) === JSON.stringify(DEFAULT_HTML_OPTIONS);
+  const htmlDefault = isDefaultHtmlOptions(props.htmlOptions);
   const defaults = props.markdownBreaks === DEFAULT_CAPABILITIES.markdownBreaks
     && props.componentMode === 'default'
     && props.strict === DEFAULT_CAPABILITIES.strict

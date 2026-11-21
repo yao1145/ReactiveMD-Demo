@@ -15,6 +15,7 @@ import { LocalDocumentView, type LocalDocumentViewProps } from 'reactive-md/reac
 import { createLocalShareableHtml, type LocalStandaloneBundle } from 'reactive-md/export';
 import type { EditorComponentMode } from 'reactive-md-editor';
 import { getDemoHost } from '../settings/component-mode';
+import { toCapabilityGrants } from '../settings/html-options';
 import { imagePolicy, resolveDocumentImages, validateImageManifest, type ImageAsset } from '../images/image-assets';
 
 
@@ -533,6 +534,10 @@ export async function buildShareableHtml(
       ...imagePolicy(resolved.images),
       document: baseline.baseline.document,
       runtime,
+      // The precompiled document carries its compile-time ceiling; the same
+      // grants the interactive build used are passed so SSR and static output
+      // render the identical capability set.
+      capabilityGrants: toCapabilityGrants(compileOptions),
       mode,
       staticFirst: mode === 'interactive',
       locale,

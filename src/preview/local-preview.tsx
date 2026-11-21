@@ -1,5 +1,5 @@
 import { memo, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { notifyLocalRuntime, type Diagnostic, type LocalRuntime } from 'reactive-md';
+import { notifyLocalRuntime, type Diagnostic, type LocalHtmlOptions, type LocalRuntime } from 'reactive-md';
 import { LocalDocumentView, type LocalReactConfig, type LocalSourceTarget } from 'reactive-md/react';
 import type { NetworkConfig } from 'reactive-md/runtime';
 import { flushComponentStateOnPageHide } from 'reactive-md/runtime/browser';
@@ -16,6 +16,12 @@ interface LocalPreviewProps {
   session: PreviewStateSession;
   /** Stable document identity used to scope saved component progress. */
   stateId: string;
+  /**
+   * Trusted mount grants for a precompiled document. They can only narrow the
+   * permissions recorded at compile time; omitting them keeps the CSS default.
+   */
+  capabilityGrants?: LocalHtmlOptions;
+  authorScriptPaused?: boolean;
   onDiagnostics: (diagnostics: Diagnostic[]) => void;
   images: readonly ImageAsset[];
   reactConfig?: LocalReactConfig;
@@ -23,7 +29,7 @@ interface LocalPreviewProps {
   onSourceNavigate?(target: LocalSourceTarget): void;
 }
 
-export const LocalPreview = memo(function LocalPreview({ document, session, stateId, onDiagnostics, images, network, reactConfig = demoReactConfig, onSourceNavigate }: LocalPreviewProps) {
+export const LocalPreview = memo(function LocalPreview({ document, session, stateId, capabilityGrants, authorScriptPaused, onDiagnostics, images, network, reactConfig = demoReactConfig, onSourceNavigate }: LocalPreviewProps) {
   const language = useLanguage();
   const copy = useCopy();
   const imageProps = useMemo(() => imagePolicy(Object.fromEntries(images.map(a => [a.url, a.dataUrl]))), [images]);
@@ -104,6 +110,8 @@ export const LocalPreview = memo(function LocalPreview({ document, session, stat
       {...imageProps}
       document={instance.document}
       runtime={instance.runtime}
+      capabilityGrants={capabilityGrants}
+      authorScriptPaused={authorScriptPaused || instance.document !== document}
       onDiagnostics={onDiagnostics}
       locale={language}
       onSourceNavigate={onSourceNavigate}

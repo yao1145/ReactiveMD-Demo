@@ -10,7 +10,6 @@ import {
 import { useCopy, useLanguage } from '../ui/i18n';
 import type { EditorComponentMode } from 'reactive-md-editor';
 import { createDemoPdf, printStaticHtml } from './export-pdf';
-import { isHtmlOptionsActive } from '../settings/html-options';
 import { resolveDocumentImages, type ImageAsset } from '../images/image-assets';
 import { IMAGE_COPY } from '../images/image-copy';
 import { ImageAssetsPanel } from '../images/image-assets-panel';
@@ -41,7 +40,7 @@ export interface ExportDialogProps {
   currentState: Readonly<Record<string, LocalValue>> | null;
   pending: boolean;
   compileError: string | null;
-  /** Granted native HTML capabilities; any enabled switch changes the route. */
+  /** Granted document capabilities; the export carries the same grants. */
   compileOptions?: LocalCompileOptions;
   dark: boolean;
   onClose(): void;
@@ -84,14 +83,12 @@ export function ExportDialog({
 }: ExportDialogProps) {
   const copy = useCopy().exportDialog;
   const language = useLanguage();
-  const htmlMode = isHtmlOptionsActive(compileOptions);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const previousFocus = useRef<HTMLElement | null>(null);
   const taskRef = useRef(0);
   const titleId = useId();
   const descriptionId = useId();
   const summaryId = useId();
-  const htmlModeNoteId = useId();
   const [format, setFormat] = useState<ExportFormat>('interactive');
   const mode: ShareableHtmlMode = format === 'pdf' ? 'static' : format;
   const [baseline, setBaseline] = useState<BaselineChoice>('initial');
@@ -191,7 +188,7 @@ export function ExportDialog({
       : null),
     [compiledDocument, currentState, publicNames],
   );
-  const effectiveBaseline: BaselineChoice = !htmlMode && currentState && compiledDocument
+  const effectiveBaseline: BaselineChoice = currentState && compiledDocument
     ? baseline
     : 'initial';
   const compileProblem = compiledDocument
@@ -203,27 +200,21 @@ export function ExportDialog({
         : copy.compileUnavailable;
 
   let parameterSummary = copy.noParameters;
-  if (htmlMode) {
-    parameterSummary = copy.htmlModeParameters;
-  } else if (compiledDocument && publicNames.length > 0) {
+  if (compiledDocument && publicNames.length > 0) {
     parameterSummary = currentState
       ? differences === 0
         ? copy.unchanged(publicNames.length)
         : copy.changed(differences ?? 0, publicNames.length)
       : copy.noCurrent;
   }
-  const imageSummary = htmlMode
-    ? copy.htmlModeImages
-    : resolvedImages.references.length === 0
-      ? copy.imageNone
-      : IMAGE_COPY[language].summary(resolvedImages.references.length - resolvedImages.missing.length, resolvedImages.references.length);
+  const imageSummary = resolvedImages.references.length === 0
+    ? copy.imageNone
+    : IMAGE_COPY[language].summary(resolvedImages.references.length - resolvedImages.missing.length, resolvedImages.references.length);
   const outputFormat = format === 'pdf' ? copy.pdf : mode === 'interactive' ? copy.outputInteractive : copy.outputStatic;
-  const outputSummary = htmlMode
-    ? copy.outputHtmlMode(outputFormat)
-    : copy.output(
-      outputFormat,
-      effectiveBaseline === 'current' ? copy.outputCurrent : copy.outputInitial,
-    );
+  const outputSummary = copy.output(
+    outputFormat,
+    effectiveBaseline === 'current' ? copy.outputCurrent : copy.outputInitial,
+  );
   const htmlDisabled = !compiledDocument
     || resolvedImages.missing.length > 0
     || imageBusy
@@ -283,7 +274,7 @@ export function ExportDialog({
   };
 
   const handleState = () => {
-    if (htmlMode || !compiledDocument || !currentState || !packageVersion || busy) return;
+    if (!compiledDocument || !currentState || !packageVersion || busy) return;
     setBuildError(null);
     try {
       const file = createLocalStateFile(
@@ -332,16 +323,6 @@ export function ExportDialog({
       </header>
 
       <div className="export-dialog-body">
-        {htmlMode ? (
-          <p
-            id={htmlModeNoteId}
-            className="export-status export-mode-note"
-            role="note"
-          >
-            {copy.htmlModeNotice}
-          </p>
-        ) : null}
-
         <fieldset className="export-fieldset" disabled={busy}>
           <legend>{copy.formatLegend}</legend>
           <label className={`export-option${format === 'interactive' ? ' is-selected' : ''}`}>
@@ -383,11 +364,10 @@ export function ExportDialog({
 
         <fieldset
           className="export-fieldset"
-          disabled={busy || htmlMode}
-          aria-describedby={htmlMode ? htmlModeNoteId : undefined}
+          disabled={busy}
         >
           <legend>{copy.stateLegend}</legend>
-          <label className={`export-option${effectiveBaseline === 'initial' ? ' is-selected' : ''}${htmlMode ? ' is-disabled' : ''}`}>
+          <label className={`export-option${effectiveBaseline === 'initial' ? ' is-selected' : ''}`}>
             <input
               type="radio"
               name={`${titleId}-baseline`}
@@ -397,15 +377,13 @@ export function ExportDialog({
             />
             <span className="export-option-copy">
               <strong>{copy.authorInitial}</strong>
-              <span className="export-option-hint">
-                {htmlMode ? copy.htmlModeStateNote : copy.authorInitialHint}
-              </span>
+              <span className="export-option-hint">{copy.authorInitialHint}</span>
             </span>
           </label>
           <label
             className={
               `export-option${effectiveBaseline === 'current' ? ' is-selected' : ''}` +
-              (currentState && !htmlMode ? '' : ' is-disabled')
+              (currentState ? '' : ' is-disabled')
             }
           >
             <input
@@ -413,15 +391,13 @@ export function ExportDialog({
               name={`${titleId}-baseline`}
               value="current"
               checked={effectiveBaseline === 'current'}
-              disabled={!currentState || htmlMode}
+              disabled={!currentState}
               onChange={() => setBaseline('current')}
             />
             <span className="export-option-copy">
               <strong>{copy.currentPreview}</strong>
               <span className="export-option-hint">
-                {htmlMode
-                  ? copy.htmlModeStateNote
-                  : currentState ? copy.currentPreviewHint : copy.currentUnavailable}
+                {currentState ? copy.currentPreviewHint : copy.currentUnavailable}
               </span>
             </span>
           </label>
@@ -442,7 +418,7 @@ export function ExportDialog({
           <p className="export-output">{outputSummary}</p>
         </section>
 
-        {!htmlMode && (resolvedImages.references.length > 0 || imageAssets.length > 0) ? (
+        {resolvedImages.references.length > 0 || imageAssets.length > 0 ? (
           <ImageAssetsPanel assets={imageAssets} references={resolvedImages.references}
             busy={busy || imageBusy} error={imageError} storageError={imageStorageError}
             onFiles={onImageFiles} onRemove={onRemoveImage} allowInsert={false} />
@@ -480,12 +456,8 @@ export function ExportDialog({
             type="button"
             className="button button-quiet export-state"
             onClick={handleState}
-            disabled={busy || htmlMode || !compiledDocument || !currentState || !packageVersion}
-            title={
-              htmlMode
-                ? copy.exportStateHtmlMode
-                : currentState ? copy.exportStateHint : copy.exportStateUnavailable
-            }
+            disabled={busy || !compiledDocument || !currentState || !packageVersion}
+            title={currentState ? copy.exportStateHint : copy.exportStateUnavailable}
           >
             {copy.exportState}
           </button>
