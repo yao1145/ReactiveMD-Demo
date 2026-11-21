@@ -78,7 +78,7 @@ export class PreviewStateSession {
       runtime,
       /** Called after React commits the next document, before its view updates. */
       update: (next: LocalDocument): boolean => {
-        if (released || this.active?.token !== token || !this.retention) return false;
+        if (released || this.active?.token !== token || (!this.retention && next.source !== currentDocument.source)) return false;
         const result = updateLocalRuntime(runtime, next, { notify: false });
         if (!result.ok) return false;
         currentDocument = next;

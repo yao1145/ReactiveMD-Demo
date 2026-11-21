@@ -1,6 +1,6 @@
 import { type ChangeEvent } from 'react';
 import { useCopy } from '../ui/i18n';
-import { isHtmlOptionsActive, type DemoHtmlOptions } from './html-options';
+import type { DemoHtmlOptions } from './html-options';
 
 type HtmlOptionKey = keyof DemoHtmlOptions;
 
@@ -16,20 +16,19 @@ export interface HtmlCompatibilityControlsProps {
 }
 
 /**
- * Playground-only switches for the temporary whole-document HTML route. They
- * are plain checkboxes and are intentionally not persisted: a reload, a
- * different example, or an import starts from the safe ReactiveMD defaults.
- * The disclosure stays collapsed by default and always reports the active mode.
+ * Playground-only capability switches. Each one is independent and applies to
+ * the current mount only: a reload, a different example, or an import starts
+ * from the documented defaults (CSS on, JavaScript and extended HTML off).
  */
 export function HtmlCompatibilityControls({ options, onChange }: HtmlCompatibilityControlsProps) {
   const copy = useCopy().htmlCompatibility;
-  const active = isHtmlOptionsActive(options);
 
   const labels: Record<HtmlOptionKey, { label: string; hint: string }> = {
     enableCss: { label: copy.css, hint: copy.cssHint },
     enableJavaScript: { label: copy.javascript, hint: copy.javascriptHint },
     enableExtendedHtml: { label: copy.extendedHtml, hint: copy.extendedHtmlHint },
   };
+  const enabled = OPTION_KEYS.filter((key) => options[key]).map((key) => labels[key].label);
 
   const toggle = (key: HtmlOptionKey) => (event: ChangeEvent<HTMLInputElement>) => {
     const checked = event.target.checked;
@@ -45,13 +44,11 @@ export function HtmlCompatibilityControls({ options, onChange }: HtmlCompatibili
       <summary className="html-compat-summary">
         <span className="html-compat-title">{copy.heading}</span>
         <span
-          className={`html-mode${active ? ' is-html' : ''}`}
+          className={`html-compat-state${enabled.length ? ' is-active' : ''}`}
           role="status"
           aria-live="polite"
-          data-html-mode={active ? 'native' : 'reactive'}
-          data-testid="html-mode"
         >
-          {active ? copy.modeHtml : copy.modeReactive}
+          {enabled.length ? copy.enabled(enabled.join(', ')) : copy.none}
         </span>
         <span className="html-compat-chevron" aria-hidden="true">⌄</span>
       </summary>

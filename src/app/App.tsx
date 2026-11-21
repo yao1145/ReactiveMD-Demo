@@ -1,3 +1,4 @@
+import { samePreviewScripts } from '../compilation/capability-preview';
 import { LocalPreview } from '../preview/local-preview';
 export { LocalPreview } from '../preview/local-preview';
 import { GuideView } from '../content/guide-view';
@@ -127,8 +128,9 @@ export default function App() {
   const [previewSession, setPreviewSession] = useState(() => new PreviewStateSession());
   const [exportOpen, setExportOpen] = useState(false);
   const [runtimeDiagnostics, setRuntimeDiagnostics] = useState<Diagnostic[]>([]);
-  // Capabilities are session-only: they start disabled on every load and are
-  // reset whenever the document switches, never inferred from source or state.
+  // Capabilities are session-only: they start from the documented defaults on
+  // every load and are reset whenever the document switches. CSS is granted by
+  // default; author JavaScript and extended HTML start disabled.
   const [htmlOptions, setHtmlOptions] = useState<DemoHtmlOptions>(freshHtmlOptions);
   const [markdownBreaks, setMarkdownBreaks] = useState(true);
   const [strict, setStrict] = useState(true);
@@ -332,14 +334,12 @@ export default function App() {
     setRuntimeDiagnostics([]);
   }, []);
 
-  // A capability change is a whole-document route change. Clear trial state so
-  // values captured under the previous renderer can never be reused, and let
-  // the compilation hook drop the old preview before the new one is ready.
+  // The preview applies grants now and adopts the recompiled document into
+  // its current runtime when the worker responds.
   const changeHtmlOptions = useCallback((next: DemoHtmlOptions) => {
     setHtmlOptions(next);
     setRuntimeDiagnostics([]);
-    beginPreviewSession();
-  }, [beginPreviewSession]);
+  }, []);
 
   // Imports always become a new personal document. The current example or
   // document is left untouched.
@@ -875,6 +875,10 @@ export default function App() {
                     ) : previewDocument ? (
                       <LocalPreview key={`${componentMode}:${instanceKey}`} document={previewDocument}
                         session={previewSession} stateId={componentMode === 'minimal' ? `${documentKey}:minimal` : documentKey}
+                        capabilityGrants={{
+                          ...htmlOptions,
+                          enableJavaScript: htmlOptions.enableJavaScript && samePreviewScripts(previewDocument, source),
+                        }}
                         reactConfig={reactConfig} network={network} onDiagnostics={report} images={documentImages.assets}
                         onSourceNavigate={editorView === 'split' ? revealSource : undefined} />
                     ) : (
