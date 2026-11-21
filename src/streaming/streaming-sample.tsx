@@ -107,7 +107,12 @@ export function StreamingSample() {
   const finished = state.status === 'done' || state.status === 'failed';
   const final = state.status === 'done';
   const editorValue = state.running ? state.source : state.targetSource;
-  const diagnostics = finished ? state.finalDiagnostics : state.streamingDiagnostics;
+  // A failed final snapshot falls back to a streaming preview, so its
+  // diagnostics are provisional for that readable fallback rather than a
+  // completed final result.
+  const provisionalDiagnostics = state.finalFailed ? state.finalDiagnostics : state.transient;
+  const provisionalHint = state.finalFailed ? copy.transientFailedHint : copy.transientHint;
+  const snapshotDiagnostics = finished ? state.finalDiagnostics : state.streamingDiagnostics;
   const diagnosticsHeading = finished ? copy.finalHeading : copy.diagnosticsHeading;
   const diagnosticsHint = finished ? copy.finalHint : copy.diagnosticsHint;
   const previewNote = state.status === 'cancelled'
@@ -215,19 +220,21 @@ export function StreamingSample() {
         <section className="streaming-panel" aria-labelledby="streaming-transient-heading">
           <header className="streaming-panel-head">
             <h3 id="streaming-transient-heading">{copy.transientHeading}</h3>
-            <span className="streaming-panel-meta">{state.transient.length ? copy.count(state.transient.length) : copy.none}</span>
+            <span className="streaming-panel-meta">{provisionalDiagnostics.length ? copy.count(provisionalDiagnostics.length) : copy.none}</span>
           </header>
-          <p className="streaming-hint">{copy.transientHint}</p>
-          <DiagnosticItems diagnostics={state.transient} testId="streaming-transient" />
+          <p className="streaming-hint">{provisionalHint}</p>
+          <DiagnosticItems diagnostics={provisionalDiagnostics} testId="streaming-transient" />
         </section>
-        <section className="streaming-panel" aria-labelledby="streaming-diagnostics-heading">
-          <header className="streaming-panel-head">
-            <h3 id="streaming-diagnostics-heading">{diagnosticsHeading}</h3>
-            <span className="streaming-panel-meta">{diagnostics.length ? copy.count(diagnostics.length) : copy.none}</span>
-          </header>
-          <p className="streaming-hint">{diagnosticsHint}</p>
-          <DiagnosticItems diagnostics={diagnostics} testId="streaming-final" />
-        </section>
+        {state.finalFailed ? null : (
+          <section className="streaming-panel" aria-labelledby="streaming-diagnostics-heading">
+            <header className="streaming-panel-head">
+              <h3 id="streaming-diagnostics-heading">{diagnosticsHeading}</h3>
+              <span className="streaming-panel-meta">{snapshotDiagnostics.length ? copy.count(snapshotDiagnostics.length) : copy.none}</span>
+            </header>
+            <p className="streaming-hint">{diagnosticsHint}</p>
+            <DiagnosticItems diagnostics={snapshotDiagnostics} testId="streaming-final" />
+          </section>
+        )}
       </div>
     </section>
   );

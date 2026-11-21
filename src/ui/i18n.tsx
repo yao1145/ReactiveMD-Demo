@@ -219,6 +219,7 @@ export interface DemoCopy {
     previewIdle: string;
     transientHeading: string;
     transientHint: string;
+    transientFailedHint: string;
     diagnosticsHeading: string;
     diagnosticsHint: string;
     finalHeading: string;
@@ -474,6 +475,8 @@ const ENGLISH: DemoCopy = {
     transientHeading: 'Provisional diagnostics',
     transientHint:
       'Repairable issues from the current snapshot. They never enter final diagnostics.',
+    transientFailedHint:
+      'The final snapshot failed, so its diagnostics are shown here while the preview falls back to a readable streaming snapshot.',
     diagnosticsHeading: 'Snapshot diagnostics',
     diagnosticsHint: 'Non-transient issues in the current snapshot.',
     finalHeading: 'Final diagnostics',
@@ -718,6 +721,7 @@ const CHINESE: DemoCopy = {
     previewIdle: '开始后按字符逐步显示当前源码。',
     transientHeading: '临时诊断',
     transientHint: '当前快照中可修复的问题，不会进入最终诊断。',
+    transientFailedHint: '最终快照失败，因此这些诊断显示在这里；预览已回退为可读的流式快照。',
     diagnosticsHeading: '快照诊断',
     diagnosticsHint: '当前快照中的非临时问题。',
     finalHeading: '最终诊断',
