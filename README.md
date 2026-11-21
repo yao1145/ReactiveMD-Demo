@@ -61,6 +61,7 @@ Tetris and 2048 run from local source under `plugin/tetris/` and `plugin/game-20
 | `npm run test:toolbar:compact` | Compact toolbar checks |
 | `npm run test:interactions` | Editor selection and interaction checks |
 | `npm run test:export` | HTML and image export checks |
+| `npm run test:capabilities` | Document-scoped author capabilities and script isolation through preview and HTML export (starts its own Vite server unless `DEMO_URL` is set) |
 | `npm run test:runtime-extensions` | Local `plugin/` extensions and the offline export bundle |
 | `npm run test:outline` | Document outline behavior |
 | `npm run test:workbench` | Compact workbench layout |
@@ -78,7 +79,7 @@ DEMO_URL=http://127.0.0.1:5173 PLAYWRIGHT_CHANNEL=msedge npm run test:editor
 
 - `content/examples/local/` contains the example articles shown in the Playground.
 - `content/guides/` contains the English and Chinese user guide.
-- `src/` contains the application: editor shell, preview, document library, export dialog and extension registration.
+- `src/` contains the application grouped by feature: app shell, documents, compilation, preview, export, images, network, streaming, content, settings, developer and shared UI. See [source layout](#source-layout) for each group.
 - `plugin/` holds the site's component source and `theme/` holds its theme source. Each directory has a README with the file inventory and the add-a-component or add-a-theme steps.
 - `extensions.ts` keeps example metadata and a compatibility host export.
 

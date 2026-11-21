@@ -62,6 +62,7 @@ npm run dev
 | `npm run test:toolbar:compact` | 紧凑工具栏检查 |
 | `npm run test:interactions` | 编辑器选区和交互检查 |
 | `npm run test:export` | HTML 和图片导出检查 |
+| `npm run test:capabilities` | 通过预览与 HTML 导出验证文档级创作能力与脚本隔离（未设置 `DEMO_URL` 时自行启动 Vite 服务器） |
 | `npm run test:runtime-extensions` | 站点本地 `plugin/` 扩展与离线导出 bundle |
 | `npm run test:outline` | 文档大纲行为 |
 | `npm run test:workbench` | 紧凑工作台布局 |
@@ -79,7 +80,7 @@ DEMO_URL=http://127.0.0.1:5173 PLAYWRIGHT_CHANNEL=msedge npm run test:editor
 
 - `content/examples/local/` 存放 Playground 中展示的示例文章。
 - `content/guides/` 存放英文和中文用户指南。
-- `src/` 存放应用：编辑器外壳、预览、文档库、导出对话框和扩展注册。
+- `src/` 按功能存放应用代码：应用外壳、文档、编译、预览、导出、图片、网络、流式示例、内容、设置、开发者工具和通用界面。各目录见[源码结构](docs/source-layout-ch.md)。
 - `plugin/` 存放站点运行的组件源码，`theme/` 存放主题源码。
 - `extensions.ts` 保留示例元数据与供测试使用的兼容 host 导出。
 
