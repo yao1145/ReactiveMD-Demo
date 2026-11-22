@@ -19,7 +19,7 @@ Demo 通过 tarball 安装的依赖都放在本目录。引擎和编辑器快照
 | 文件 | 包 | 版本 |
 | --- | --- | --- |
 | `reactive-md-0.9.1-27af3c66ce88.tgz` | `reactive-md` | `0.9.1` |
-| `reactive-md-editor-0.2.0-8cee1beed712.tgz` | `reactive-md-editor` | `0.2.0` |
+| `reactive-md-editor-0.2.0-07454a2f1d63.tgz` | `reactive-md-editor` | `0.2.0` |
 | `reactive-md-sci-fi-theme-1.0.0-525cab7ab93f.tgz` | `reactive-md-sci-fi-theme` | `1.0.0` |
 | `reactive-md-tetris-package-0.1.0-fc1fa620038f.tgz` | `reactive-md-tetris-package` | `0.1.0` |
 | `reactive-md-game-2048-package-0.1.0-ce931218c317.tgz` | `reactive-md-game-2048-package` | `0.1.0` |
@@ -40,6 +40,6 @@ Demo 通过 tarball 安装的依赖都放在本目录。引擎和编辑器快照
 
 引擎 tarball 是提交 `a001605` 发布的 0.9.1 版本，包含流式源码编译优化、独立作者能力和文档内跳转滚动。SHA256 为 `27af3c66ce8803147e3595916ddce8eda1e2c23878a84deacf17c61d4aae5533`。
 
-Editor 0.2.0 候选包的分析 Worker 使用 `reactive-md@0.9.0`。SHA256 为 `8cee1beed71271d61f3829e332d5a1f023bacffeb7e89855ca49f5cf37b11763`。
+Editor 0.2.0 候选包的分析 Worker 使用 `reactive-md@0.9.0`。SHA256 为 `07454a2f1d630be93b2cb8305711786b45d33f46a9ec7d758a7c6815f1055fa3`。
 
 主题夹具由提交 `351b341` 构建，SHA256 为 `525cab7ab93fda6331e8fd5260c2c85aec5935559032bc951ad0ed827f7d4277`。
