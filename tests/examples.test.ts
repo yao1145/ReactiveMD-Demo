@@ -80,10 +80,8 @@ describe('localized playground examples', () => {
     expect(EXAMPLES).toHaveLength(BUILTIN_COUNT + extensionExamples.length);
     for (const example of EXAMPLES) {
       expect(example.title.trim().length, example.id).toBeGreaterThan(0);
-      expect(example.hint.trim().length, example.id).toBeGreaterThan(0);
       expect(example.source.trim().length, example.id).toBeGreaterThan(0);
       expect(example.titleZh.trim().length, example.id).toBeGreaterThan(0);
-      expect(example.hintZh.trim().length, example.id).toBeGreaterThan(0);
       expect(example.sourceZh.trim().length, example.id).toBeGreaterThan(0);
       expect(example.sourceZh, example.id).not.toBe(example.source);
       expect(example.titleZh, example.id).not.toBe(example.title);
@@ -101,7 +99,6 @@ describe('localized playground examples', () => {
         id: source.id,
         section: source.section,
         title: source.title,
-        hint: source.hint,
         source: source.source,
       });
       expect(localizedExample(source, 'en')).toEqual(example);
@@ -117,7 +114,6 @@ describe('localized playground examples', () => {
         id: source.id,
         section: source.section,
         title: source.titleZh,
-        hint: source.hintZh,
         source: source.sourceZh,
       });
       expect(localizedExample(source, 'zh')).toEqual(example);

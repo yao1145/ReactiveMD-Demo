@@ -9,10 +9,9 @@
 | 文件 | 作用 |
 | --- | --- |
 | `src/main.tsx` | Playground 入口，由 `index.html` 加载。引入引擎与编辑器样式、应用样式和 `app/App`。 |
-| `src/embed.tsx` | 嵌入页入口，由 `embed.html` 加载。渲染相互独立的内存文档实例。 |
 | `src/reactive-md-vite.d.ts` | Vite 客户端与虚拟模块的类型声明。 |
 
-这三个路径是稳定锚点。`index.html`、`embed.html`、`vite.config.ts` 的构建输入和 Vitest 配置都按路径引用它们。
+`src/main.tsx` 是稳定的浏览器入口。`index.html` 与 `vite.config.ts` 的构建输入都按路径引用它。
 
 ## 目录
 
@@ -28,7 +27,7 @@
 | `streaming/` | `fake-stream.ts`、`streaming-sample.tsx`、`streaming-sample.css` | 确定性的流式示例：按每秒 token 数播放、示例或宿主源码、过期结果统计，并提供实时流式预览面板。 |
 | `content/` | `examples.ts`、`guide-examples.tsx`、`guide-view.tsx`、`guide-code.css` | 示例目录、指南页面与指南渲染，以及指南代码样式。Markdown 源文件仍位于顶层 `content/examples/` 和 `content/guides/`。 |
 | `ui/` | `i18n.tsx`、`icons.tsx`、`use-editor-height.ts`、`use-scroll-container.ts` | 共享的中英文文案类型、图标集和布局 hook。 |
-| `settings/` | `component-mode.ts`、`html-options.ts`、`html-compatibility.tsx` | 组件模式的宿主选择、HTML 能力模型及其开关控件。 |
+| `settings/` | `component-mode.ts`、`html-options.ts` | 组件模式的宿主选择与 HTML 能力模型。 |
 | `developer/` | `developer-tools.tsx`、`developer-tools.css` | 用于运行时诊断和包信息查看的开发者工具面板。 |
 
 ## 新文件放在哪里
@@ -49,9 +48,9 @@
 ## 样式
 
 - 组件样式与组件同目录，并由该组件导入：`document-tree.tsx` 导入 `./document-tree.css`，`developer-tools.tsx` 导入 `./developer-tools.css`。
-- 页面级样式由入口加载，因为它们作用于整个外壳和渲染出的文档：两个入口都加载 `app/styles.css` 与 `app/author.css`，`main.tsx` 另外加载 `content/guide-code.css`。
+- 页面级样式由入口加载，因为它们作用于整个外壳和渲染出的文档：`app/styles.css`、`app/author.css` 和 `content/guide-code.css`。
 - 引擎和编辑器样式继续通过包名导入：`reactive-md/styles.css` 和 `reactive-md-editor/styles.css`。
 
 ## 构建锚点
 
-`vite.config.ts` 注册 React 插件、`reactiveMd({ includeMinimal: true })`、`exportAssets()`、`pdfExport()` 和 `surveyApi()`，并以 `index.html`、`embed.html` 作为构建输入。`reactiveMd()` 发现 `plugin/` 中的组件包与 `theme/` 中的主题。`vite.pdf-export.ts` 提供本地 `/__reactive-md/pdf` 端点，通过 `reactive-md/pdf` 渲染供打印的 HTML。`vite.survey.ts` 提供联网问卷示例使用、仅限本机回环的 HTTP 与 SSE 端点。`vitest.config.ts` 只注册 ReactiveMD 与导出资源插件；PDF 与问卷插件仅在开发服务器中生效。仓库根目录的 `extensions.ts` 提供 Games 示例元数据和供测试使用的 host 导出。
+`vite.config.ts` 注册 React 插件、`reactiveMd({ includeMinimal: true })`、`exportAssets()`、`pdfExport()` 和 `surveyApi()`，并以 `index.html` 作为构建输入。`reactiveMd()` 发现 `plugin/` 中的组件包与 `theme/` 中的主题。`vite.pdf-export.ts` 提供本地 `/__reactive-md/pdf` 端点，通过 `reactive-md/pdf` 渲染供打印的 HTML。`vite.survey.ts` 提供联网问卷示例使用、仅限本机回环的 HTTP 与 SSE 端点。`vitest.config.ts` 只注册 ReactiveMD 与导出资源插件；PDF 与问卷插件仅在开发服务器中生效。仓库根目录的 `extensions.ts` 提供 Games 示例元数据和供测试使用的 host 导出。

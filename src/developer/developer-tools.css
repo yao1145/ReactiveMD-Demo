@@ -30,28 +30,9 @@
 .devtools-scroll {
   flex: 1 1 auto;
   min-height: 0;
-  overflow-y: scroll;
+  overflow-y: auto;
   overflow-x: hidden;
-  scrollbar-width: thin;
-  scrollbar-color: var(--line-strong) transparent;
   overscroll-behavior: contain;
-}
-
-.devtools-scroll::-webkit-scrollbar {
-  width: 8px;
-}
-
-.devtools-scroll::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.devtools-scroll::-webkit-scrollbar-thumb {
-  background: var(--line-strong);
-  border-radius: 4px;
-}
-
-.devtools-scroll::-webkit-scrollbar-thumb:hover {
-  background: var(--ink-muted);
 }
 
 .devtools-cards {
@@ -137,20 +118,6 @@
   line-height: 1.3;
 }
 
-.dev-card-titles small {
-  display: none;
-  color: var(--ink-muted);
-  font-size: 10.5px;
-  line-height: 1.35;
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
-
-.dev-card:hover .dev-card-titles small,
-.dev-card:focus-within .dev-card-titles small {
-  display: block;
-}
-
 .dev-card-badge {
   flex: 0 0 auto;
   max-width: 76px;
@@ -228,12 +195,6 @@
   color: var(--ink-soft);
   font-size: 11.5px;
   font-weight: var(--weight-medium);
-  line-height: 1.35;
-}
-
-.dev-option-copy small {
-  color: var(--ink-muted);
-  font-size: 10px;
   line-height: 1.35;
 }
 

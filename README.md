@@ -18,7 +18,7 @@ npm ci --legacy-peer-deps
 npm run dev
 ```
 
-Open `http://127.0.0.1:5173`. The embed example is at `/embed.html`.
+Open `http://127.0.0.1:5173`.
 
 The Workshop budget example is at `/?example=minimal-budget`. Switch component
 modes in Developer tools and select PDF in the Export dialog. PDF uses the selected starting
@@ -93,7 +93,7 @@ Vite uses `reactiveMd()`. Add `theme/<name>/theme.css` for a theme or a default 
 
 ## Source layout
 
-`src/` is grouped by feature. See [docs/source-layout-en.md](docs/source-layout-en.md) or [docs/source-layout-ch.md](docs/source-layout-ch.md) for each group, where new files belong, cross-group imports and the stable browser entries `src/main.tsx` and `src/embed.tsx`.
+`src/` is grouped by feature. See [docs/source-layout-en.md](docs/source-layout-en.md) or [docs/source-layout-ch.md](docs/source-layout-ch.md) for each group, where new files belong, cross-group imports and the stable browser entry `src/main.tsx`.
 
 ## Export assets
 

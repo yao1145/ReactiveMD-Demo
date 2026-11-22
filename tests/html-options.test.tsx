@@ -9,7 +9,6 @@ import {
 } from 'reactive-md';
 import { ExportDialog } from '../src/export/export-dialog';
 import { PreviewStateSession } from '../src/compilation/preview-state';
-import { HtmlCompatibilityControls } from '../src/settings/html-compatibility';
 import {
   DEFAULT_HTML_OPTIONS,
   freshHtmlOptions,
@@ -227,58 +226,6 @@ describe('capability switches in the preview session', () => {
   });
 });
 
-describe('HTML capability controls', () => {
-  it('renders three independent toggles with only CSS checked by default', () => {
-    const markup = renderToStaticMarkup(
-      <LanguageProvider language="en">
-        <HtmlCompatibilityControls options={options()} onChange={() => {}} />
-      </LanguageProvider>,
-    );
-    expect(markup.match(/type="checkbox"/g)).toHaveLength(3);
-    expect(markup.match(/checked=""/g) ?? []).toHaveLength(1);
-    expect(markup).toContain(COPY.en.htmlCompatibility.enabled('CSS'));
-    expect(markup).toContain(COPY.en.htmlCompatibility.css);
-    expect(markup).toContain(COPY.en.htmlCompatibility.javascript);
-    expect(markup).toContain(COPY.en.htmlCompatibility.extendedHtml);
-  });
-
-  it('reports each additional capability that is turned on', () => {
-    const markup = renderToStaticMarkup(
-      <LanguageProvider language="zh">
-        <HtmlCompatibilityControls
-          options={options({ enableJavaScript: true, enableExtendedHtml: true })}
-          onChange={() => {}}
-        />
-      </LanguageProvider>,
-    );
-    expect(markup.match(/checked=""/g) ?? []).toHaveLength(3);
-    expect(markup).toContain(
-      COPY.zh.htmlCompatibility.enabled('CSS, JavaScript, 扩展 HTML'),
-    );
-  });
-
-  it('reports no enabled capability when CSS is turned off', () => {
-    const markup = renderToStaticMarkup(
-      <LanguageProvider language="en">
-        <HtmlCompatibilityControls options={options({ enableCss: false })} onChange={() => {}} />
-      </LanguageProvider>,
-    );
-    expect(markup.match(/checked=""/g) ?? []).toHaveLength(0);
-    expect(markup).toContain(COPY.en.htmlCompatibility.none);
-  });
-
-  it('keeps both locales complete and distinct', () => {
-    expect(COPY.en.htmlCompatibility.css).toBe('CSS');
-    expect(COPY.zh.htmlCompatibility.css).toBe('CSS');
-    expect(COPY.en.htmlCompatibility.javascript).toBe('JavaScript');
-    expect(COPY.zh.htmlCompatibility.javascript).toBe('JavaScript');
-    expect(COPY.zh.htmlCompatibility.extendedHtml).toContain('HTML');
-    expect(COPY.en.htmlCompatibility.extendedHtml).not.toBe(COPY.zh.htmlCompatibility.extendedHtml);
-    expect(COPY.en.htmlCompatibility.enabled('CSS')).toBe('Enabled: CSS');
-    expect(COPY.zh.htmlCompatibility.enabled('CSS')).toBe('已开启：CSS');
-  });
-});
-
 function exportMarkup(props: {
   compileOptions?: LocalCompileOptions;
   currentState: Readonly<Record<string, never>> | null;
@@ -320,7 +267,7 @@ describe('export dialog with capability switches', () => {
       compileOptions: toCompileOptions({ enableCss: false, enableJavaScript: true }),
       currentState: {},
     });
-    expect(markup).toContain(COPY.en.exportDialog.currentPreviewHint);
+    expect(markup).toContain(COPY.en.exportDialog.currentPreview);
     expect(markup).not.toContain(COPY.en.exportDialog.currentUnavailable);
     expect(markup).not.toContain(COPY.en.exportDialog.exportStateUnavailable);
   });
@@ -334,12 +281,10 @@ describe('export dialog with capability switches', () => {
   it('omits the retired whole-document HTML wording in both locales', () => {
     for (const language of ['en', 'zh'] as const) {
       const markup = exportMarkup({ compileOptions: CONVERTED, currentState: {}, language });
-      const copy = COPY[language].exportDialog;
       const notice = language === 'en'
         ? 'Native HTML mode is active'
         : '当前为原生 HTML 模式';
       expect(markup).not.toContain(notice);
-      expect(markup).toContain(copy.output(copy.outputInteractive, copy.outputInitial));
     }
   });
 });

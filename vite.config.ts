@@ -6,6 +6,7 @@ import { pdfExport } from './vite.pdf-export.ts';
 import { surveyApi } from './vite.survey.ts';
 
 export default defineConfig({
+  appType: 'mpa',
   plugins: [react(), reactiveMd({ includeMinimal: true }), exportAssets(), pdfExport(), surveyApi()],
   // Vitest and the host bundle builder use their own Vite instances.
   cacheDir: 'node_modules/.vite-demo',
@@ -14,5 +15,5 @@ export default defineConfig({
   // URL after Vite discovers it late.
   optimizeDeps: { include: ['react-dom/server'] },
   server: { host: '127.0.0.1', port: 5173, strictPort: true },
-  build: { rolldownOptions: { input: { main: 'index.html', embed: 'embed.html' } } },
+  build: { rolldownOptions: { input: { main: 'index.html' } } },
 });

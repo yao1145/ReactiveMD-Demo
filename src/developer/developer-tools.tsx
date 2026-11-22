@@ -32,14 +32,14 @@ export interface DeveloperToolsCopy {
   modifiedBadge: string;
   copied: string;
   cards: {
-    compiler: { title: string; subtitle: string; markdownBreaks: string; markdownBreaksHint: string; strict: string; strictHint: string; componentMode: string; modes: Record<EditorComponentMode, string> };
-    html: { title: string; subtitle: string; css: string; cssHint: string; javascript: string; javascriptHint: string; extendedHtml: string; extendedHtmlHint: string };
-    editor: { title: string; subtitle: string; viewMode: string; views: Record<EditorViewMode, string>; toolbar: string; toolbarHint: string; authoring: string; authoringHint: string; trial: string; trialHint: string };
-    export: { title: string; subtitle: string; open: string; markdown: string };
-    document: { title: string; subtitle: string; import: string; saveCopy: string; restoreExample: string; runAgain: string };
-    extensions: { title: string; subtitle: string; loaded: string };
-    runtime: { title: string; subtitle: string; engine: string; editor: string; document: string; mode: string; duration: string; diagnostics: string; documents: string; folders: string; trash: string };
-    api: { title: string; subtitle: string; copyImport: (name: string, packageName: string) => string; expandGroup: (name: string) => string; collapseGroup: (name: string) => string };
+    compiler: { title: string; markdownBreaks: string; strict: string; componentMode: string; modes: Record<EditorComponentMode, string> };
+    html: { title: string; css: string; javascript: string; extendedHtml: string };
+    editor: { title: string; viewMode: string; views: Record<EditorViewMode, string>; toolbar: string; authoring: string; trial: string };
+    export: { title: string; open: string; markdown: string };
+    document: { title: string; import: string; saveCopy: string; restoreExample: string; runAgain: string };
+    extensions: { title: string; loaded: string };
+    runtime: { title: string; engine: string; editor: string; document: string; mode: string; duration: string; diagnostics: string; documents: string; folders: string; trash: string };
+    api: { title: string; copyImport: (name: string, packageName: string) => string; expandGroup: (name: string) => string; collapseGroup: (name: string) => string };
   };
 }
 
@@ -53,45 +53,32 @@ const COPY: Record<Language, DeveloperToolsCopy> = {
     cards: {
       compiler: {
         title: 'Compiler',
-        subtitle: 'Compilation, recovery and Markdown breaks',
         markdownBreaks: 'Markdown line breaks',
-        markdownBreaksHint: 'Render ordinary soft line breaks as <br>.',
         strict: 'Strict parsing',
-        strictHint: 'Recover broken structure locally instead of stopping.',
         componentMode: 'Component mode',
         modes: { default: 'Default', minimal: 'Minimal' },
       },
       html: {
         title: 'HTML',
-        subtitle: 'CSS, JavaScript and extended HTML',
         css: 'CSS',
-        cssHint: 'Apply <css> blocks and component css attributes.',
         javascript: 'JavaScript',
-        javascriptHint: 'Run author <javascript> blocks in the preview.',
         extendedHtml: 'Extended HTML',
-        extendedHtmlHint: 'Render sanitized HTML fragments beyond the safe subset.',
       },
       editor: {
         title: 'Editor',
-        subtitle: 'View, toolbar and trial state',
         viewMode: 'View',
         views: { edit: 'Edit', split: 'Split', preview: 'Preview' },
         toolbar: 'Formatting toolbar',
-        toolbarHint: 'Show the Markdown formatting toolbar.',
         authoring: 'Authoring panel',
-        authoringHint: 'Show insertion templates and analysis hints.',
         trial: 'Keep trial state',
-        trialHint: 'Preserve compatible values while typing.',
       },
       export: {
         title: 'Export',
-        subtitle: 'HTML, PDF and Markdown',
         open: 'Open export dialog',
         markdown: 'Download Markdown source',
       },
       document: {
         title: 'Document',
-        subtitle: 'Import, copies and reruns',
         import: 'Import document',
         saveCopy: 'Save example copy',
         restoreExample: 'Restore example',
@@ -99,12 +86,10 @@ const COPY: Record<Language, DeveloperToolsCopy> = {
       },
       extensions: {
         title: 'Extensions',
-        subtitle: 'Registered component packages',
         loaded: 'Loaded',
       },
       runtime: {
         title: 'Runtime',
-        subtitle: 'Versions, diagnostics and compile status',
         engine: 'Engine',
         editor: 'Editor',
         document: 'Active document',
@@ -117,7 +102,6 @@ const COPY: Record<Language, DeveloperToolsCopy> = {
       },
       api: {
         title: 'Interfaces',
-        subtitle: 'Click any interface to copy its import',
         copyImport: (name, packageName) => `Copy import for ${name} from ${packageName}`,
         expandGroup: (name) => `Expand ${name}`,
         collapseGroup: (name) => `Collapse ${name}`,
@@ -133,57 +117,43 @@ const COPY: Record<Language, DeveloperToolsCopy> = {
     cards: {
       compiler: {
         title: '编译器',
-        subtitle: '编译、恢复与Markdown换行',
         markdownBreaks: 'Markdown 换行',
-        markdownBreaksHint: '把普通软换行渲染为 <br>。',
         strict: '严格解析',
-        strictHint: '结构损坏时局部恢复，而不是直接停止。',
         componentMode: '组件模式',
         modes: { default: '默认', minimal: '精简' },
       },
       html: {
         title: 'HTML',
-        subtitle: 'CSS、JavaScript 与扩展 HTML',
         css: 'CSS',
-        cssHint: '应用 <css> 块和组件的 css 属性。',
         javascript: 'JavaScript',
-        javascriptHint: '在预览中运行作者的 <javascript> 块。',
         extendedHtml: '扩展 HTML',
-        extendedHtmlHint: '渲染安全子集之外的净化 HTML 片段。',
       },
       editor: {
         title: '编辑器',
-        subtitle: '视图、工具栏与试算状态',
         viewMode: '视图',
         views: { edit: '编辑', split: '分栏', preview: '预览' },
         toolbar: '格式化工具栏',
-        toolbarHint: '显示 Markdown 格式化工具栏。',
         authoring: '创作面板',
-        authoringHint: '显示插入模板与分析提示。',
         trial: '保留试算状态',
-        trialHint: '编辑时保留兼容的命名参数值。',
       },
       export: {
         title: '导出',
-        subtitle: 'HTML、PDF 与 Markdown',
         open: '打开导出对话框',
         markdown: '下载 Markdown 源码',
       },
       document: {
         title: '文档操作',
-        subtitle: '导入、副本与重新运行',        import: '导入文档',
+        import: '导入文档',
         saveCopy: '保存示例副本',
         restoreExample: '恢复示例',
         runAgain: '重新运行',
       },
       extensions: {
         title: '扩展',
-        subtitle: '已注册的组件包',
         loaded: '已加载',
       },
       runtime: {
         title: '运行信息',
-        subtitle: '版本、诊断与编译状态',
         engine: '引擎',
         editor: '编辑器',
         document: '当前文档',
@@ -196,7 +166,6 @@ const COPY: Record<Language, DeveloperToolsCopy> = {
       },
       api: {
         title: '接口',
-        subtitle: '点击接口复制 import 语句',
         copyImport: (name, packageName) => `复制 ${name}（来自 ${packageName}）的 import`,
         expandGroup: (name) => `展开 ${name}`,
         collapseGroup: (name) => `收起 ${name}`,
@@ -264,9 +233,8 @@ const DEFAULT_CAPABILITIES = {
 
 type Tone = 'blue' | 'green' | 'orange' | 'purple' | 'cyan' | 'pink';
 
-function DevCard({ title, subtitle, icon, tone, badge, defaultOpen = false, children }: {
+function DevCard({ title, icon, tone, badge, defaultOpen = false, children }: {
   title: string;
-  subtitle: string;
   icon: ReactNode;
   tone: Tone;
   badge?: string;
@@ -279,7 +247,6 @@ function DevCard({ title, subtitle, icon, tone, badge, defaultOpen = false, chil
       <span className="dev-card-icon" aria-hidden="true">{icon}</span>
       <span className="dev-card-titles">
         <strong>{title}</strong>
-        <small>{subtitle}</small>
       </span>
       {badge ? <span className="dev-card-badge">{badge}</span> : null}
       <ChevronRightIcon className="dev-card-chevron" size={16} />
@@ -288,16 +255,14 @@ function DevCard({ title, subtitle, icon, tone, badge, defaultOpen = false, chil
   </section>;
 }
 
-function DevToggle({ label, hint, checked, onChange }: {
+function DevToggle({ label, checked, onChange }: {
   label: string;
-  hint: string;
   checked: boolean;
   onChange(checked: boolean): void;
 }) {
   return <button type="button" role="switch" aria-checked={checked} className="dev-option" onClick={() => onChange(!checked)}>
     <span className="dev-option-copy">
       <strong>{label}</strong>
-      <small>{hint}</small>
     </span>
     <span className={`dev-switch${checked ? ' is-on' : ''}`} aria-hidden="true"><span /></span>
   </button>;
@@ -365,7 +330,7 @@ export function DeveloperTools(props: DeveloperToolsProps) {
 
     <div className="devtools-scroll" ref={scrollRef}>
       <div className="devtools-cards">
-        <DevCard title={copy.cards.compiler.title} subtitle={copy.cards.compiler.subtitle}
+        <DevCard title={copy.cards.compiler.title}
           icon={<CodeIcon />} tone="green" badge={badge}>
           <div className="dev-option dev-option-static">
             <span className="dev-option-copy"><strong>{copy.cards.compiler.componentMode}</strong></span>
@@ -376,23 +341,23 @@ export function DeveloperTools(props: DeveloperToolsProps) {
               </button>)}
             </span>
           </div>
-          <DevToggle label={copy.cards.compiler.markdownBreaks} hint={copy.cards.compiler.markdownBreaksHint}
+          <DevToggle label={copy.cards.compiler.markdownBreaks}
             checked={props.markdownBreaks} onChange={props.onMarkdownBreaksChange} />
-          <DevToggle label={copy.cards.compiler.strict} hint={copy.cards.compiler.strictHint}
+          <DevToggle label={copy.cards.compiler.strict}
             checked={props.strict} onChange={props.onStrictChange} />
         </DevCard>
 
-        <DevCard title={copy.cards.html.title} subtitle={copy.cards.html.subtitle}
+        <DevCard title={copy.cards.html.title}
           icon={<FilesIcon />} tone="blue" badge={htmlDefault ? copy.defaultBadge : copy.modifiedBadge}>
-          <DevToggle label={copy.cards.html.css} hint={copy.cards.html.cssHint}
+          <DevToggle label={copy.cards.html.css}
             checked={props.htmlOptions.enableCss} onChange={enableCss => props.onHtmlOptionsChange({ ...props.htmlOptions, enableCss })} />
-          <DevToggle label={copy.cards.html.javascript} hint={copy.cards.html.javascriptHint}
+          <DevToggle label={copy.cards.html.javascript}
             checked={props.htmlOptions.enableJavaScript} onChange={enableJavaScript => props.onHtmlOptionsChange({ ...props.htmlOptions, enableJavaScript })} />
-          <DevToggle label={copy.cards.html.extendedHtml} hint={copy.cards.html.extendedHtmlHint}
+          <DevToggle label={copy.cards.html.extendedHtml}
             checked={props.htmlOptions.enableExtendedHtml} onChange={enableExtendedHtml => props.onHtmlOptionsChange({ ...props.htmlOptions, enableExtendedHtml })} />
         </DevCard>
 
-        <DevCard title={copy.cards.editor.title} subtitle={copy.cards.editor.subtitle}
+        <DevCard title={copy.cards.editor.title}
           icon={<SlidersIcon />} tone="orange">
           <div className="dev-option dev-option-static">
             <span className="dev-option-copy"><strong>{copy.cards.editor.viewMode}</strong></span>
@@ -403,21 +368,21 @@ export function DeveloperTools(props: DeveloperToolsProps) {
               </button>)}
             </span>
           </div>
-          <DevToggle label={copy.cards.editor.toolbar} hint={copy.cards.editor.toolbarHint}
+          <DevToggle label={copy.cards.editor.toolbar}
             checked={props.editorToolbar} onChange={props.onEditorToolbarChange} />
-          <DevToggle label={copy.cards.editor.authoring} hint={copy.cards.editor.authoringHint}
+          <DevToggle label={copy.cards.editor.authoring}
             checked={props.editorAuthoring} onChange={props.onEditorAuthoringChange} />
-          <DevToggle label={copy.cards.editor.trial} hint={copy.cards.editor.trialHint}
+          <DevToggle label={copy.cards.editor.trial}
             checked={props.retainPreviewState} onChange={props.onRetainPreviewStateChange} />
         </DevCard>
 
-        <DevCard title={copy.cards.export.title} subtitle={copy.cards.export.subtitle}
+        <DevCard title={copy.cards.export.title}
           icon={<DownloadIcon />} tone="cyan">
           <DevAction label={copy.cards.export.open} icon={<DownloadIcon />} onClick={props.onExport} />
           <DevAction label={copy.cards.export.markdown} icon={<FileIcon />} onClick={props.onDownloadMarkdown} />
         </DevCard>
 
-        <DevCard title={copy.cards.document.title} subtitle={copy.cards.document.subtitle}
+        <DevCard title={copy.cards.document.title}
           icon={<FileIcon />} tone="purple">
           <DevAction label={copy.cards.document.import} icon={<UploadIcon />} onClick={() => file.current?.click()} />
           {props.activeKind === 'example' ? <>
@@ -427,7 +392,7 @@ export function DeveloperTools(props: DeveloperToolsProps) {
           <DevAction label={copy.cards.document.runAgain} icon={<PlayIcon />} onClick={props.onRunAgain} />
         </DevCard>
 
-        <DevCard title={copy.cards.extensions.title} subtitle={copy.cards.extensions.subtitle}
+        <DevCard title={copy.cards.extensions.title}
           icon={<PuzzleIcon />} tone="pink" badge={String(props.extensions.length)}>
           {props.extensions.length ? <ul className="dev-extension-list">
             {props.extensions.map(extension => <li key={extension.id}>
@@ -437,7 +402,7 @@ export function DeveloperTools(props: DeveloperToolsProps) {
           </ul> : <p className="dev-empty">{copy.defaultBadge}</p>}
         </DevCard>
 
-        <DevCard title={copy.cards.runtime.title} subtitle={copy.cards.runtime.subtitle}
+        <DevCard title={copy.cards.runtime.title}
           icon={<InfoIcon />} tone="blue" badge={engineManifest.version.split('-')[0]}>
           <div className="dev-info-list">
             <div><span>{copy.cards.runtime.engine}</span><code>{engineManifest.version}</code></div>
@@ -452,7 +417,7 @@ export function DeveloperTools(props: DeveloperToolsProps) {
           </div>
         </DevCard>
 
-        <DevCard title={copy.cards.api.title} subtitle={copy.cards.api.subtitle}
+        <DevCard title={copy.cards.api.title}
           icon={<CodeIcon />} tone="green" badge={String(totalApis)}>
           {API_GROUPS.map(group => {
             const open = openGroups.has(group.id);

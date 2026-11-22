@@ -12,7 +12,7 @@ describe('demo copy dictionaries', () => {
   it('has the same recursive shape in English and Chinese', () => {
     expect(shapeOf(COPY.zh)).toEqual(shapeOf(COPY.en));
   });
-  it('defaults to English and resolves owned guide paths in both languages', () => {
+  it('defaults to English and resolves both languages', () => {
     expect(DEFAULT_LANGUAGE).toBe('en');
     expect(copyFor('en')).toBe(COPY.en);
     expect(copyFor('zh')).toBe(COPY.zh);
@@ -22,8 +22,6 @@ describe('demo copy dictionaries', () => {
     expect(COPY.zh.htmlLang).toBe('zh-CN');
     expect(COPY.en.languageToggle.ariaLabel).toBe('Switch to Chinese');
     expect(COPY.zh.languageToggle.ariaLabel).toBe('切换到英文');
-    expect(COPY.en.guide.documentFile).toBe('content/guides/local-guide-en.md');
-    expect(COPY.zh.guide.documentFile).toBe('content/guides/local-guide-ch.md');
   });
   it('formats status and diagnostics in both languages', () => {
     expect(COPY.en.status.compiled(2, 15, false)).toBe('Compiled · 2 diagnostics');

@@ -38,7 +38,7 @@ try {
     const current = dialog.getByRole('radio', { name: /Current preview state/ });
     await expect(current).toBeEnabled();
     await current.check();
-    await expect(dialog.locator('.export-output')).toContainText('current preview state');
+    await expect(current).toBeChecked();
   });
 
   const stateDownloadPromise = page.waitForEvent('download');

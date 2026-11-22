@@ -24,7 +24,7 @@ npm ci --legacy-peer-deps
 npm run dev
 ```
 
-打开 `http://127.0.0.1:5173`。嵌入示例位于 `/embed.html`。
+打开 `http://127.0.0.1:5173`。
 
 打开 `/?example=minimal-budget` 试用工作坊预算示例。在「开发者工具」中切换默认与精简组件，在「导出」对话框中选择 PDF。PDF 使用所选起始值。本地服务安装 Chromium 后可直接下载 PDF，安装命令为 `npx playwright install chromium`。静态站点打开浏览器打印窗口，可在其中另存为 PDF。
 

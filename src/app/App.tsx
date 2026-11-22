@@ -933,10 +933,6 @@ export default function App() {
                 toolbarStatus={editorView === 'preview' ? undefined : statusChip}
               />
 
-              <p className="editor-note" id="preview-state-note">
-                {copy.editor.stateNote}
-              </p>
-
               <section className="diagnostics-panel" aria-label={copy.editor.diagnosticsRegion}>
                 <div className="diagnostics-head">
                   <h3>{copy.editor.diagnosticsHeading}</h3>
@@ -959,20 +955,6 @@ export default function App() {
           </OutlineWorkspace>
         </main>
         )}
-
-        <footer className="app-footer">
-          {view === 'playground' && simple ? <p>{copy.showcase.footer}</p> : <p>
-            {copy.footer.bindBefore}<code>bind</code>{copy.footer.bindBetween}
-            <code>{copy.footer.expression}</code>{copy.footer.afterExpression}
-          </p>}
-          {view === 'guide' ? (
-            <p>
-              {copy.footer.guideBefore}<code>{copy.guide.documentFile}</code>{copy.footer.guideAfter}
-            </p>
-          ) : !simple ? (
-            <p>{copy.footer.trial}</p>
-          ) : null}
-        </footer>
 
         <input ref={imagePicker} type="file" accept="image/*" multiple hidden
           onChange={event => {

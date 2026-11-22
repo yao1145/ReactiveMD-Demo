@@ -194,29 +194,9 @@
   height: 100%;
   max-height: calc(100dvh - 140px);
   overflow-x: hidden;
-  overflow-y: scroll;
-  scrollbar-gutter: stable;
-  scrollbar-width: thin;
-  scrollbar-color: var(--line-strong) transparent;
+  overflow-y: auto;
   overscroll-behavior: contain;
   padding: var(--space-2) var(--space-1);
-}
-
-.outline-scroll::-webkit-scrollbar {
-  width: 8px;
-}
-
-.outline-scroll::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.outline-scroll::-webkit-scrollbar-thumb {
-  background: var(--line-strong);
-  border-radius: 4px;
-}
-
-.outline-scroll::-webkit-scrollbar-thumb:hover {
-  background: var(--ink-muted);
 }
 
 .outline-list {

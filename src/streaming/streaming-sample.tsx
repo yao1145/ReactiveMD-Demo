@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties } from 'react';
 import {
   LocalCompileScheduler,
   formatLocalDiagnostic,
@@ -133,6 +133,8 @@ export function StreamingSample() {
   const snapshotDiagnostics = finished ? state.finalDiagnostics : state.streamingDiagnostics;
   const diagnosticsHeading = finished ? copy.finalHeading : copy.diagnosticsHeading;
   const chipState = state.status === 'done' ? '' : state.status === 'cancelled' || state.status === 'failed' || state.snapshotStatus === 'failed' ? ' is-error' : ' is-pending';
+  const speedPosition = tpsToSliderPosition(state.speedTps);
+  const speedProgress = `${(speedPosition / STREAM_SPEED_SLIDER_MAX) * 100}%`;
 
   return (
     <section className="streaming-view" aria-label={copy.region}>
@@ -171,10 +173,11 @@ export function StreamingSample() {
             </button>
           ) : null}
         </div>
-        <label className="streaming-speed">
-          <span>{copy.speedLabel}</span>
+        <label className="streaming-speed"
+          style={{ '--streaming-speed-progress': speedProgress } as CSSProperties}>
+          <span className="streaming-speed-label">{copy.speedLabel}</span>
           <input type="range" min={0} max={STREAM_SPEED_SLIDER_MAX}
-            step={1} value={tpsToSliderPosition(state.speedTps)}
+            step={1} value={speedPosition}
             onChange={(event) => controller.setSpeed(sliderPositionToTps(Number(event.target.value)))}
             data-testid="streaming-speed" />
           <output data-testid="streaming-speed-value">{copy.speedValue(state.speedTps)}</output>

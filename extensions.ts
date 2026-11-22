@@ -6,8 +6,6 @@ import type { PlaygroundExample } from './src/content/examples';
 export const examples: readonly PlaygroundExample[] = [{
   id: 'games', section: 'reference',
   title: 'Games', titleZh: '小游戏',
-  hint: 'Tetris and 2048 in one document, with independent controls and offline export.',
-  hintZh: '在同一篇文档中玩俄罗斯方块和 2048，分别操作，也可以离线导出。',
   source: gamesSource(false), sourceZh: gamesSource(true),
 }];
 

@@ -17,14 +17,6 @@ export interface DemoCopy {
   /** Value written to `document.documentElement.lang`. */
   htmlLang: 'en' | 'zh-CN';
   documentTitle: string;
-  showcase: {
-    intro: string;
-    navigation: string;
-    features: string;
-    reference: string;
-    more: string;
-    footer: string;
-  };
   languageToggle: {
     /** Visible short label: the language the button switches to. */
     label: string;
@@ -35,10 +27,6 @@ export interface DemoCopy {
   };
   masthead: {
     eyebrow: string;
-    introBefore: string;
-    introBetween: string;
-    expression: string;
-    introAfter: string;
     viewSwitcher: string;
     playground: string;
     guide: string;
@@ -51,27 +39,6 @@ export interface DemoCopy {
   guide: {
     title: string;
     back: string;
-    /** Repository documentation file this view renders. */
-    documentFile: string;
-  };
-  workbench: {
-    example: string;
-    keepTrialState: string;
-    keepTrialStateTitle: string;
-    restoreExample: string;
-    runAgain: string;
-  };
-  htmlCompatibility: {
-    heading: string;
-    legend: string;
-    css: string;
-    cssHint: string;
-    javascript: string;
-    javascriptHint: string;
-    extendedHtml: string;
-    extendedHtmlHint: string;
-    enabled: (active: string) => string;
-    none: string;
   };
   authorTools: {
     ariaLabel: string;
@@ -84,21 +51,14 @@ export interface DemoCopy {
   };
   exportDialog: {
     title: string;
-    description: string;
     close: string;
     formatLegend: string;
     interactive: string;
-    interactiveHint: string;
     static: string;
-    staticHint: string;
     pdf: string;
-    pdfHint: string;
-    printPdfHint: string;
     stateLegend: string;
     authorInitial: string;
-    authorInitialHint: string;
     currentPreview: string;
-    currentPreviewHint: string;
     currentUnavailable: string;
     summaryLegend: string;
     summaryParameters: string;
@@ -108,11 +68,6 @@ export interface DemoCopy {
     noParameters: string;
     noCurrent: string;
     imageNone: string;
-    output: (mode: string, state: string) => string;
-    outputInteractive: string;
-    outputStatic: string;
-    outputInitial: string;
-    outputCurrent: string;
     compilePending: string;
     compileFailed: (message: string) => string;
     compileUnavailable: string;
@@ -135,7 +90,6 @@ export interface DemoCopy {
     previewView: string;
     viewSwitch: string;
     sourceLabel: string;
-    stateNote: string;
     diagnosticsRegion: string;
     diagnosticsHeading: string;
     diagnosticsCompiling: string;
@@ -165,7 +119,6 @@ export interface DemoCopy {
   preview: {
     region: string;
     heading: string;
-    subtitle: string;
     startErrorTitle: string;
     preparing: string;
     staleTitle: string;
@@ -213,37 +166,11 @@ export interface DemoCopy {
     waiting: string;
     unexpectedError: (message: string) => string;
   };
-  footer: {
-    bindBefore: string;
-    bindBetween: string;
-    expression: string;
-    afterExpression: string;
-    guideBefore: string;
-    guideAfter: string;
-    trial: string;
-  };
-  embed: {
-    documentTitle: string;
-    heading: string;
-    intro: string;
-    instanceA: string;
-    instanceB: string;
-    remount: string;
-    back: string;
-  };
 }
 
 const ENGLISH: DemoCopy = {
   htmlLang: 'en',
   documentTitle: 'Reactive MD · Interactive Document Lab',
-  showcase: {
-    intro: 'Try a lesson, discuss a proposal, fill in a survey or read a personal essay. The controls are part of each document.',
-    navigation: 'Choose an example',
-    features: 'Feature demo',
-    reference: 'Reference',
-    more: 'Open diagnostics',
-    footer: 'Try the controls in each document. Open the source to explore or change how it works.',
-  },
   languageToggle: {
     label: '中',
     labelLang: 'zh-CN',
@@ -251,11 +178,6 @@ const ENGLISH: DemoCopy = {
   },
   masthead: {
     eyebrow: 'Local interactive document lab',
-    introBefore: 'Place input controls in Markdown, name parameters with ',
-    introBetween: ', then read them with ',
-    expression: '{{ expressions }}',
-    introAfter:
-      '. Adjust an input and prose, tables, charts and curves update instantly.',
     viewSwitcher: 'View switcher',
     playground: 'Playground',
     guide: 'User Guide',
@@ -268,27 +190,6 @@ const ENGLISH: DemoCopy = {
   guide: {
     title: 'User Guide',
     back: 'Back to Playground',
-    documentFile: 'content/guides/local-guide-en.md',
-  },
-  workbench: {
-    example: 'Example',
-    keepTrialState: 'Keep trial state',
-    keepTrialStateTitle:
-      'Keep compatible named parameters while editing; values are revalidated when initial values or constraints change.',
-    restoreExample: 'Restore example',
-    runAgain: 'Run again',
-  },
-  htmlCompatibility: {
-    heading: 'HTML compatibility',
-    legend: 'Allowed capabilities',
-    css: 'CSS',
-    cssHint: 'Apply <css> blocks and component css attributes.',
-    javascript: 'JavaScript',
-    javascriptHint: 'Run author <javascript> blocks in the preview.',
-    extendedHtml: 'Extended HTML',
-    extendedHtmlHint: 'Render sanitized HTML fragments beyond the safe subset.',
-    enabled: (active) => `Enabled: ${active}`,
-    none: 'No capability enabled',
   },
   authorTools: {
     ariaLabel: 'Document tools',
@@ -301,24 +202,14 @@ const ENGLISH: DemoCopy = {
   },
   exportDialog: {
     title: 'Export document',
-    description:
-      'Download the Markdown source, self-contained HTML, or a PDF snapshot.',
     close: 'Close export dialog',
     formatLegend: 'Output format',
     interactive: 'Interactive HTML',
-    interactiveHint:
-      'One self-contained file with the embedded runtime. Readers can use the controls, and the exported values are already applied.',
     static: 'Static HTML',
-    staticHint: 'A read-only snapshot without a runtime or scripts, suitable for printing and archiving.',
     pdf: 'PDF',
-    pdfHint: 'Download a paginated snapshot of the selected state.',
-    printPdfHint: 'Choose Save as PDF in the browser print dialog.',
     stateLegend: 'Starting values',
     authorInitial: 'Author initial values',
-    authorInitialHint:
-      'Use the defaults declared in the document. Every open and reset starts from the same values.',
     currentPreview: 'Current preview state',
-    currentPreviewHint: 'Use the values currently shown in the preview as the exported starting point.',
     currentUnavailable:
       'The current preview state is unavailable because no matching document is running.',
     summaryLegend: 'Export summary',
@@ -331,11 +222,6 @@ const ENGLISH: DemoCopy = {
     noParameters: 'This document has no public parameters.',
     noCurrent: 'The current preview state cannot be compared or exported right now.',
     imageNone: 'No images: the HTML file will be completely self-contained.',
-    output: (mode, state) => `Will export ${mode} using ${state}.`,
-    outputInteractive: 'interactive HTML',
-    outputStatic: 'static HTML',
-    outputInitial: 'the author initial values',
-    outputCurrent: 'the current preview state',
     compilePending: 'Waiting for the current source to finish compiling…',
     compileFailed: (message) => `Resolve compilation errors before exporting. ${message}`,
     compileUnavailable:
@@ -361,8 +247,6 @@ const ENGLISH: DemoCopy = {
     previewView: 'Preview',
     viewSwitch: 'Editor view',
     sourceLabel: 'Reactive MD source',
-    stateNote:
-      'Compatible values carry across edits; rerunning, switching examples, importing or refreshing resets them.',
     diagnosticsRegion: 'Compile and runtime diagnostics',
     diagnosticsHeading: 'Diagnostics',
     diagnosticsCompiling: 'Compiling',
@@ -392,7 +276,6 @@ const ENGLISH: DemoCopy = {
   preview: {
     region: 'Live preview',
     heading: 'Preview',
-    subtitle: 'A local document you can interact with directly',
     startErrorTitle: 'Could not start document',
     preparing: 'Preparing interactive document…',
     staleTitle: 'Showing the last valid preview',
@@ -446,38 +329,11 @@ const ENGLISH: DemoCopy = {
     waiting: 'Waiting to compile',
     unexpectedError: (message) => `Unexpected document error: ${message}`,
   },
-  footer: {
-    bindBefore: 'Name parameters with ',
-    bindBetween: ' and read them in prose with ',
-    expression: '{{ }}',
-    afterExpression: ' in prose.',
-    guideBefore: 'The guide content matches ',
-    guideAfter: ' in the repository.',
-    trial: 'Trial values stay in this session; rerunning or refreshing resets them.',
-  },
-  embed: {
-    documentTitle: 'Reactive MD embed example',
-    heading: 'Embed interactive local documents in your app',
-    intro:
-      'Both document instances share the same source but manage their own in-memory state. Remounting starts from initial values, and refreshing the page does not keep interaction results.',
-    instanceA: 'Instance A',
-    instanceB: 'Instance B',
-    remount: 'Remount',
-    back: 'Back to Playground',
-  },
 };
 
 const CHINESE: DemoCopy = {
   htmlLang: 'zh-CN',
   documentTitle: 'Reactive MD · 交互文档实验室',
-  showcase: {
-    intro: '上一堂课，讨论一份方案，填写活动意向，或读一篇生活随笔。直接操作文档中的内容。',
-    navigation: '选择示例',
-    features: '功能演示',
-    reference: '查阅',
-    more: '打开调试示例',
-    footer: '直接操作文档中的控件；展开源码，可以查看或修改它的写法。',
-  },
   languageToggle: {
     label: 'EN',
     labelLang: 'en',
@@ -485,10 +341,6 @@ const CHINESE: DemoCopy = {
   },
   masthead: {
     eyebrow: '本地交互文档实验室',
-    introBefore: '在 Markdown 中放置输入控件，用 ',
-    introBetween: ' 命名参数，再用 ',
-    expression: '{{ 表达式 }}',
-    introAfter: ' 读取它们。调整输入，正文、表格、图表和曲线立即更新。',
     viewSwitcher: '页面切换',
     playground: 'Playground',
     guide: '使用指南',
@@ -501,26 +353,6 @@ const CHINESE: DemoCopy = {
   guide: {
     title: '使用指南',
     back: '返回 Playground',
-    documentFile: 'content/guides/local-guide-ch.md',
-  },
-  workbench: {
-    example: '示例',
-    keepTrialState: '保留试算状态',
-    keepTrialStateTitle: '编辑时保留兼容的命名参数；修改初值或约束后会重新校验。',
-    restoreExample: '恢复示例',
-    runAgain: '重新运行',
-  },
-  htmlCompatibility: {
-    heading: 'HTML 兼容',
-    legend: '允许的能力',
-    css: 'CSS',
-    cssHint: '应用 <css> 块和组件的 css 属性。',
-    javascript: 'JavaScript',
-    javascriptHint: '在预览中运行作者的 <javascript> 块。',
-    extendedHtml: '扩展 HTML',
-    extendedHtmlHint: '渲染安全子集之外的净化 HTML 片段。',
-    enabled: (active) => `已开启：${active}`,
-    none: '未开启任何能力',
   },
   authorTools: {
     ariaLabel: '文档工具',
@@ -533,21 +365,14 @@ const CHINESE: DemoCopy = {
   },
   exportDialog: {
     title: '导出文档',
-    description: '下载 Markdown 源码、自包含 HTML 或 PDF 快照。',
     close: '关闭导出对话框',
     formatLegend: '输出格式',
     interactive: '交互式 HTML',
-    interactiveHint: '单文件内嵌运行时。读者可以使用控件，打开时已经应用导出的参数值。',
     static: '静态 HTML',
-    staticHint: '只读快照，不包含运行时和脚本，适合打印和归档。',
     pdf: 'PDF',
-    pdfHint: '将所选状态排版成分页文档并下载。',
-    printPdfHint: '在浏览器打印窗口中选择「另存为 PDF」。',
     stateLegend: '起始值',
     authorInitial: '作者初值',
-    authorInitialHint: '使用文档声明的默认值。每次打开和重置都从相同的值开始。',
     currentPreview: '当前预览状态',
-    currentPreviewHint: '把预览中当前显示的值作为导出起始值。',
     currentUnavailable: '当前没有正在运行且匹配的文档，无法使用预览状态。',
     summaryLegend: '导出摘要',
     summaryParameters: '参数',
@@ -557,11 +382,6 @@ const CHINESE: DemoCopy = {
     noParameters: '这份文档没有公开参数。',
     noCurrent: '当前预览状态暂时无法比较或导出。',
     imageNone: '没有图片：HTML 文件完全自包含。',
-    output: (mode, state) => `将导出${mode}，起始值使用${state}。`,
-    outputInteractive: '交互式 HTML',
-    outputStatic: '静态 HTML',
-    outputInitial: '作者初值',
-    outputCurrent: '当前预览状态',
     compilePending: '正在等待当前源码编译完成…',
     compileFailed: (message) => `请修复编译错误后再导出。${message}`,
     compileUnavailable: '源码编译完成后即可导出。',
@@ -585,7 +405,6 @@ const CHINESE: DemoCopy = {
     previewView: '预览',
     viewSwitch: '编辑视图',
     sourceLabel: 'Reactive MD 源码',
-    stateNote: '编辑时沿用兼容参数；重新运行、切换示例、导入或刷新会重置。',
     diagnosticsRegion: '编译与运行诊断',
     diagnosticsHeading: '诊断',
     diagnosticsCompiling: '编译中',
@@ -615,7 +434,6 @@ const CHINESE: DemoCopy = {
   preview: {
     region: '实时预览',
     heading: '预览',
-    subtitle: '可以直接操作的本地文档',
     startErrorTitle: '无法启动文档',
     preparing: '正在准备交互文档…',
     staleTitle: '正在显示上次成功的预览',
@@ -667,25 +485,6 @@ const CHINESE: DemoCopy = {
     compilingMainThread: '编译中… · 主线程',
     waiting: '等待编译',
     unexpectedError: (message) => `文档出现未预期错误：${message}`,
-  },
-  footer: {
-    bindBefore: '参数用 ',
-    bindBetween: ' 命名，正文用 ',
-    expression: '{{ }}',
-    afterExpression: ' 读取。',
-    guideBefore: '指南内容与仓库 ',
-    guideAfter: ' 保持一致。',
-    trial: '试算仅保存在当前会话，重新运行或刷新即重置。',
-  },
-  embed: {
-    documentTitle: 'Reactive MD 嵌入示例',
-    heading: '本地交互文档可以嵌入你的应用',
-    intro:
-      '两个文档实例使用同一份源码，但各自管理内存状态。重新挂载会从初值开始，刷新页面也不会保留交互结果。',
-    instanceA: '实例 A',
-    instanceB: '实例 B',
-    remount: '重新挂载',
-    back: '返回 Playground',
   },
 };
 

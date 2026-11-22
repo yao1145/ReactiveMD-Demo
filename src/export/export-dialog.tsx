@@ -87,7 +87,6 @@ export function ExportDialog({
   const previousFocus = useRef<HTMLElement | null>(null);
   const taskRef = useRef(0);
   const titleId = useId();
-  const descriptionId = useId();
   const summaryId = useId();
   const [format, setFormat] = useState<ExportFormat>('interactive');
   const mode: ShareableHtmlMode = format === 'pdf' ? 'static' : format;
@@ -210,11 +209,6 @@ export function ExportDialog({
   const imageSummary = resolvedImages.references.length === 0
     ? copy.imageNone
     : IMAGE_COPY[language].summary(resolvedImages.references.length - resolvedImages.missing.length, resolvedImages.references.length);
-  const outputFormat = format === 'pdf' ? copy.pdf : mode === 'interactive' ? copy.outputInteractive : copy.outputStatic;
-  const outputSummary = copy.output(
-    outputFormat,
-    effectiveBaseline === 'current' ? copy.outputCurrent : copy.outputInitial,
-  );
   const htmlDisabled = !compiledDocument
     || resolvedImages.missing.length > 0
     || imageBusy
@@ -297,7 +291,6 @@ export function ExportDialog({
       ref={dialogRef}
       className="export-dialog"
       aria-labelledby={titleId}
-      aria-describedby={descriptionId}
       aria-busy={busy}
       onCancel={(event) => {
         event.preventDefault();
@@ -310,7 +303,6 @@ export function ExportDialog({
       <header className="export-dialog-head">
         <div>
           <h2 id={titleId}>{copy.title}</h2>
-          <p id={descriptionId} className="export-dialog-intro">{copy.description}</p>
         </div>
         <button
           type="button"
@@ -336,7 +328,6 @@ export function ExportDialog({
             />
             <span className="export-option-copy">
               <strong>{copy.interactive}</strong>
-              <span className="export-option-hint">{copy.interactiveHint}</span>
             </span>
           </label>
           <label className={`export-option${format === 'static' ? ' is-selected' : ''}`}>
@@ -349,7 +340,6 @@ export function ExportDialog({
             />
             <span className="export-option-copy">
               <strong>{copy.static}</strong>
-              <span className="export-option-hint">{copy.staticHint}</span>
             </span>
           </label>
           <label className={`export-option${format === 'pdf' ? ' is-selected' : ''}`}>
@@ -357,7 +347,6 @@ export function ExportDialog({
               checked={format === 'pdf'} onChange={() => setFormat('pdf')} />
             <span className="export-option-copy">
               <strong>{copy.pdf}</strong>
-              <span className="export-option-hint">{import.meta.env.DEV ? copy.pdfHint : copy.printPdfHint}</span>
             </span>
           </label>
         </fieldset>
@@ -377,7 +366,6 @@ export function ExportDialog({
             />
             <span className="export-option-copy">
               <strong>{copy.authorInitial}</strong>
-              <span className="export-option-hint">{copy.authorInitialHint}</span>
             </span>
           </label>
           <label
@@ -396,9 +384,7 @@ export function ExportDialog({
             />
             <span className="export-option-copy">
               <strong>{copy.currentPreview}</strong>
-              <span className="export-option-hint">
-                {currentState ? copy.currentPreviewHint : copy.currentUnavailable}
-              </span>
+              {currentState ? null : <span className="export-option-hint">{copy.currentUnavailable}</span>}
             </span>
           </label>
         </fieldset>
@@ -415,7 +401,6 @@ export function ExportDialog({
               <dd>{imageSummary}</dd>
             </div>
           </dl>
-          <p className="export-output">{outputSummary}</p>
         </section>
 
         {resolvedImages.references.length > 0 || imageAssets.length > 0 ? (

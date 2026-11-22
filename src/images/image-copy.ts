@@ -3,7 +3,6 @@ import type { ImageAssetErrorCode } from './image-assets';
 export const IMAGE_COPY = {
   en: {
     title: 'Document images', add: 'Add images', choose: 'Choose file', replace: 'Replace', remove: 'Remove',
-    hint: 'Choose images or paste them into the source editor. PNG, JPEG, GIF or WebP; 8 MiB each, 24 MiB total, up to 64 files. Images stay in this browser and are embedded in HTML exports.',
     missing: 'File needed', ready: 'Ready', unused: 'Not referenced', loading: 'Reading images…',
     storage: 'Images could not be saved in this browser. Export HTML before leaving or refreshing the page.',
     errors: {
@@ -19,7 +18,6 @@ export const IMAGE_COPY = {
   },
   zh: {
     title: '文档图片', add: '添加图片', choose: '选择文件', replace: '替换', remove: '移除',
-    hint: '选择图片，或直接粘贴到源码编辑器。支持 PNG、JPEG、GIF、WebP；单张不超过 8 MiB、合计 24 MiB、最多 64 项。图片保存在当前浏览器中，导出 HTML 时一并内嵌。',
     missing: '待补充文件', ready: '已就绪', unused: '未引用', loading: '正在读取图片…',
     storage: '当前浏览器无法保存图片。离开或刷新页面前，请先导出 HTML。',
     errors: {

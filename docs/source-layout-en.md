@@ -9,10 +9,9 @@
 | File | Role |
 | --- | --- |
 | `src/main.tsx` | Playground entry loaded by `index.html`. Imports the engine and editor styles, the app styles and `app/App`. |
-| `src/embed.tsx` | Embed entry loaded by `embed.html`. Renders independent in-memory documents. |
 | `src/reactive-md-vite.d.ts` | Vite client and virtual-module type declarations. |
 
-These three paths are stable anchors. `index.html`, `embed.html`, the `vite.config.ts` build inputs and the Vitest setup refer to them by path.
+`src/main.tsx` is the stable browser entry. `index.html` and the `vite.config.ts` build input refer to it by path.
 
 ## Groups
 
@@ -28,7 +27,7 @@ These three paths are stable anchors. `index.html`, `embed.html`, the `vite.conf
 | `streaming/` | `fake-stream.ts`, `streaming-sample.tsx`, `streaming-sample.css` | Deterministic streaming sample: tokens-per-second pacing, example or host-authored source, stale-result accounting, and a live streaming preview panel. |
 | `content/` | `examples.ts`, `guide-examples.tsx`, `guide-view.tsx`, `guide-code.css` | Example catalog, the guide view and guide rendering, and guide code styles. Markdown sources stay in the top-level `content/examples/` and `content/guides/` directories. |
 | `ui/` | `i18n.tsx`, `icons.tsx`, `use-editor-height.ts`, `use-scroll-container.ts` | Shared typed copy, the icon set and layout hooks. |
-| `settings/` | `component-mode.ts`, `html-options.ts`, `html-compatibility.tsx` | Component mode host selection, HTML capability model and its controls. |
+| `settings/` | `component-mode.ts`, `html-options.ts` | Component mode host selection and the HTML capability model. |
 | `developer/` | `developer-tools.tsx`, `developer-tools.css` | Developer tools panel for runtime diagnostics and package inspection. |
 
 ## Where new files belong
@@ -49,9 +48,9 @@ These three paths are stable anchors. `index.html`, `embed.html`, the `vite.conf
 ## Styles
 
 - Component CSS lives beside its component in the same group and is imported by that component: `document-tree.tsx` imports `./document-tree.css`, `developer-tools.tsx` imports `./developer-tools.css`.
-- Page-wide styles are loaded from the entries because they apply across the shell and rendered documents: `app/styles.css` and `app/author.css` from both entries, `content/guide-code.css` from `main.tsx`.
+- Page-wide styles are loaded from the entry because they apply across the shell and rendered documents: `app/styles.css` and `app/author.css`, plus `content/guide-code.css`.
 - Engine and editor styles remain package imports: `reactive-md/styles.css` and `reactive-md-editor/styles.css`.
 
 ## Build anchors
 
-`vite.config.ts` registers the React plugin, `reactiveMd({ includeMinimal: true })`, `exportAssets()`, `pdfExport()` and `surveyApi()`, with `index.html` and `embed.html` as build inputs. `reactiveMd()` discovers the component packages in `plugin/` and the theme in `theme/`. `vite.pdf-export.ts` serves the local `/__reactive-md/pdf` endpoint, which renders print-ready HTML through `reactive-md/pdf`. `vite.survey.ts` provides the loopback-only survey HTTP and SSE endpoints used by the network example. `vitest.config.ts` registers only the ReactiveMD and export-asset plugins; the PDF and survey plugins are dev-server only. The `extensions.ts` file at the repository root supplies the Games example metadata and a host export for tests.
+`vite.config.ts` registers the React plugin, `reactiveMd({ includeMinimal: true })`, `exportAssets()`, `pdfExport()` and `surveyApi()`, with `index.html` as the build input. `reactiveMd()` discovers the component packages in `plugin/` and the theme in `theme/`. `vite.pdf-export.ts` serves the local `/__reactive-md/pdf` endpoint, which renders print-ready HTML through `reactive-md/pdf`. `vite.survey.ts` provides the loopback-only survey HTTP and SSE endpoints used by the network example. `vitest.config.ts` registers only the ReactiveMD and export-asset plugins; the PDF and survey plugins are dev-server only. The `extensions.ts` file at the repository root supplies the Games example metadata and a host export for tests.
