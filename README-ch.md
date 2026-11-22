@@ -30,7 +30,7 @@ npm run dev
 
 `npm ci` 需要 `package-lock.json`。在没有 lockfile 的全新检出中，先运行一次 `npm install --legacy-peer-deps`，然后提交结果。
 
-引擎和编辑器以 `vendor/` 下的 tarball 形式提供（`reactive-md` 0.9.0、`reactive-md-editor` 0.2.0）。参阅[包清单与哈希](vendor/README-ch.md)和[候选包更新流程](docs/candidate-package-updates-ch.md)。
+引擎和编辑器以 `vendor/` 下的 tarball 形式提供（`reactive-md` 0.9.1、`reactive-md-editor` 0.2.0）。参阅[包清单与哈希](vendor/README-ch.md)和[候选包更新流程](docs/candidate-package-updates-ch.md)。
 
 科幻主题从 `theme/sci-fi/theme.css` 自动发现，因此声明 `<theme name="sci-fi">` 的文档可以在预览、编辑器与离线导出中正常渲染。
 

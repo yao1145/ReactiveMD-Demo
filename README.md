@@ -38,7 +38,7 @@ dialog, where you can choose Save as PDF.
 
 The games and the theme that the site renders are the directories in [plugin/](plugin/README.md) and [theme/](theme/README.md). The installed game and theme tarballs verify that an npm consumer discovers and compiles those packages; the site imports none of them.
 
-The engine and editor arrive as tarballs under `vendor/` (`reactive-md` 0.9.0 and `reactive-md-editor` 0.2.0). See the [package inventory and hashes](vendor/README.md) and the [candidate update procedure](docs/candidate-package-updates-en.md).
+The engine and editor arrive as tarballs under `vendor/` (`reactive-md` 0.9.1 and `reactive-md-editor` 0.2.0). See the [package inventory and hashes](vendor/README.md) and the [candidate update procedure](docs/candidate-package-updates-en.md).
 
 The sci-fi theme is discovered from `theme/sci-fi/theme.css`, so documents that declare
 `<theme name="sci-fi">` render in the preview, the editor and the offline export.
