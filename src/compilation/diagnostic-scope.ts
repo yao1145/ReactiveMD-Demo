@@ -6,15 +6,22 @@ import { dedupeDiagnostics } from './diagnostics';
 export type DiagnosticOrigin = 'compile' | 'export';
 
 /**
- * Identity of one document source generation. The display name is not part of
- * the identity: switching UI language must not split a scope, while editing the
- * source or switching documents must.
+ * Identity of one compilation generation: a document source plus the compile
+ * options it was compiled with. The display name is not part of the identity:
+ * switching UI language must not split a scope, while editing the source,
+ * switching documents or changing compile options must.
  */
 export interface DiagnosticScope {
   readonly documentKey: string;
   readonly documentName: string;
   readonly sourceDigest: string;
   readonly sourceLength: number;
+  /**
+   * Stable signature of the compile options that affect compilation, as
+   * returned by the engine's `localCompileOptionsKey`. Never holds the options
+   * object itself, so observers and other unstable values stay out of identity.
+   */
+  readonly compileKey: string;
 }
 
 export interface ScopedDiagnostic {
@@ -69,24 +76,28 @@ export function createDiagnosticScope(
   documentKey: string,
   documentName: string,
   source: string,
+  compileKey: string,
 ): DiagnosticScope {
   return {
     documentKey,
     documentName,
     sourceDigest: digestSource(source),
     sourceLength: source.length,
+    compileKey,
   };
 }
 
 export function sameDiagnosticScope(left: DiagnosticScope, right: DiagnosticScope): boolean {
   return left.documentKey === right.documentKey
     && left.sourceDigest === right.sourceDigest
-    && left.sourceLength === right.sourceLength;
+    && left.sourceLength === right.sourceLength
+    && left.compileKey === right.compileKey;
 }
 
 /** Short display label for the panel; never used for identity. */
 export function scopeLabel(scope: DiagnosticScope): string {
-  return `${scope.documentName} · ${scope.sourceDigest.slice(0, 8)}`;
+  const compileDigest = digestSource(scope.compileKey).slice(0, 4);
+  return `${scope.documentName} · ${scope.sourceDigest.slice(0, 8)} · ${compileDigest}`;
 }
 
 const MAX_DIAGNOSTICS = 100;
@@ -97,8 +108,9 @@ const MAX_TRACE_SCOPES = 512;
  * Bounded, scoped history of compiler events and export observations.
  *
  * Compile trace ids identify the generation that scheduled them, so a worker
- * response that arrives after a document or source switch stays filed under the
- * old generation. Export observations carry their operation scope explicitly.
+ * response that arrives after a document, source or compile-option switch stays
+ * filed under the old generation. Export observations carry their operation
+ * scope explicitly.
  */
 export class DiagnosticJournal {
   private scope: DiagnosticScope;

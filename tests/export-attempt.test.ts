@@ -1,17 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import type { Diagnostic } from 'reactive-md';
-import { createDiagnosticReport, emitLocalDiagnostic } from 'reactive-md/observability';
+import { localCompileOptionsKey, type Diagnostic } from 'reactive-md';
+import { createDiagnosticReport, emitLocalDiagnostic, emitLocalTrace } from 'reactive-md/observability';
 import {
   DiagnosticJournal,
   createDiagnosticScope,
+  createScopedObserver,
   latestExportFailureId,
   selectReportObservations,
   type ScopedObservation,
 } from '../src/compilation/diagnostic-scope';
-import { ExportAttempt } from '../src/export/export-attempt';
+import { ExportAttempt, exportFailureDiagnostic } from '../src/export/export-attempt';
 
 const SOURCE = '# Export lifecycle\n\nWorker boundary {{ 1 + 1 }}';
-const scope = createDiagnosticScope('export:lifecycle', 'Lifecycle', SOURCE);
+const scope = createDiagnosticScope('export:lifecycle', 'Lifecycle', SOURCE, localCompileOptionsKey());
 
 function diagnostic(code: string, message = `Message for ${code}`): Diagnostic {
   return {
@@ -247,5 +248,72 @@ describe('export lifecycle in the diagnostic journal', () => {
       ['export-start', undefined, undefined],
       ['export-end', 'printed', 'pdf'],
     ]);
+  });
+});
+
+describe('terminal export failure recoverability', () => {
+  function archivedReport(observations: readonly ScopedObservation[]) {
+    const journal = new DiagnosticJournal(scope);
+    for (const observation of observations) journal.record(observation);
+    const selection = selectReportObservations({
+      scope,
+      current: [],
+      diagnostics: journal.diagnostics,
+      events: journal.events,
+    });
+    return createDiagnosticReport(SOURCE, {
+      diagnostics: selection.diagnostics,
+      events: selection.events,
+    });
+  }
+
+  it('marks the wrapper that ends a failed attempt as not recoverable', () => {
+    const failure = exportFailureDiagnostic({ stage: 'render', format: 'html', mode: 'interactive' });
+    expect(failure.recoverable).toBe(false);
+    const compiler = diagnostic('local.binding.unknown', 'Detailed compiler diagnostic');
+    const observations: ScopedObservation[] = [];
+    const tracked = new ExportAttempt({
+      scope,
+      traceId: 'export-failed',
+      isCurrent: () => true,
+      onObservation: observation => observations.push(observation),
+      now: () => 1,
+      elapsed: () => 1,
+    });
+    expect(tracked.fail(failure.code, [failure, compiler])).toBe(true);
+
+    const report = archivedReport(observations);
+    const wrapper = report.diagnostics.find(item => item.code === 'local.export.failure');
+    expect(wrapper?.recoverable).toBe(false);
+    expect(report.diagnostics.map(item => item.code)).toEqual([
+      'local.export.failure',
+      'local.binding.unknown',
+    ]);
+  });
+
+  it('marks the wrapper of an asset preparation failure as not recoverable', () => {
+    const observations: ScopedObservation[] = [];
+    const operationId = 'export-assets';
+    const observer = createScopedObserver({
+      scope,
+      operationId,
+      onObservation: observation => observations.push(observation),
+    });
+    // Mirrors the dialog's preparation catch: one diagnostic, then the
+    // export-error event that ends the operation.
+    const failure = exportFailureDiagnostic({ stage: 'assets' });
+    emitLocalDiagnostic(observer, failure);
+    emitLocalTrace(observer, {
+      type: 'export-error',
+      traceId: operationId,
+      timestamp: 1,
+      stage: 'assets',
+      code: failure.code,
+    });
+
+    const report = archivedReport(observations);
+    const wrapper = report.diagnostics.find(item => item.code === 'local.export.failure');
+    expect(wrapper?.recoverable).toBe(false);
+    expect(report.diagnostics.map(item => item.code)).toEqual(['local.export.failure']);
   });
 });

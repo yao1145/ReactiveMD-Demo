@@ -21,7 +21,7 @@ import {
   useSyncExternalStore,
   type MouseEvent as ReactMouseEvent,
 } from 'react';
-import type { Diagnostic, SourceRange } from 'reactive-md';
+import { localCompileOptionsKey, type Diagnostic, type SourceRange } from 'reactive-md';
 import type { LocalObserver } from 'reactive-md/observability';
 import { getDemoHost } from '../settings/component-mode';
 import { SURVEY_EXAMPLE_ID } from '../network/survey-contract';
@@ -256,6 +256,10 @@ export default function App() {
   const { config: demoConfig, reactConfig } = getDemoHost(componentMode);
   const network = libraryMode === 'example' && selectedExample === SURVEY_EXAMPLE_ID ? getSurveyNetwork() : undefined;
   const compileOptions = useMemo(() => ({ ...toCompileOptions(htmlOptions), markdownBreaks, strict, config: demoConfig }), [htmlOptions, markdownBreaks, strict, demoConfig]);
+  // The engine's stable option signature names the compile configuration. The
+  // options object itself never enters a scope, so observers and fresh objects
+  // cannot split or merge generations by identity.
+  const compileKey = useMemo(() => localCompileOptionsKey(compileOptions), [compileOptions]);
   const currentExample = localizedExample(
     EXAMPLES.find((item) => item.id === selectedExample) ?? DEFAULT_EXAMPLE,
     language,
@@ -268,11 +272,11 @@ export default function App() {
   const activeDocument = libraryMode === 'documents' ? currentDocument : null;
   const documentKey = activeDocument ? `document:${activeDocument.id}` : `example:${selectedExample}`;
   const documentName = activeDocument?.name ?? currentExample.title;
-  // One scope per document source generation. The journal keeps history for
+  // One scope per compiled source generation. The journal keeps history for
   // the panel, but the report only ever combines entries with this identity.
   const scope = useMemo(
-    () => createDiagnosticScope(documentKey, documentName, source),
-    [documentKey, documentName, source],
+    () => createDiagnosticScope(documentKey, documentName, source, compileKey),
+    [documentKey, documentName, source, compileKey],
   );
   const journalRef = useRef<DiagnosticJournal | null>(null);
   journalRef.current ??= new DiagnosticJournal(scope);

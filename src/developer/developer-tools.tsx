@@ -334,17 +334,17 @@ export function DeveloperTools(props: DeveloperToolsProps) {
     && htmlDefault;
   const badge = defaults ? copy.defaultBadge : copy.modifiedBadge;
   // The panel shows the full current diagnostics plus the retained scoped
-  // history, labelled whenever an entry comes from another document or source.
-  // Entries repeat across the current list and an export's history; keep one
-  // copy per source scope.
+  // history, labelled whenever an entry comes from another document, source or
+  // compile configuration. Entries repeat across the current list and an
+  // export's history; keep one copy per source scope.
   const panelDiagnostics: { diagnostic: Diagnostic; scope: DiagnosticScope }[] = [];
   const seenPanelDiagnostics = new Set<string>();
   for (const entry of [
     ...props.currentDiagnostics.map(diagnostic => ({ diagnostic, scope: props.scope })),
     ...props.observations.diagnostics.map(item => ({ diagnostic: item.diagnostic, scope: item.scope })),
   ]) {
-    const key = `${entry.scope.documentKey}|${entry.scope.sourceDigest}|${entry.diagnostic.code}`
-      + `|${entry.diagnostic.range.start}|${entry.diagnostic.range.end}|${entry.diagnostic.message}`;
+    const key = `${entry.scope.documentKey}|${entry.scope.sourceDigest}|${entry.scope.compileKey}`
+      + `|${entry.diagnostic.code}|${entry.diagnostic.range.start}|${entry.diagnostic.range.end}|${entry.diagnostic.message}`;
     if (seenPanelDiagnostics.has(key)) continue;
     seenPanelDiagnostics.add(key);
     panelDiagnostics.push(entry);

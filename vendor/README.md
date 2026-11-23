@@ -18,8 +18,8 @@ The site renders the local extension source in [plugin/](../plugin/README.md) an
 
 | File | Package | Version |
 | --- | --- | --- |
-| `reactive-md-0.9.2-c172cf501201.tgz` | `reactive-md` | `0.9.2` |
-| `reactive-md-editor-0.2.1-a795b8a34631.tgz` | `reactive-md-editor` | `0.2.1` |
+| `reactive-md-0.9.2-361b3acd5402.tgz` | `reactive-md` | `0.9.2` |
+| `reactive-md-editor-0.2.1-b7fdce7c4114.tgz` | `reactive-md-editor` | `0.2.1` |
 | `reactive-md-sci-fi-theme-1.0.0-525cab7ab93f.tgz` | `reactive-md-sci-fi-theme` | `1.0.0` |
 | `reactive-md-tetris-package-0.1.0-fc1fa620038f.tgz` | `reactive-md-tetris-package` | `0.1.0` |
 | `reactive-md-game-2048-package-0.1.0-ce931218c317.tgz` | `reactive-md-game-2048-package` | `0.1.0` |
@@ -38,8 +38,8 @@ The game packages declare a `reactive-md` peer range of `^0.8.0-next.0` and a Re
 
 Build the package in its own repository, copy the output here with the versioned, content-addressed filename, update the `file:` path in `package.json` and regenerate the lockfile. [docs/candidate-package-updates-en.md](../docs/candidate-package-updates-en.md) records the current engine and editor procedure.
 
-The engine 0.9.2 candidate adds bounded observability, scoped diagnostics and safe fallback scheduling. It is a prepared candidate, not a published release. SHA256 is `c172cf501201f1d2b67202a670bfddec2c271ba35598332f7706537a0755d943`.
+The engine 0.9.2 candidate adds bounded observability, scoped diagnostics, retry ownership and safe fallback scheduling. It is a prepared candidate, not a published release. SHA256 is `361b3acd54024fa46ae8ebd8d04494f943e9f275914bcc666e3748a0eb9ce512`.
 
-The Editor 0.2.1 candidate bundles this engine candidate in its analysis Worker and requires the `reactive-md@^0.9.2` peer. It is also a prepared candidate. SHA256 is `a795b8a34631e26ff897b30b7b20700e2c6588d2175405ec858eab1f0023d1ec`.
+The Editor 0.2.1 candidate bundles this engine candidate in its analysis Worker and requires the `reactive-md@^0.9.2` peer. It is also a prepared candidate. SHA256 is `b7fdce7c4114cd8e2f45d6a93f87bd554f590d54b6e95ab9d09130cf47dffb37`.
 
 The theme fixture was built from commit `351b341` and has SHA256 `525cab7ab93fda6331e8fd5260c2c85aec5935559032bc951ad0ed827f7d4277`.

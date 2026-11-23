@@ -1,5 +1,6 @@
 import type { Diagnostic } from 'reactive-md';
 import {
+  createLocalObservabilityDiagnostic,
   createLocalTraceId,
   emitLocalDiagnostic,
   emitLocalTrace,
@@ -11,6 +12,23 @@ import {
   type DiagnosticScope,
   type ScopedObservation,
 } from '../compilation/diagnostic-scope';
+
+/**
+ * Wrapper diagnostic for an export operation that is ending in failure.
+ *
+ * The engine's observability messages are recoverable by default because the
+ * host decides how to continue. This wrapper closes the running export, so the
+ * report must not describe it as recoverable. Detailed compiler, bundle and SSR
+ * diagnostics keep their own `recoverable` values.
+ */
+export function exportFailureDiagnostic(
+  details: NonNullable<Diagnostic['details']>,
+): Diagnostic {
+  return {
+    ...createLocalObservabilityDiagnostic('local.export.failure', details),
+    recoverable: false,
+  };
+}
 
 /** Stages the engine report keeps for export trace events. */
 export const EXPORT_STAGES = ['compile', 'assets', 'bundle', 'render', 'download', 'pdf'] as const;

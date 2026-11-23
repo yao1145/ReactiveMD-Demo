@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import {
   createLocalStateFile,
+  localCompileOptionsKey,
   serializeLocalState,
   type LocalCompileOptions,
   type LocalDocument,
   type LocalStateFile,
   type LocalValue,
 } from 'reactive-md';
-import { createLocalObservabilityDiagnostic, createLocalTraceId, emitLocalDiagnostic, emitLocalTrace } from 'reactive-md/observability';
+import { createLocalTraceId, emitLocalDiagnostic, emitLocalTrace } from 'reactive-md/observability';
 import {
   createDiagnosticScope,
   createScopedObserver,
@@ -17,7 +18,7 @@ import {
 import { useCopy, useLanguage } from '../ui/i18n';
 import type { EditorComponentMode } from 'reactive-md-editor';
 import { createDemoPdf, printStaticHtml } from './export-pdf';
-import { ExportAttempt } from './export-attempt';
+import { ExportAttempt, exportFailureDiagnostic } from './export-attempt';
 import { resolveDocumentImages, type ImageAsset } from '../images/image-assets';
 import { IMAGE_COPY } from '../images/image-copy';
 import { ImageAssetsPanel } from '../images/image-assets-panel';
@@ -117,11 +118,13 @@ export function ExportDialog({
   // not restart preparation or refetch anything.
   const extensionRoute = documentUsesExtensionBundle(compiledDocument, componentMode);
   const documentReady = compiledDocument !== null && !pending;
-  // Each dialog operation is filed under the source it exports. Without an
-  // explicit scope (tests, embedded hosts), derive one from the current props.
+  // Each dialog operation is filed under the source and compile configuration
+  // it exports. Without an explicit scope (tests, embedded hosts), derive one
+  // from the current props with the same stable option key as the app scope.
+  const compileKey = localCompileOptionsKey(compileOptions);
   const dialogScope = useMemo(
-    () => scope ?? createDiagnosticScope('export', baseName, source),
-    [scope, baseName, source],
+    () => scope ?? createDiagnosticScope('export', baseName, source, compileKey),
+    [scope, baseName, source, compileKey],
   );
 
   const cancelActiveExport = useCallback(() => {
@@ -202,7 +205,9 @@ export function ExportDialog({
       })
       .catch((error: unknown) => {
         if (cancelled) return;
-        const diagnostic = createLocalObservabilityDiagnostic('local.export.failure', { stage: 'assets' });
+        // Resource preparation ends this dialog operation, so its wrapper is
+        // not a recoverable diagnostic even though the engine default is.
+        const diagnostic = exportFailureDiagnostic({ stage: 'assets' });
         emitLocalDiagnostic(observer, diagnostic);
         emitLocalTrace(observer, { type: 'export-error', traceId: operationId, timestamp: Date.now(), stage: 'assets', code: diagnostic.code });
         setAssetsError(formatBuildError(error));
@@ -319,7 +324,7 @@ export function ExportDialog({
       onClose();
     } catch (error) {
       if (task !== taskRef.current) return;
-      const diagnostic = createLocalObservabilityDiagnostic('local.export.failure', { stage: attempt.stage, format: format === 'pdf' ? 'pdf' : 'html', mode });
+      const diagnostic = exportFailureDiagnostic({ stage: attempt.stage, format: format === 'pdf' ? 'pdf' : 'html', mode });
       const diagnostics = error instanceof ShareableHtmlBuildError
         // Keep each compiler, bundle or SSR diagnostic with its own phase and
         // details; the report and panel show the reason, not just the wrapper.
