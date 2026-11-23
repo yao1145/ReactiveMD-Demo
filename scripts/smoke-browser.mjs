@@ -47,7 +47,12 @@ try {
       offline.on('pageerror', error => offlineErrors.push(error.message));
       offline.on('request', request => { if (/^https?:/.test(request.url())) requests.push(request.url()); });
       await offline.goto(pathToFileURL(htmlPath).href);
+      await expect(offline.locator('.local-document')).toHaveAttribute('data-render-mode', 'interactive');
       await expect(offline.locator('.local-document')).toContainText('Current headcount: 2');
+      const offlineSlider = offline.getByRole('slider', { name: 'People', exact: true });
+      await offlineSlider.focus();
+      await offlineSlider.press('ArrowRight');
+      await expect(offline.locator('.local-document')).toContainText('Current headcount: 3');
       expect(offlineErrors).toEqual([]);
       expect(requests).toEqual([]);
       await offline.close();
