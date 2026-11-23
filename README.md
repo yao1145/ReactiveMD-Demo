@@ -28,7 +28,8 @@ The Workshop budget example is at `/?example=minimal-budget`. Switch component
 modes in Developer tools and select PDF in the Export dialog. PDF uses the selected starting
 values. With Playwright Chromium installed (`npx playwright install chromium`),
 the local dev server downloads the PDF. The static site opens the browser print
-dialog, where you can choose Save as PDF.
+dialog, where you save the PDF; the export trace records that path as `printed`
+and a downloaded file as `ok`.
 
 `npm ci` requires `package-lock.json`. On a fresh checkout without a lockfile, run `npm install --legacy-peer-deps` once and commit the result.
 
@@ -42,7 +43,7 @@ dialog, where you can choose Save as PDF.
 
 The games and the theme that the site renders are the directories in [plugin/](plugin/README.md) and [theme/](theme/README.md). The installed game and theme tarballs verify that an npm consumer discovers and compiles those packages; the site imports none of them.
 
-The engine and editor arrive as tarballs under `vendor/` (`reactive-md` 0.9.1 and `reactive-md-editor` 0.2.0). See the [package inventory and hashes](vendor/README.md) and the [candidate update procedure](docs/candidate-package-updates-en.md).
+The engine and editor arrive as tarballs under `vendor/` (`reactive-md` 0.9.2 and `reactive-md-editor` 0.2.1). See the [package inventory and hashes](vendor/README.md) and the [candidate update procedure](docs/candidate-package-updates-en.md).
 
 The sci-fi theme is discovered from `theme/sci-fi/theme.css`, so documents that declare
 `<theme name="sci-fi">` render in the preview, the editor and the offline export.

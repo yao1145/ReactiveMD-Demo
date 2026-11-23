@@ -10,7 +10,14 @@ import type { EditorComponentMode, EditorViewMode } from 'reactive-md-editor';
 import { isDefaultHtmlOptions, type DemoHtmlOptions } from '../settings/html-options';
 import type { Language } from '../ui/i18n';
 import { createDiagnosticReport, formatLocalDiagnostic, type Diagnostic } from 'reactive-md/observability';
-import type { LocalTraceEvent } from 'reactive-md/observability';
+import {
+  sameDiagnosticScope,
+  scopeLabel,
+  selectReportObservations,
+  type DiagnosticScope,
+  type ScopedDiagnostic,
+  type ScopedTraceEvent,
+} from '../compilation/diagnostic-scope';
 import { useScrollContainer } from '../ui/use-scroll-container';
 import {
   CheckIcon,
@@ -43,7 +50,7 @@ export interface DeveloperToolsCopy {
     document: { title: string; import: string; saveCopy: string; restoreExample: string; runAgain: string };
     extensions: { title: string; loaded: string };
     runtime: { title: string; engine: string; editor: string; document: string; mode: string; duration: string; diagnostics: string; documents: string; folders: string; trash: string };
-    trace: { title: string; empty: string; copy: string; failure: string };
+    trace: { title: string; empty: string; copy: string; failure: string; scope: string; scopeHint: string; history: string };
     api: { title: string; copyImport: (name: string, packageName: string) => string; expandGroup: (name: string) => string; collapseGroup: (name: string) => string };
   };
 }
@@ -105,7 +112,15 @@ const COPY: Record<Language, DeveloperToolsCopy> = {
         folders: 'Folders',
         trash: 'Trash',
       },
-      trace: { title: 'Diagnostic events', empty: 'No events yet.', copy: 'Copy diagnostic report', failure: 'Could not copy the report.' },
+      trace: {
+        title: 'Diagnostic events',
+        empty: 'No events yet.',
+        copy: 'Copy diagnostic report',
+        failure: 'Could not copy the report.',
+        scope: 'Report scope',
+        scopeHint: 'Copied reports contain only this document and source.',
+        history: 'Earlier document or source',
+      },
       api: {
         title: 'Interfaces',
         copyImport: (name, packageName) => `Copy import for ${name} from ${packageName}`,
@@ -170,7 +185,15 @@ const COPY: Record<Language, DeveloperToolsCopy> = {
         folders: '文件夹',
         trash: '回收站',
       },
-      trace: { title: '诊断事件', empty: '暂无事件。', copy: '复制诊断报告', failure: '无法复制报告。' },
+      trace: {
+        title: '诊断事件',
+        empty: '暂无事件。',
+        copy: '复制诊断报告',
+        failure: '无法复制报告。',
+        scope: '报告范围',
+        scopeHint: '复制的报告仅包含当前文档和源码。',
+        history: '较早的文档或源码',
+      },
       api: {
         title: '接口',
         copyImport: (name, packageName) => `复制 ${name}（来自 ${packageName}）的 import`,
@@ -215,9 +238,16 @@ export interface DeveloperToolsProps {
   compileDuration: number;
   compileMode: string;
   extensions: readonly { id: string; title: string }[];
-  traceEvents: readonly LocalTraceEvent[];
+  /** Identity of the document source the report is generated for. */
+  scope: DiagnosticScope;
+  /** Diagnostics compiled for that exact source. */
+  currentDiagnostics: readonly Diagnostic[];
+  /** Scoped history retained for the panel; the report selects from it. */
+  observations: {
+    readonly diagnostics: readonly ScopedDiagnostic[];
+    readonly events: readonly ScopedTraceEvent[];
+  };
   source: string;
-  reportDiagnostics: readonly Diagnostic[];
 }
 
 function apiNames(namespace: Record<string, unknown>): string[] {
@@ -303,6 +333,22 @@ export function DeveloperTools(props: DeveloperToolsProps) {
     && props.retainPreviewState === DEFAULT_CAPABILITIES.retain
     && htmlDefault;
   const badge = defaults ? copy.defaultBadge : copy.modifiedBadge;
+  // The panel shows the full current diagnostics plus the retained scoped
+  // history, labelled whenever an entry comes from another document or source.
+  // Entries repeat across the current list and an export's history; keep one
+  // copy per source scope.
+  const panelDiagnostics: { diagnostic: Diagnostic; scope: DiagnosticScope }[] = [];
+  const seenPanelDiagnostics = new Set<string>();
+  for (const entry of [
+    ...props.currentDiagnostics.map(diagnostic => ({ diagnostic, scope: props.scope })),
+    ...props.observations.diagnostics.map(item => ({ diagnostic: item.diagnostic, scope: item.scope })),
+  ]) {
+    const key = `${entry.scope.documentKey}|${entry.scope.sourceDigest}|${entry.diagnostic.code}`
+      + `|${entry.diagnostic.range.start}|${entry.diagnostic.range.end}|${entry.diagnostic.message}`;
+    if (seenPanelDiagnostics.has(key)) continue;
+    seenPanelDiagnostics.add(key);
+    panelDiagnostics.push(entry);
+  }
 
   async function copyImport(packageName: string, name: string) {
     const text = `import { ${name} } from '${packageName}';`;
@@ -331,10 +377,18 @@ export function DeveloperTools(props: DeveloperToolsProps) {
   }
 
   async function copyReport() {
+    // Select from the journal here so the copied document digest, diagnostics
+    // and events always describe the same document source.
+    const selection = selectReportObservations({
+      scope: props.scope,
+      current: props.currentDiagnostics,
+      diagnostics: props.observations.diagnostics,
+      events: props.observations.events,
+    });
     const report = createDiagnosticReport(props.source, {
       package: { editor: editorManifest.version, react: reactVersion, vite: viteManifest.version },
-      diagnostics: props.reportDiagnostics,
-      events: props.traceEvents,
+      diagnostics: selection.diagnostics,
+      events: selection.events,
     });
     try {
       await navigator.clipboard.writeText(JSON.stringify(report, null, 2));
@@ -454,25 +508,38 @@ export function DeveloperTools(props: DeveloperToolsProps) {
           </div>
         </DevCard>
 
-        <DevCard title={copy.cards.trace.title} icon={<InfoIcon />} tone="cyan" badge={String(props.traceEvents.length)}>
+        <DevCard title={copy.cards.trace.title} icon={<InfoIcon />} tone="cyan" badge={String(props.observations.events.length)}>
           <DevAction label={copy.cards.trace.copy} icon={<CopyIcon />} onClick={() => { void copyReport(); }} />
           <p className="dev-empty" role="status">{reportFeedback}</p>
-          {props.traceEvents.length ? <ol className="dev-trace-events" aria-label={copy.cards.trace.title}>
-            {props.traceEvents.slice().reverse().map((event, index) => <li key={`${event.traceId}-${event.type}-${index}`}>
-              <time>{new Date(event.timestamp).toLocaleTimeString()}</time>
-              <code>{event.type}</code>
-              {event.status === undefined ? null : <span>{event.status}</span>}
-              {event.stage === undefined ? null : <span>{event.stage}</span>}
-              {event.requestId === undefined ? null : <span>#{event.requestId}</span>}
-              {event.sourceRevision === undefined ? null : <span>rev {event.sourceRevision}</span>}
-              {event.durationMs === undefined ? null : <span>{event.durationMs} ms</span>}
-            </li>)}
+          <p className="dev-scope-line" data-testid="report-scope" title={copy.cards.trace.scopeHint}>
+            <span>{copy.cards.trace.scope}</span>
+            <code>{scopeLabel(props.scope)}</code>
+          </p>
+          {props.observations.events.length ? <ol className="dev-trace-events" aria-label={copy.cards.trace.title}>
+            {props.observations.events.slice().reverse().map((entry, index) => {
+              const event = entry.event;
+              const current = sameDiagnosticScope(entry.scope, props.scope);
+              return <li key={`${event.traceId}-${event.type}-${index}`} data-scope={current ? 'current' : 'history'}>
+                {current ? null : <span className="dev-scope-tag" title={copy.cards.trace.history}>{scopeLabel(entry.scope)}</span>}
+                <time>{new Date(event.timestamp).toLocaleTimeString()}</time>
+                <code>{event.type}</code>
+                {event.status === undefined ? null : <span>{event.status}</span>}
+                {event.stage === undefined ? null : <span>{event.stage}</span>}
+                {event.requestId === undefined ? null : <span>#{event.requestId}</span>}
+                {event.sourceRevision === undefined ? null : <span>rev {event.sourceRevision}</span>}
+                {event.durationMs === undefined ? null : <span>{event.durationMs} ms</span>}
+              </li>;
+            })}
           </ol> : <p className="dev-empty">{copy.cards.trace.empty}</p>}
-          {props.reportDiagnostics.length ? <ul className="dev-trace-events" aria-label={copy.cards.runtime.diagnostics}>
-            {props.reportDiagnostics.map((item, index) => <li key={`${item.code}-${index}`}>
-              <code>{item.code}</code>
-              <span>{formatLocalDiagnostic(item, props.language)}</span>
-            </li>)}
+          {panelDiagnostics.length ? <ul className="dev-trace-events" aria-label={copy.cards.runtime.diagnostics}>
+            {panelDiagnostics.map((entry, index) => {
+              const current = sameDiagnosticScope(entry.scope, props.scope);
+              return <li key={`${entry.diagnostic.code}-${index}`} data-scope={current ? 'current' : 'history'}>
+                {current ? null : <span className="dev-scope-tag" title={copy.cards.trace.history}>{scopeLabel(entry.scope)}</span>}
+                <code>{entry.diagnostic.code}</code>
+                <span>{formatLocalDiagnostic(entry.diagnostic, props.language)}</span>
+              </li>;
+            })}
           </ul> : null}
         </DevCard>
 

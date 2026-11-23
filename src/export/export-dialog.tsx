@@ -8,10 +8,16 @@ import {
   type LocalValue,
 } from 'reactive-md';
 import { createLocalObservabilityDiagnostic, createLocalTraceId, emitLocalDiagnostic, emitLocalTrace } from 'reactive-md/observability';
-import type { LocalObserver } from 'reactive-md/observability';
+import {
+  createDiagnosticScope,
+  createScopedObserver,
+  type DiagnosticScope,
+  type ScopedObservation,
+} from '../compilation/diagnostic-scope';
 import { useCopy, useLanguage } from '../ui/i18n';
 import type { EditorComponentMode } from 'reactive-md-editor';
 import { createDemoPdf, printStaticHtml } from './export-pdf';
+import { ExportAttempt } from './export-attempt';
 import { resolveDocumentImages, type ImageAsset } from '../images/image-assets';
 import { IMAGE_COPY } from '../images/image-copy';
 import { ImageAssetsPanel } from '../images/image-assets-panel';
@@ -54,7 +60,10 @@ export interface ExportDialogProps {
   imageStorageError: boolean;
   onImageFiles(files: File[], target?: string): void;
   onRemoveImage(url: string): void;
-  observer?: LocalObserver;
+  /** Scope of the current document source; every export attempt is filed under it. */
+  scope?: DiagnosticScope;
+  /** Receives the structured diagnostics and traces of each export attempt. */
+  onObservation?(observation: ScopedObservation): void;
 }
 
 function downloadText(name: string, text: string, type: string): void {
@@ -84,13 +93,16 @@ export function ExportDialog({
   onClose,
   onDownloadMarkdown,
   imageAssets, imageBusy, imageError, imageStorageError, onImageFiles, onRemoveImage,
-  observer,
+  scope, onObservation,
 }: ExportDialogProps) {
   const copy = useCopy().exportDialog;
   const language = useLanguage();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const previousFocus = useRef<HTMLElement | null>(null);
   const taskRef = useRef(0);
+  // The attempt that owns the running export. It is cleared once the attempt
+  // reaches a terminal event, so closing the dialog cannot cancel it twice.
+  const activeAttemptRef = useRef<ExportAttempt | null>(null);
   const titleId = useId();
   const summaryId = useId();
   const [format, setFormat] = useState<ExportFormat>('interactive');
@@ -105,17 +117,33 @@ export function ExportDialog({
   // not restart preparation or refetch anything.
   const extensionRoute = documentUsesExtensionBundle(compiledDocument, componentMode);
   const documentReady = compiledDocument !== null && !pending;
+  // Each dialog operation is filed under the source it exports. Without an
+  // explicit scope (tests, embedded hosts), derive one from the current props.
+  const dialogScope = useMemo(
+    () => scope ?? createDiagnosticScope('export', baseName, source),
+    [scope, baseName, source],
+  );
+
+  const cancelActiveExport = useCallback(() => {
+    const attempt = activeAttemptRef.current;
+    if (!attempt) return;
+    activeAttemptRef.current = null;
+    attempt.cancel();
+  }, []);
 
   const requestClose = useCallback(() => {
-    // Invalidate an in-flight render so closing never downloads later.
+    // Cancel the running attempt while its observer is still current, then
+    // invalidate it so nothing from the closed dialog can write back later.
+    cancelActiveExport();
     taskRef.current += 1;
     onClose();
-  }, [onClose]);
+  }, [cancelActiveExport, onClose]);
 
   // Reset the dialog choices after each close so reopening starts from the
   // documented defaults (interactive HTML, author initial values).
   useEffect(() => {
     if (open) return;
+    cancelActiveExport();
     taskRef.current += 1;
     setFormat('interactive');
     setBaseline('initial');
@@ -124,7 +152,7 @@ export function ExportDialog({
     setPackageVersion(null);
     setBusy(false);
     setBuildError(null);
-  }, [open]);
+  }, [open, cancelActiveExport]);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -144,16 +172,26 @@ export function ExportDialog({
   }, [open]);
 
   useEffect(() => () => {
+    cancelActiveExport();
     const dialog = dialogRef.current;
     if (dialog?.open) dialog.close();
     const target = previousFocus.current;
     previousFocus.current = null;
     if (target?.isConnected) target.focus();
-  }, []);
+  }, [cancelActiveExport]);
 
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
+    const operationId = createLocalTraceId();
+    // Preparation belongs to the dialog's own operation: its failures are kept
+    // with their structured reason instead of the preview's diagnostics.
+    const observer = createScopedObserver({
+      scope: dialogScope,
+      operationId,
+      isCurrent: () => !cancelled,
+      onObservation,
+    });
     setAssetsState('loading');
     setAssetsError(null);
     prepareShareableHtmlAssets(mode, componentMode, { documentReady, usesExtensionBundle: extensionRoute })
@@ -166,14 +204,14 @@ export function ExportDialog({
         if (cancelled) return;
         const diagnostic = createLocalObservabilityDiagnostic('local.export.failure', { stage: 'assets' });
         emitLocalDiagnostic(observer, diagnostic);
-        emitLocalTrace(observer, { type: 'export-error', traceId: createLocalTraceId(), timestamp: Date.now(), stage: 'assets', code: diagnostic.code });
+        emitLocalTrace(observer, { type: 'export-error', traceId: operationId, timestamp: Date.now(), stage: 'assets', code: diagnostic.code });
         setAssetsError(formatBuildError(error));
         setAssetsState('error');
       });
     return () => {
       cancelled = true;
     };
-  }, [open, mode, componentMode, documentReady, extensionRoute, observer]);
+  }, [open, mode, componentMode, documentReady, extensionRoute, dialogScope, onObservation]);
 
   useEffect(() => {
     if (!currentState && baseline === 'current') setBaseline('initial');
@@ -230,10 +268,15 @@ export function ExportDialog({
     taskRef.current = task;
     setBusy(true);
     setBuildError(null);
-    const traceId = createLocalTraceId();
-    const started = performance.now();
-    let stage: 'compile' | 'assets' | 'bundle' | 'render' | 'download' | 'pdf' = 'compile';
-    emitLocalTrace(observer, { type: 'export-start', traceId, timestamp: Date.now() });
+    // One attempt owns the start event, the scoped observer and the eventual
+    // terminal event. Everything the build reports stays in this operation's
+    // scope, and a closed dialog cancels it before the task is invalidated.
+    const attempt = new ExportAttempt({
+      scope: dialogScope,
+      isCurrent: () => task === taskRef.current,
+      onObservation,
+    });
+    activeAttemptRef.current = attempt;
     try {
       const generator = { name: DEMO_GENERATOR_NAME, version: packageVersion };
       const values = effectiveBaseline === 'current' && currentState
@@ -247,45 +290,52 @@ export function ExportDialog({
         mode,
         locale: language,
         colorScheme,
-        compileOptions: { ...compileOptions, observer },
+        compileOptions: { ...compileOptions, observer: attempt.observer },
         componentMode,
         imageAssets,
-        onStage: next => { stage = next; },
+        onStage: next => { attempt.setStage(next); },
       });
       if (task !== taskRef.current) return;
       if (format === 'pdf') {
-        stage = 'pdf';
+        attempt.setStage('pdf');
         if (import.meta.env.DEV) {
           const pdf = await createDemoPdf(result.html);
           if (task !== taskRef.current) return;
-          stage = 'download';
+          attempt.setStage('download');
           downloadFile(`${baseName}.pdf`, pdf);
+          attempt.succeed('ok');
         } else {
           await printStaticHtml(result.html, () => task === taskRef.current);
           if (task !== taskRef.current) return;
+          // The browser dialog controls saving, so a completed print
+          // interaction is all this path can confirm.
+          attempt.succeed('printed');
         }
       } else {
-        stage = 'download';
+        attempt.setStage('download');
         downloadText(`${baseName}.html`, result.html, 'text/html;charset=utf-8');
+        attempt.succeed('ok');
       }
-      emitLocalTrace(observer, { type: 'export-end', traceId, timestamp: Date.now(), durationMs: Math.round(performance.now() - started) });
       onClose();
     } catch (error) {
       if (task !== taskRef.current) return;
-      const diagnostic = createLocalObservabilityDiagnostic('local.export.failure', { stage, format: format === 'pdf' ? 'pdf' : 'html', mode });
-      emitLocalDiagnostic(observer, diagnostic);
-      if (error instanceof ShareableHtmlBuildError) {
-        for (const item of error.diagnostics) emitLocalDiagnostic(observer, item);
-      }
-      emitLocalTrace(observer, { type: 'export-error', traceId, timestamp: Date.now(), stage, code: diagnostic.code, durationMs: Math.round(performance.now() - started) });
+      const diagnostic = createLocalObservabilityDiagnostic('local.export.failure', { stage: attempt.stage, format: format === 'pdf' ? 'pdf' : 'html', mode });
+      const diagnostics = error instanceof ShareableHtmlBuildError
+        // Keep each compiler, bundle or SSR diagnostic with its own phase and
+        // details; the report and panel show the reason, not just the wrapper.
+        ? [diagnostic, ...error.diagnostics]
+        : [diagnostic];
+      attempt.fail(diagnostic.code, diagnostics);
       setBuildError(formatBuildError(error));
     } finally {
+      if (activeAttemptRef.current === attempt) activeAttemptRef.current = null;
       if (task === taskRef.current) setBusy(false);
     }
   };
 
   const handleMarkdown = () => {
     if (busy) return;
+    cancelActiveExport();
     taskRef.current += 1;
     onDownloadMarkdown();
     onClose();
@@ -374,6 +424,12 @@ export function ExportDialog({
             </span>
           </label>
         </fieldset>
+
+        {format === 'pdf' ? (
+          <p className="export-status export-pdf-hint">
+            {import.meta.env.DEV ? copy.pdfDownloadHint : copy.pdfPrintHint}
+          </p>
+        ) : null}
 
         <fieldset
           className="export-fieldset"

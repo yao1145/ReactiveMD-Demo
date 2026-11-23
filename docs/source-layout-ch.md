@@ -19,9 +19,9 @@
 | --- | --- | --- |
 | `app/` | `App.tsx`、`styles.css`、`author.css` | Playground 外壳。组合编辑器、预览、文档库、大纲、对话框和开发者工具，保存应用状态并负责连接。样式表覆盖页面外壳、工作台布局和创作工具栏。 |
 | `documents/` | `document-library.ts`、`document-library-codec.ts`、`document-tree.tsx`、`document-tree.css`、`document-outline.tsx`、`document-outline.css`、`document-outline-model.ts`、`use-draft-persistence.ts`、`workspace-storage.ts` | 个人文档库模型及其带版本号的存储编解码、文件夹与回收站处理、示例草稿持久化、侧栏文档树和标题大纲工作区。 |
-| `compilation/` | `use-local-compilation.ts`、`local-compile-worker.ts`、`preview-state.ts`、`diagnostics.ts`、`diagnostic-list.tsx`、`component-state-storage.ts` | 基于 Worker 的本地编译 hook、编译 Worker 入口、临时预览会话、诊断辅助函数与列表，以及组件进度存储。 |
+| `compilation/` | `use-local-compilation.ts`、`local-compile-worker.ts`、`preview-state.ts`、`diagnostics.ts`、`diagnostic-scope.ts`、`diagnostic-list.tsx`、`component-state-storage.ts` | 基于 Worker 的本地编译 hook、编译 Worker 入口、临时预览会话、诊断辅助函数与列表、带作用域的诊断与链路历史，以及组件进度存储。 |
 | `images/` | `image-assets.ts`、`image-assets-panel.tsx`、`image-copy.ts`、`use-document-images.ts`、`example-images.ts` | 图片校验与限额、IndexedDB 存储、内置示例图片、图片面板及其文案。 |
-| `export/` | `export-dialog.tsx`、`export-html.ts`、`export-pdf.ts` | 导出对话框、可分享 HTML 的生成，以及 PDF 下载与浏览器打印辅助函数。 |
+| `export/` | `export-dialog.tsx`、`export-html.ts`、`export-pdf.ts`、`export-attempt.ts` | 导出对话框、可分享 HTML 的生成、PDF 下载与浏览器打印辅助函数，以及负责开始与终态链路事件的导出尝试。 |
 | `preview/` | `local-preview.tsx`、`preview-fullscreen.tsx`、`preview-fullscreen.css` | 由运行时驱动的预览界面，负责运行时会话生命周期、组件进度和诊断；以及预览全屏开关、原生 Fullscreen API 处理和视口回退覆盖层。 |
 | `network/` | `survey-contract.ts`、`survey-network.ts` | 联网问卷示例的契约（端点路径、参与者请求头和载荷校验），以及仅在开发环境使用的 HTTP 提交与 SSE 结果客户端。 |
 | `streaming/` | `fake-stream.ts`、`streaming-sample.tsx`、`streaming-sample.css` | 确定性的流式示例：按每秒 token 数播放、示例或宿主源码、过期结果统计，并提供实时流式预览面板。 |
@@ -53,6 +53,6 @@
 
 ## 构建锚点
 
-应用为编译和导出提供稳定的 `LocalObserver`。开发者工具显示最近 50 条链路事件，并复制包含引擎、Editor、React 和 Vite 版本的 `reactive-md-diagnostic/v1` 报告。报告包含浏览器环境、源码摘要、诊断位置和选定资源字段。导出失败携带对应阶段，包括 PDF 渲染和下载。报告生成器脱敏源码相关的自由文本和资源 owner 路径。
+应用为编译和导出提供稳定的 `LocalObserver`。开发者工具显示最近 50 条链路事件以及保留的作用域历史，并复制包含引擎、Editor、React 和 Vite 版本的 `reactive-md-diagnostic/v1` 报告。报告只组合当前文档源码下的诊断和事件；面板会标注其他文档或其他源码代次的条目。报告包含浏览器环境、源码摘要、诊断位置和选定资源字段。导出失败保留最近一次尝试的编译、bundle 和 SSR 结构化诊断。每次导出都会发出 `export-start` 和恰好一个终态事件，两者带相同的 trace id、阶段和耗时：文件下载完成时是 `export-end`（`ok`），浏览器打印交互结束时是 `export-end`（`printed`），失败时是 `export-error`（`failed` 与失败码），导出进行中关闭对话框时是 `export-cancel`（`cancelled`）。PDF 由浏览器打印窗口保存，所以打印路径确认的是交互结束，而不是文件已保存。取消会保留该次尝试此前的观察，并丢弃之后到达的结果。报告生成器脱敏源码相关的自由文本和资源 owner 路径。
 
 `vite.config.ts` 注册 React 插件、`reactiveMd({ includeMinimal: true })`、`exportAssets()`、`pdfExport()` 和 `surveyApi()`，并以 `index.html` 作为构建输入。`reactiveMd()` 发现 `plugin/` 中的组件包与 `theme/` 中的主题。`vite.pdf-export.ts` 提供本地 `/__reactive-md/pdf` 端点，通过 `reactive-md/pdf` 渲染供打印的 HTML。`vite.survey.ts` 提供联网问卷示例使用、仅限本机回环的 HTTP 与 SSE 端点。`vitest.config.ts` 只注册 ReactiveMD 与导出资源插件；PDF 与问卷插件仅在开发服务器中生效。仓库根目录的 `extensions.ts` 提供 Games 示例元数据和供测试使用的 host 导出。

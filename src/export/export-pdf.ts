@@ -31,7 +31,9 @@ export async function createDemoPdf(html: string): Promise<Blob> {
 /**
  * Print the same static output on a browser-only deployment. The iframe gets no
  * script capability, and a failed image decode stops the print instead of
- * producing a document that silently lacks images.
+ * producing a document that silently lacks images. Resolving means the print
+ * interaction finished; saving the PDF happens in the browser print dialog, so
+ * the export trace reports `printed` rather than a completed download.
  */
 export async function printStaticHtml(html: string, isCurrent: () => boolean): Promise<void> {
   if (!isCurrent()) return;

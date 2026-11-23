@@ -77,6 +77,8 @@ export interface DemoCopy {
     exportHtml: string;
     exportPdf: string;
     printPdf: string;
+    pdfDownloadHint: string;
+    pdfPrintHint: string;
     exportMarkdown: string;
     exportState: string;
     exportStateHint: string;
@@ -233,6 +235,10 @@ const ENGLISH: DemoCopy = {
     exportHtml: 'Export HTML',
     exportPdf: 'Download PDF',
     printPdf: 'Print or save PDF',
+    pdfDownloadHint:
+      'The local dev server renders the PDF and downloads the file directly.',
+    pdfPrintHint:
+      'The browser print dialog opens for saving. The export trace records the print interaction as printed.',
     exportMarkdown: 'Download Markdown',
     exportState: 'Save current state',
     exportStateHint:
@@ -392,6 +398,8 @@ const CHINESE: DemoCopy = {
     exportHtml: '导出 HTML',
     exportPdf: '下载 PDF',
     printPdf: '打印或保存 PDF',
+    pdfDownloadHint: '本地开发服务器渲染 PDF 并直接下载文件。',
+    pdfPrintHint: '浏览器打印窗口负责保存。导出追踪把打印交互记为 printed。',
     exportMarkdown: '下载 Markdown',
     exportState: '保存当前状态',
     exportStateHint: '把当前预览参数下载为 reactive-md-state/v1 文件，供 CLI 构建使用。',

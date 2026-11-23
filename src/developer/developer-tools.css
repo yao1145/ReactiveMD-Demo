@@ -516,3 +516,27 @@
 .dev-trace-events { margin: 12px 0 0; padding: 0; list-style: none; max-height: 240px; overflow: auto; }
 .dev-trace-events li { display: flex; flex-wrap: wrap; gap: 8px; padding: 6px 8px; border-top: 1px solid var(--border-subtle, #d8dee8); font-size: 12px; }
 .dev-trace-events time { color: var(--text-muted, #667085); }
+
+.dev-scope-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  margin: 10px 0 0;
+  padding: 6px 8px 0;
+  border-top: 1px solid var(--border-subtle, #d8dee8);
+  color: var(--text-muted, #667085);
+  font-size: 11px;
+}
+
+.dev-scope-line code {
+  color: var(--ink-soft);
+  overflow-wrap: anywhere;
+}
+
+.dev-scope-tag {
+  flex: 0 0 100%;
+  color: var(--text-muted, #667085);
+  font-size: 10px;
+  overflow-wrap: anywhere;
+}

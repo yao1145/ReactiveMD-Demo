@@ -4,6 +4,11 @@ import { GuideView } from '../content/guide-view';
 import { StreamingSample } from '../streaming/streaming-sample';
 import { DiagnosticList } from '../compilation/diagnostic-list';
 import { dedupeDiagnostics } from '../compilation/diagnostics';
+import {
+  DiagnosticJournal,
+  createDiagnosticScope,
+  type ScopedObservation,
+} from '../compilation/diagnostic-scope';
 import { DEFAULT_EXAMPLE, SELECTION_KEY, browserStorage, savedItem, initialLanguage, initialExampleId, savedSource, writeLibraryMode } from '../documents/workspace-storage';
 import { useDraftPersistence } from '../documents/use-draft-persistence';
 import {
@@ -17,7 +22,7 @@ import {
   type MouseEvent as ReactMouseEvent,
 } from 'react';
 import type { Diagnostic, SourceRange } from 'reactive-md';
-import type { LocalObserver, LocalTraceEvent } from 'reactive-md/observability';
+import type { LocalObserver } from 'reactive-md/observability';
 import { getDemoHost } from '../settings/component-mode';
 import { SURVEY_EXAMPLE_ID } from '../network/survey-contract';
 import { getSurveyNetwork } from '../network/survey-network';
@@ -251,21 +256,51 @@ export default function App() {
   const { config: demoConfig, reactConfig } = getDemoHost(componentMode);
   const network = libraryMode === 'example' && selectedExample === SURVEY_EXAMPLE_ID ? getSurveyNetwork() : undefined;
   const compileOptions = useMemo(() => ({ ...toCompileOptions(htmlOptions), markdownBreaks, strict, config: demoConfig }), [htmlOptions, markdownBreaks, strict, demoConfig]);
-  const [traceEvents, setTraceEvents] = useState<LocalTraceEvent[]>([]);
-  const [observedDiagnostics, setObservedDiagnostics] = useState<Diagnostic[]>([]);
-  const observer = useMemo<LocalObserver>(() => ({
-    onTrace: event => setTraceEvents(previous => [...previous, event].slice(-50)),
-    onDiagnostic: diagnostic => {
-      if (diagnostic.phase === 'worker' || diagnostic.phase === 'export' || diagnostic.phase === 'resource') {
-        setObservedDiagnostics(previous => [...previous, diagnostic].slice(-50));
-      }
-    },
-  }), []);
-  const compilation = useLocalCompilation(source, compileOptions, true, editHint.current, observer);
   const currentExample = localizedExample(
     EXAMPLES.find((item) => item.id === selectedExample) ?? DEFAULT_EXAMPLE,
     language,
   );
+  const currentDocument = useMemo(() => {
+    const id = libraryState.selectedId;
+    if (!id) return null;
+    return libraryState.documents.find((item) => item.id === id) ?? null;
+  }, [libraryState.documents, libraryState.selectedId]);
+  const activeDocument = libraryMode === 'documents' ? currentDocument : null;
+  const documentKey = activeDocument ? `document:${activeDocument.id}` : `example:${selectedExample}`;
+  const documentName = activeDocument?.name ?? currentExample.title;
+  // One scope per document source generation. The journal keeps history for
+  // the panel, but the report only ever combines entries with this identity.
+  const scope = useMemo(
+    () => createDiagnosticScope(documentKey, documentName, source),
+    [documentKey, documentName, source],
+  );
+  const journalRef = useRef<DiagnosticJournal | null>(null);
+  journalRef.current ??= new DiagnosticJournal(scope);
+  const journal = journalRef.current;
+  journal.setScope(scope);
+  const [journalVersion, setJournalVersion] = useState(0);
+  const observer = useMemo<LocalObserver>(() => ({
+    onTrace: event => {
+      journal.recordCompileEvent(event);
+      setJournalVersion(version => version + 1);
+    },
+    onDiagnostic: diagnostic => {
+      journal.recordCompileDiagnostic(diagnostic);
+      setJournalVersion(version => version + 1);
+    },
+  }), [journal]);
+  const observations = useMemo(
+    () => ({
+      diagnostics: [...journal.diagnostics],
+      events: [...journal.events],
+    }),
+    [journal, journalVersion],
+  );
+  const recordObservation = useCallback((observation: ScopedObservation) => {
+    journal.record(observation);
+    setJournalVersion(version => version + 1);
+  }, [journal]);
+  const compilation = useLocalCompilation(source, compileOptions, true, editHint.current, observer);
   const compiled = compilation.result;
   const exampleOptions = useMemo(() => localizedExamples(language), [language]);
   const activeDocumentCount = useMemo(() => activeDocuments(libraryState).length, [libraryState]);
@@ -276,13 +311,6 @@ export default function App() {
   const extensionExamples = useMemo(() => exampleOptions
     .filter(example => example.section === 'reference')
     .map(example => ({ id: example.id, title: example.title })), [exampleOptions]);
-  const currentDocument = useMemo(() => {
-    const id = libraryState.selectedId;
-    if (!id) return null;
-    return libraryState.documents.find((item) => item.id === id) ?? null;
-  }, [libraryState.documents, libraryState.selectedId]);
-  const activeDocument = libraryMode === 'documents' ? currentDocument : null;
-  const documentKey = activeDocument ? `document:${activeDocument.id}` : `example:${selectedExample}`;
   const exportBaseName = activeDocument ? documentFileStem(activeDocument.name) : selectedExample;
 
   useEffect(() => {
@@ -868,9 +896,10 @@ export default function App() {
               compileDuration={compilation.duration}
               compileMode={compilation.mode ?? 'idle'}
               extensions={extensionExamples}
-              traceEvents={traceEvents}
+              scope={scope}
+              currentDiagnostics={currentDiagnostics}
+              observations={observations}
               source={source}
-              reportDiagnostics={dedupeDiagnostics([...currentDiagnostics, ...observedDiagnostics])}
             />}>
             <section id="source-pane" className="pane pane-editor" aria-label={copy.editor.region}
               onClickCapture={captureImageInsert}
@@ -996,7 +1025,8 @@ export default function App() {
           dark={dark}
           onClose={closeExportDialog}
           onDownloadMarkdown={exportSource}
-          observer={observer}
+          scope={scope}
+          onObservation={recordObservation}
         />
       </div>
     </LanguageProvider>

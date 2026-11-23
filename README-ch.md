@@ -30,11 +30,11 @@ npm run dev
 
 打开 `http://127.0.0.1:5173`。
 
-打开 `/?example=minimal-budget` 试用工作坊预算示例。在「开发者工具」中切换默认与精简组件，在「导出」对话框中选择 PDF。PDF 使用所选起始值。本地服务安装 Chromium 后可直接下载 PDF，安装命令为 `npx playwright install chromium`。静态站点打开浏览器打印窗口，可在其中另存为 PDF。
+打开 `/?example=minimal-budget` 试用工作坊预算示例。在「开发者工具」中切换默认与精简组件，在「导出」对话框中选择 PDF。PDF 使用所选起始值。本地服务安装 Chromium 后可直接下载 PDF，安装命令为 `npx playwright install chromium`。静态站点打开浏览器打印窗口，在其中保存 PDF；导出追踪把这条路径记为 `printed`，把下载的文件记为 `ok`。
 
 `npm ci` 需要 `package-lock.json`。在没有 lockfile 的全新检出中，先运行一次 `npm install --legacy-peer-deps`，然后提交结果。
 
-引擎和编辑器以 `vendor/` 下的 tarball 形式提供（`reactive-md` 0.9.1、`reactive-md-editor` 0.2.0）。参阅[包清单与哈希](vendor/README-ch.md)和[候选包更新流程](docs/candidate-package-updates-ch.md)。
+引擎和编辑器以 `vendor/` 下的 tarball 形式提供（`reactive-md` 0.9.2、`reactive-md-editor` 0.2.1）。参阅[包清单与哈希](vendor/README-ch.md)和[候选包更新流程](docs/candidate-package-updates-ch.md)。
 
 科幻主题从 `theme/sci-fi/theme.css` 自动发现，因此声明 `<theme name="sci-fi">` 的文档可以在预览、编辑器与离线导出中正常渲染。
 
