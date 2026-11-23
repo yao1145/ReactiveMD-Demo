@@ -257,6 +257,21 @@
   background: inherit;
 }
 
+/* Entrance motion, matching the user guide view. */
+.streaming-view {
+  animation: rmd-chrome-rise var(--motion-slow) var(--ease-standard) 120ms backwards;
+}
+
+.streaming-hero,
+.streaming-toolbar {
+  animation: rmd-chrome-fade var(--motion-base) var(--ease-standard) 160ms backwards;
+}
+
+.streaming-grid,
+.streaming-diagnostics {
+  animation: rmd-chrome-fade var(--motion-slow) var(--ease-standard) 120ms backwards;
+}
+
 @media (max-width: 960px) {
   .streaming-grid,
   .streaming-diagnostics {
