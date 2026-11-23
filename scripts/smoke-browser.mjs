@@ -3,7 +3,7 @@ import { createServer } from 'vite';
 import { mkdir } from 'node:fs/promises';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
-import { openWorkbench, clickWorkbenchAction, replaceWorkbenchSource } from './workbench-ui.mjs';
+import { openWorkbench, clickWorkbenchAction, replaceWorkbenchSource, openDeveloperCard } from './workbench-ui.mjs';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const server = process.env.DEMO_URL ? null : await createServer({ root, server: { host: '127.0.0.1', port: 0 } });
@@ -16,6 +16,7 @@ await mkdir('artifacts/browser-smoke', { recursive: true });
 try {
   for (const width of [1440, 390]) {
     const page = await browser.newPage({ viewport: { width, height: 900 } });
+    await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
     await openWorkbench(page, baseURL);
@@ -56,9 +57,44 @@ try {
       expect(offlineErrors).toEqual([]);
       expect(requests).toEqual([]);
       await offline.close();
+
+      const exportCard = await openDeveloperCard(page, 'Export');
+      await exportCard.getByRole('button', { name: 'Open export dialog', exact: true }).click();
+      await page.route('**/__reactive-md/pdf', route => route.fulfill({ status: 500, body: 'PDF test failure' }));
+      const dialog = page.getByRole('dialog');
+      await dialog.getByRole('radio', { name: 'PDF', exact: true }).check();
+      await dialog.getByRole('button', { name: 'Download PDF', exact: true }).click();
+      await expect(dialog.locator('[role=alert]')).toContainText('PDF test failure');
+      await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
+      await page.unroute('**/__reactive-md/pdf');
+      const traceCard = await openDeveloperCard(page, 'Diagnostic events');
+      await expect(traceCard.locator('ol')).toContainText('export-end');
+      await expect(traceCard.locator('ol')).toContainText('export-error');
+      await expect(traceCard.locator('ul')).toContainText('local.export.failure');
+      await traceCard.getByRole('button', { name: 'Copy diagnostic report', exact: true }).click();
+      await expect(traceCard.getByRole('status')).toHaveText('Copied');
+      const report = await page.evaluate(async () => JSON.parse(await navigator.clipboard.readText()));
+      expect(report.schema).toBe('reactive-md-diagnostic/v1');
+      expect(report.environment.runtime).toBe('browser');
+      expect(report.package.editor).toBeTruthy();
+      expect(report.package.react).toBeTruthy();
+      expect(report.package.vite).toBeTruthy();
+      expect(report.document.sourceDigest).toBeTruthy();
+      expect(report.document.source).toBeUndefined();
+      expect(report.diagnostics).toContainEqual(expect.objectContaining({ code: 'local.export.failure', details: expect.objectContaining({ stage: 'pdf' }) }));
     }
     await replaceWorkbenchSource(page, '# Migration check\n\nWorker boundary {{ 2 + 1 }}');
     await expect(page.locator('.local-document')).toContainText('Worker boundary 3');
+    if (width === 1440) {
+      for (let revision = 0; revision < 26; revision++) {
+        await replaceWorkbenchSource(page, `# Trace check ${revision}\n\nWorker boundary {{ 2 + 1 }}`);
+        await expect(page.locator('.local-document')).toContainText(`Trace check ${revision}`);
+      }
+      const traceCard = await openDeveloperCard(page, 'Diagnostic events');
+      await expect(traceCard.locator('ol > li')).toHaveCount(50);
+      await expect(traceCard.locator('ol')).toContainText('worker-response');
+      await page.screenshot({ path: 'artifacts/browser-smoke/diagnostic-events.png', fullPage: true });
+    }
     expect(errors).toEqual([]);
     await page.close();
   }

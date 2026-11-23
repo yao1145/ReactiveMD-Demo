@@ -512,3 +512,7 @@
   from { opacity: 0; transform: translateY(-3px); }
   to { opacity: 1; transform: none; }
 }
+
+.dev-trace-events { margin: 12px 0 0; padding: 0; list-style: none; max-height: 240px; overflow: auto; }
+.dev-trace-events li { display: flex; flex-wrap: wrap; gap: 8px; padding: 6px 8px; border-top: 1px solid var(--border-subtle, #d8dee8); font-size: 12px; }
+.dev-trace-events time { color: var(--text-muted, #667085); }

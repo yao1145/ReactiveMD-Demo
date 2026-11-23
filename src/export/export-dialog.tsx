@@ -7,6 +7,8 @@ import {
   type LocalStateFile,
   type LocalValue,
 } from 'reactive-md';
+import { createLocalObservabilityDiagnostic, createLocalTraceId, emitLocalDiagnostic, emitLocalTrace } from 'reactive-md/observability';
+import type { LocalObserver } from 'reactive-md/observability';
 import { useCopy, useLanguage } from '../ui/i18n';
 import type { EditorComponentMode } from 'reactive-md-editor';
 import { createDemoPdf, printStaticHtml } from './export-pdf';
@@ -18,6 +20,7 @@ import {
   countParameterDifferences,
   documentUsesExtensionBundle,
   formatBuildError,
+  ShareableHtmlBuildError,
   prepareShareableHtmlAssets,
   DEMO_GENERATOR_NAME,
   type ShareableColorScheme,
@@ -51,6 +54,7 @@ export interface ExportDialogProps {
   imageStorageError: boolean;
   onImageFiles(files: File[], target?: string): void;
   onRemoveImage(url: string): void;
+  observer?: LocalObserver;
 }
 
 function downloadText(name: string, text: string, type: string): void {
@@ -80,6 +84,7 @@ export function ExportDialog({
   onClose,
   onDownloadMarkdown,
   imageAssets, imageBusy, imageError, imageStorageError, onImageFiles, onRemoveImage,
+  observer,
 }: ExportDialogProps) {
   const copy = useCopy().exportDialog;
   const language = useLanguage();
@@ -159,13 +164,16 @@ export function ExportDialog({
       })
       .catch((error: unknown) => {
         if (cancelled) return;
+        const diagnostic = createLocalObservabilityDiagnostic('local.export.failure', { stage: 'assets' });
+        emitLocalDiagnostic(observer, diagnostic);
+        emitLocalTrace(observer, { type: 'export-error', traceId: createLocalTraceId(), timestamp: Date.now(), stage: 'assets', code: diagnostic.code });
         setAssetsError(formatBuildError(error));
         setAssetsState('error');
       });
     return () => {
       cancelled = true;
     };
-  }, [open, mode, componentMode, documentReady, extensionRoute]);
+  }, [open, mode, componentMode, documentReady, extensionRoute, observer]);
 
   useEffect(() => {
     if (!currentState && baseline === 'current') setBaseline('initial');
@@ -222,6 +230,10 @@ export function ExportDialog({
     taskRef.current = task;
     setBusy(true);
     setBuildError(null);
+    const traceId = createLocalTraceId();
+    const started = performance.now();
+    let stage: 'compile' | 'assets' | 'bundle' | 'render' | 'download' | 'pdf' = 'compile';
+    emitLocalTrace(observer, { type: 'export-start', traceId, timestamp: Date.now() });
     try {
       const generator = { name: DEMO_GENERATOR_NAME, version: packageVersion };
       const values = effectiveBaseline === 'current' && currentState
@@ -235,26 +247,38 @@ export function ExportDialog({
         mode,
         locale: language,
         colorScheme,
-        compileOptions,
+        compileOptions: { ...compileOptions, observer },
         componentMode,
         imageAssets,
+        onStage: next => { stage = next; },
       });
       if (task !== taskRef.current) return;
       if (format === 'pdf') {
+        stage = 'pdf';
         if (import.meta.env.DEV) {
           const pdf = await createDemoPdf(result.html);
           if (task !== taskRef.current) return;
+          stage = 'download';
           downloadFile(`${baseName}.pdf`, pdf);
         } else {
           await printStaticHtml(result.html, () => task === taskRef.current);
           if (task !== taskRef.current) return;
         }
       } else {
+        stage = 'download';
         downloadText(`${baseName}.html`, result.html, 'text/html;charset=utf-8');
       }
+      emitLocalTrace(observer, { type: 'export-end', traceId, timestamp: Date.now(), durationMs: Math.round(performance.now() - started) });
       onClose();
     } catch (error) {
-      if (task === taskRef.current) setBuildError(formatBuildError(error));
+      if (task !== taskRef.current) return;
+      const diagnostic = createLocalObservabilityDiagnostic('local.export.failure', { stage, format: format === 'pdf' ? 'pdf' : 'html', mode });
+      emitLocalDiagnostic(observer, diagnostic);
+      if (error instanceof ShareableHtmlBuildError) {
+        for (const item of error.diagnostics) emitLocalDiagnostic(observer, item);
+      }
+      emitLocalTrace(observer, { type: 'export-error', traceId, timestamp: Date.now(), stage, code: diagnostic.code, durationMs: Math.round(performance.now() - started) });
+      setBuildError(formatBuildError(error));
     } finally {
       if (task === taskRef.current) setBusy(false);
     }

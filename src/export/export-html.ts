@@ -26,8 +26,10 @@ const FALLBACK_PACKAGE_VERSION = '0.0.0';
 
 export type ShareableHtmlMode = 'interactive' | 'static';
 export type ShareableColorScheme = 'light' | 'dark' | 'auto';
+export type ShareableHtmlStage = 'compile' | 'assets' | 'bundle' | 'render';
 
 export interface ShareableHtmlBuildOptions {
+  onStage?: (stage: ShareableHtmlStage) => void;
   source: string;
   state: LocalStateFile;
   mode: ShareableHtmlMode;
@@ -467,6 +469,10 @@ export function formatBuildError(error: unknown): string {
 export async function buildShareableHtml(
   options: ShareableHtmlBuildOptions,
 ): Promise<ShareableHtmlBuildResult> {
+  const reportStage = (stage: ShareableHtmlStage) => {
+    try { options.onStage?.(stage); } catch { /* Telemetry cannot affect an export. */ }
+  };
+  reportStage('compile');
   const minimal = options.componentMode === 'minimal';
   const { config: demoConfig, reactConfig, resources, notices } = getDemoHost(options.componentMode);
   const { source, state, mode } = options;
@@ -479,6 +485,7 @@ export async function buildShareableHtml(
     throw new ShareableHtmlBuildError('The document does not compile.', compiled.diagnostics);
   }
   const document = compiled.document;
+  reportStage('assets');
   const usesExtensions = documentUsesExtensionBundle(document, options.componentMode);
   if (usesExtensions && compileOptions.config.key !== demoConfig.key) {
     throw new ShareableHtmlBuildError('This document requires an extension configuration that is not installed in the Demo.');
@@ -514,6 +521,7 @@ export async function buildShareableHtml(
     ? notices.map(notice => [notice.id, notice.license, notice.text].filter(Boolean).join('\n')).join('\n\n')
     : '';
   if (usesExtensions && mode === 'interactive') {
+    reportStage('bundle');
     // Vite updates the default export in place during a theme refresh.
     const { default: built } = await (minimal ? loadMinimalBundle() : loadDefaultBundle());
     if ('error' in built) throw new ShareableHtmlBuildError(built.error, built.diagnostics);
@@ -524,6 +532,7 @@ export async function buildShareableHtml(
     extensionNotices = built.notices;
   }
   const title = options.title?.trim() || deriveDocumentTitle(document);
+  reportStage('render');
   const runtime = createLocalRuntime(baseline.baseline.document);
   let staticMarkup: string;
   try {

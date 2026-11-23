@@ -17,6 +17,7 @@ import {
   type MouseEvent as ReactMouseEvent,
 } from 'react';
 import type { Diagnostic, SourceRange } from 'reactive-md';
+import type { LocalObserver, LocalTraceEvent } from 'reactive-md/observability';
 import { getDemoHost } from '../settings/component-mode';
 import { SURVEY_EXAMPLE_ID } from '../network/survey-contract';
 import { getSurveyNetwork } from '../network/survey-network';
@@ -250,7 +251,17 @@ export default function App() {
   const { config: demoConfig, reactConfig } = getDemoHost(componentMode);
   const network = libraryMode === 'example' && selectedExample === SURVEY_EXAMPLE_ID ? getSurveyNetwork() : undefined;
   const compileOptions = useMemo(() => ({ ...toCompileOptions(htmlOptions), markdownBreaks, strict, config: demoConfig }), [htmlOptions, markdownBreaks, strict, demoConfig]);
-  const compilation = useLocalCompilation(source, compileOptions, true, editHint.current);
+  const [traceEvents, setTraceEvents] = useState<LocalTraceEvent[]>([]);
+  const [observedDiagnostics, setObservedDiagnostics] = useState<Diagnostic[]>([]);
+  const observer = useMemo<LocalObserver>(() => ({
+    onTrace: event => setTraceEvents(previous => [...previous, event].slice(-50)),
+    onDiagnostic: diagnostic => {
+      if (diagnostic.phase === 'worker' || diagnostic.phase === 'export' || diagnostic.phase === 'resource') {
+        setObservedDiagnostics(previous => [...previous, diagnostic].slice(-50));
+      }
+    },
+  }), []);
+  const compilation = useLocalCompilation(source, compileOptions, true, editHint.current, observer);
   const currentExample = localizedExample(
     EXAMPLES.find((item) => item.id === selectedExample) ?? DEFAULT_EXAMPLE,
     language,
@@ -857,6 +868,9 @@ export default function App() {
               compileDuration={compilation.duration}
               compileMode={compilation.mode ?? 'idle'}
               extensions={extensionExamples}
+              traceEvents={traceEvents}
+              source={source}
+              reportDiagnostics={dedupeDiagnostics([...currentDiagnostics, ...observedDiagnostics])}
             />}>
             <section id="source-pane" className="pane pane-editor" aria-label={copy.editor.region}
               onClickCapture={captureImageInsert}
@@ -982,6 +996,7 @@ export default function App() {
           dark={dark}
           onClose={closeExportDialog}
           onDownloadMarkdown={exportSource}
+          observer={observer}
         />
       </div>
     </LanguageProvider>

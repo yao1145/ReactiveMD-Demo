@@ -11,7 +11,12 @@ describe('browser export of HTML tables', () => {
     const compiled = compileLocal(source);
     if (!compiled.ok) throw new Error(JSON.stringify(compiled.diagnostics));
     const state = createLocalStateFile(compiled.document, { n: 5 }, { name: 'test', version: '1' });
-    const result = await buildShareableHtml({ source, state, mode });
+    const stages: string[] = [];
+    const result = await buildShareableHtml({ source, state, mode, onStage(stage) {
+      stages.push(stage);
+      throw new Error('observer failure');
+    } });
+    expect(stages).toEqual(['compile', 'assets', 'render']);
     const tree = parseFragment(result.html);
     expect(elements(tree, 'table')).toHaveLength(1);
     expect(elements(tree, 'tbody')).toHaveLength(1);

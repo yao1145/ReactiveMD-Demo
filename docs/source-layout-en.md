@@ -53,4 +53,6 @@
 
 ## Build anchors
 
+The application supplies a stable `LocalObserver` to compilation and export. Developer tools display the latest 50 trace events and copy a `reactive-md-diagnostic/v1` report with engine, editor, React and Vite versions. Reports include browser environment, source digest, diagnostic locations and selected resource details. Export failures include their stage, including PDF rendering and download. The report builder redacts source-derived free text and resource owner paths.
+
 `vite.config.ts` registers the React plugin, `reactiveMd({ includeMinimal: true })`, `exportAssets()`, `pdfExport()` and `surveyApi()`, with `index.html` as the build input. `reactiveMd()` discovers the component packages in `plugin/` and the theme in `theme/`. `vite.pdf-export.ts` serves the local `/__reactive-md/pdf` endpoint, which renders print-ready HTML through `reactive-md/pdf`. `vite.survey.ts` provides the loopback-only survey HTTP and SSE endpoints used by the network example. `vitest.config.ts` registers only the ReactiveMD and export-asset plugins; the PDF and survey plugins are dev-server only. The `extensions.ts` file at the repository root supplies the Games example metadata and a host export for tests.

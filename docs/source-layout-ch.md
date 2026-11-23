@@ -53,4 +53,6 @@
 
 ## 构建锚点
 
+应用为编译和导出提供稳定的 `LocalObserver`。开发者工具显示最近 50 条链路事件，并复制包含引擎、Editor、React 和 Vite 版本的 `reactive-md-diagnostic/v1` 报告。报告包含浏览器环境、源码摘要、诊断位置和选定资源字段。导出失败携带对应阶段，包括 PDF 渲染和下载。报告生成器脱敏源码相关的自由文本和资源 owner 路径。
+
 `vite.config.ts` 注册 React 插件、`reactiveMd({ includeMinimal: true })`、`exportAssets()`、`pdfExport()` 和 `surveyApi()`，并以 `index.html` 作为构建输入。`reactiveMd()` 发现 `plugin/` 中的组件包与 `theme/` 中的主题。`vite.pdf-export.ts` 提供本地 `/__reactive-md/pdf` 端点，通过 `reactive-md/pdf` 渲染供打印的 HTML。`vite.survey.ts` 提供联网问卷示例使用、仅限本机回环的 HTTP 与 SSE 端点。`vitest.config.ts` 只注册 ReactiveMD 与导出资源插件；PDF 与问卷插件仅在开发服务器中生效。仓库根目录的 `extensions.ts` 提供 Games 示例元数据和供测试使用的 host 导出。

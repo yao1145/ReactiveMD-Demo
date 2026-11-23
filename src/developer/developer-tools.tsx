@@ -4,9 +4,13 @@ import * as editorApi from 'reactive-md-editor';
 import * as authoringApi from 'reactive-md/authoring';
 import engineManifest from 'reactive-md/package.json';
 import editorManifest from 'reactive-md-editor/package.json';
+import viteManifest from 'vite/package.json';
+import { version as reactVersion } from 'react';
 import type { EditorComponentMode, EditorViewMode } from 'reactive-md-editor';
 import { isDefaultHtmlOptions, type DemoHtmlOptions } from '../settings/html-options';
 import type { Language } from '../ui/i18n';
+import { createDiagnosticReport, formatLocalDiagnostic, type Diagnostic } from 'reactive-md/observability';
+import type { LocalTraceEvent } from 'reactive-md/observability';
 import { useScrollContainer } from '../ui/use-scroll-container';
 import {
   CheckIcon,
@@ -39,6 +43,7 @@ export interface DeveloperToolsCopy {
     document: { title: string; import: string; saveCopy: string; restoreExample: string; runAgain: string };
     extensions: { title: string; loaded: string };
     runtime: { title: string; engine: string; editor: string; document: string; mode: string; duration: string; diagnostics: string; documents: string; folders: string; trash: string };
+    trace: { title: string; empty: string; copy: string; failure: string };
     api: { title: string; copyImport: (name: string, packageName: string) => string; expandGroup: (name: string) => string; collapseGroup: (name: string) => string };
   };
 }
@@ -100,6 +105,7 @@ const COPY: Record<Language, DeveloperToolsCopy> = {
         folders: 'Folders',
         trash: 'Trash',
       },
+      trace: { title: 'Diagnostic events', empty: 'No events yet.', copy: 'Copy diagnostic report', failure: 'Could not copy the report.' },
       api: {
         title: 'Interfaces',
         copyImport: (name, packageName) => `Copy import for ${name} from ${packageName}`,
@@ -164,6 +170,7 @@ const COPY: Record<Language, DeveloperToolsCopy> = {
         folders: '文件夹',
         trash: '回收站',
       },
+      trace: { title: '诊断事件', empty: '暂无事件。', copy: '复制诊断报告', failure: '无法复制报告。' },
       api: {
         title: '接口',
         copyImport: (name, packageName) => `复制 ${name}（来自 ${packageName}）的 import`,
@@ -208,6 +215,9 @@ export interface DeveloperToolsProps {
   compileDuration: number;
   compileMode: string;
   extensions: readonly { id: string; title: string }[];
+  traceEvents: readonly LocalTraceEvent[];
+  source: string;
+  reportDiagnostics: readonly Diagnostic[];
 }
 
 function apiNames(namespace: Record<string, unknown>): string[] {
@@ -281,6 +291,7 @@ export function DeveloperTools(props: DeveloperToolsProps) {
   const file = useRef<HTMLInputElement>(null);
   const scrollRef = useScrollContainer<HTMLDivElement>();
   const [copied, setCopied] = useState<string | null>(null);
+  const [reportFeedback, setReportFeedback] = useState('');
   const [openGroups, setOpenGroups] = useState<ReadonlySet<string>>(() => new Set(['engine']));
   const totalApis = API_GROUPS.reduce((sum, group) => sum + group.names.length, 0);
   const htmlDefault = isDefaultHtmlOptions(props.htmlOptions);
@@ -317,6 +328,32 @@ export function DeveloperTools(props: DeveloperToolsProps) {
       if (next.has(id)) next.delete(id); else next.add(id);
       return next;
     });
+  }
+
+  async function copyReport() {
+    const report = createDiagnosticReport(props.source, {
+      package: { editor: editorManifest.version, react: reactVersion, vite: viteManifest.version },
+      diagnostics: props.reportDiagnostics,
+      events: props.traceEvents,
+    });
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(report, null, 2));
+      setReportFeedback(copy.copied);
+    } catch {
+      try {
+        const area = document.createElement('textarea');
+        area.value = JSON.stringify(report, null, 2);
+        area.style.position = 'fixed';
+        area.style.opacity = '0';
+        document.body.appendChild(area);
+        area.select();
+        const copiedReport = document.execCommand('copy');
+        area.remove();
+        setReportFeedback(copiedReport ? copy.copied : copy.cards.trace.failure);
+      } catch {
+        setReportFeedback(copy.cards.trace.failure);
+      }
+    }
   }
 
   return <section className="developer-tools" aria-label={copy.heading}>
@@ -415,6 +452,28 @@ export function DeveloperTools(props: DeveloperToolsProps) {
             <div><span>{copy.cards.runtime.folders}</span><code>{props.folderCount}</code></div>
             <div><span>{copy.cards.runtime.trash}</span><code>{props.trashCount}</code></div>
           </div>
+        </DevCard>
+
+        <DevCard title={copy.cards.trace.title} icon={<InfoIcon />} tone="cyan" badge={String(props.traceEvents.length)}>
+          <DevAction label={copy.cards.trace.copy} icon={<CopyIcon />} onClick={() => { void copyReport(); }} />
+          <p className="dev-empty" role="status">{reportFeedback}</p>
+          {props.traceEvents.length ? <ol className="dev-trace-events" aria-label={copy.cards.trace.title}>
+            {props.traceEvents.slice().reverse().map((event, index) => <li key={`${event.traceId}-${event.type}-${index}`}>
+              <time>{new Date(event.timestamp).toLocaleTimeString()}</time>
+              <code>{event.type}</code>
+              {event.status === undefined ? null : <span>{event.status}</span>}
+              {event.stage === undefined ? null : <span>{event.stage}</span>}
+              {event.requestId === undefined ? null : <span>#{event.requestId}</span>}
+              {event.sourceRevision === undefined ? null : <span>rev {event.sourceRevision}</span>}
+              {event.durationMs === undefined ? null : <span>{event.durationMs} ms</span>}
+            </li>)}
+          </ol> : <p className="dev-empty">{copy.cards.trace.empty}</p>}
+          {props.reportDiagnostics.length ? <ul className="dev-trace-events" aria-label={copy.cards.runtime.diagnostics}>
+            {props.reportDiagnostics.map((item, index) => <li key={`${item.code}-${index}`}>
+              <code>{item.code}</code>
+              <span>{formatLocalDiagnostic(item, props.language)}</span>
+            </li>)}
+          </ul> : null}
         </DevCard>
 
         <DevCard title={copy.cards.api.title}

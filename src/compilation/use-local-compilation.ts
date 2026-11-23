@@ -7,6 +7,7 @@ import type {
   LocalCompileWorker,
   AuthorAnalysis, LocalCompileEditHint,
 } from 'reactive-md';
+import type { LocalObserver } from 'reactive-md/observability';
 
 export type LocalCompiledDocument = Extract<LocalCompileResult, { ok: true }>['document'];
 
@@ -49,6 +50,7 @@ export function useLocalCompilation(
   options?: LocalCompileOptions,
   includeAuthorAnalysis = false,
   editHint?: LocalCompileEditHint,
+  observer?: LocalObserver,
 ): LocalCompilation {
   const optionsKey = localCompileOptionsKey(options);
   const previewKey = localCompileOptionsKey({
@@ -86,6 +88,7 @@ export function useLocalCompilation(
       // Coalesce a frame's edits without adding the library's conservative
       // 150 ms default to every local preview. In-flight work is still coalesced.
       delay: 20,
+      observer,
       onResult: (outcome) => {
         const outcomeOptionsKey = outcome.options === undefined
           ? scheduledOptionsKey
@@ -125,7 +128,7 @@ export function useLocalCompilation(
       schedulerRef.current = null;
       scheduler.dispose();
     };
-  }, [optionsKey, previewKey, includeAuthorAnalysis]);
+  }, [optionsKey, previewKey, includeAuthorAnalysis, observer]);
 
   useEffect(() => {
     schedulerRef.current?.schedule(source, optionsRef.current, editHint);
