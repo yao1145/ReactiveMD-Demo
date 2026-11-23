@@ -17,6 +17,10 @@ Vite 启用 `reactiveMd()`。主题放入 `theme/<名称>/theme.css`；组件在
 - Node.js 22.12 或更高版本。CI 使用 Node 24。
 - npm。
 
+## 支持范围
+
+引擎仓库维护跨包的[支持矩阵](https://github.com/yao1145/ReactiveMD/blob/main/docs/compatibility/support-matrix-ch.md)及其验证命令。本仓库的测试与浏览器脚本提供其中列出的证据，支持状态通过本地运行这些检查验证。
+
 ## 安装与运行
 
 ```sh

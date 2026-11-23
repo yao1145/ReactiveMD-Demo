@@ -11,6 +11,10 @@ Live site: [yaozi.raricy.com](https://yaozi.raricy.com/).
 - Node.js 22.12 or newer. CI uses Node 24.
 - npm.
 
+## Support
+
+The engine repository maintains the cross-package [support matrix](https://github.com/yao1145/ReactiveMD/blob/main/docs/compatibility/support-matrix-en.md) and its verification commands. The tests and browser scripts in this repository supply the evidence listed there, and support status is verified by running them locally.
+
 ## Install and run
 
 ```sh
