@@ -18,8 +18,8 @@ The site renders the local extension source in [plugin/](../plugin/README.md) an
 
 | File | Package | Version |
 | --- | --- | --- |
-| `reactive-md-0.9.2-2675f8860abf.tgz` | `reactive-md` | `0.9.2` |
-| `reactive-md-editor-0.2.1-a703894489d5.tgz` | `reactive-md-editor` | `0.2.1` |
+| `reactive-md-0.9.2-7a0757798643.tgz` | `reactive-md` | `0.9.2` |
+| `reactive-md-editor-0.2.1-910d8496099b.tgz` | `reactive-md-editor` | `0.2.1` |
 | `reactive-md-sci-fi-theme-1.0.0-525cab7ab93f.tgz` | `reactive-md-sci-fi-theme` | `1.0.0` |
 | `reactive-md-tetris-package-0.1.0-fc1fa620038f.tgz` | `reactive-md-tetris-package` | `0.1.0` |
 | `reactive-md-game-2048-package-0.1.0-ce931218c317.tgz` | `reactive-md-game-2048-package` | `0.1.0` |
@@ -38,8 +38,8 @@ The game packages declare a `reactive-md` peer range of `^0.8.0-next.0` and a Re
 
 Build the package in its own repository, copy the output here with the versioned, content-addressed filename, update the `file:` path in `package.json` and regenerate the lockfile. [docs/candidate-package-updates-en.md](../docs/candidate-package-updates-en.md) records the current engine and editor procedure.
 
-The engine 0.9.2 candidate adds bounded observability, complete export report codes, scoped diagnostics, retry ownership and safe fallback scheduling. It is a prepared candidate, not a published release. SHA256 is `2675f8860abf7f8ae70ac81389120f2524c99ebefe388267ac9704fd1427e180`.
+The engine 0.9.2 candidate was built from `d59f63d` plus the release contract changes. It keeps the two-level diagnostic contract and adds structured observability. Its SHA256 is `7a0757798643b0e88cd22d73ec1d88e36b0801f0ad78c2858cd14e0f3dd716a6`.
 
-The Editor 0.2.1 candidate bundles this engine candidate in its analysis Worker and requires the `reactive-md@^0.9.2` peer. It is also a prepared candidate. SHA256 is `a703894489d558a5a5adbb8994dcd0451c933171fe267ddb09497af7f63517d7`.
+The editor 0.2.1 candidate was built from `df11b8c` plus the diagnostic contract changes. Its analysis Worker bundles this engine candidate and its peer range is `reactive-md@^0.9.2`. Its SHA256 is `910d8496099b79ab9ad53598a17b3a3ace64be1e07d5b8cb244ae4d6a102fe7c`.
 
 The theme fixture was built from commit `351b341` and has SHA256 `525cab7ab93fda6331e8fd5260c2c85aec5935559032bc951ad0ed827f7d4277`.

@@ -299,15 +299,16 @@ describe('report diagnostic ordering', () => {
     });
   });
 
-  it('keeps more severe diagnostics ahead of the export failure', () => {
-    const fatal = diagnostic('local.compile.limit', { severity: 'fatal' });
-    const errors = Array.from({ length: 120 }, (_, index) => diagnostic('local.binding.unknown', {
+  it('orders errors above warnings and gives export errors priority among errors', () => {
+    const compileError = diagnostic('local.binding.unknown');
+    const warnings = Array.from({ length: 120 }, (_, index) => diagnostic('local.binding.unknown', {
+      severity: 'warning',
       message: `Existing diagnostic ${index}`,
     }));
     const failure = diagnostic('local.export.failure');
-    const ordered = orderReportDiagnostics([fatal, ...errors], [failure]);
-    expect(ordered[0]).toBe(fatal);
-    expect(ordered[1]).toBe(failure);
+    const ordered = orderReportDiagnostics([...warnings, compileError], [failure]);
+    expect(ordered[0]).toBe(failure);
+    expect(ordered[1]).toBe(compileError);
     expect(ordered).toHaveLength(122);
   });
 

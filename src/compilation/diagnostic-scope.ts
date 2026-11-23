@@ -192,10 +192,8 @@ export class DiagnosticJournal {
 }
 
 const SEVERITY_WEIGHT: Record<Diagnostic['severity'], number> = {
-  info: 1,
-  warning: 2,
-  error: 3,
-  fatal: 4,
+  warning: 1,
+  error: 2,
 };
 
 /**

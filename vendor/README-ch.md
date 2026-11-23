@@ -18,8 +18,8 @@ Demo 通过 tarball 安装的依赖都放在本目录。引擎和编辑器快照
 
 | 文件 | 包 | 版本 |
 | --- | --- | --- |
-| `reactive-md-0.9.2-2675f8860abf.tgz` | `reactive-md` | `0.9.2` |
-| `reactive-md-editor-0.2.1-a703894489d5.tgz` | `reactive-md-editor` | `0.2.1` |
+| `reactive-md-0.9.2-7a0757798643.tgz` | `reactive-md` | `0.9.2` |
+| `reactive-md-editor-0.2.1-910d8496099b.tgz` | `reactive-md-editor` | `0.2.1` |
 | `reactive-md-sci-fi-theme-1.0.0-525cab7ab93f.tgz` | `reactive-md-sci-fi-theme` | `1.0.0` |
 | `reactive-md-tetris-package-0.1.0-fc1fa620038f.tgz` | `reactive-md-tetris-package` | `0.1.0` |
 | `reactive-md-game-2048-package-0.1.0-ce931218c317.tgz` | `reactive-md-game-2048-package` | `0.1.0` |
@@ -38,8 +38,8 @@ Demo 通过 tarball 安装的依赖都放在本目录。引擎和编辑器快照
 
 在包所属仓库中构建，使用带版本号和内容哈希的文件名复制到这里，更新 `package.json` 中的 `file:` 路径并重新生成 lockfile。当前的引擎与编辑器更新流程见 [docs/candidate-package-updates-ch.md](../docs/candidate-package-updates-ch.md)。
 
-引擎 0.9.2 候选包增加有界可观察性、完整的导出报告码、带作用域的诊断、重试所有权和安全 fallback 调度。它是预备候选，尚未发布。SHA256 为 `2675f8860abf7f8ae70ac81389120f2524c99ebefe388267ac9704fd1427e180`。
+引擎 0.9.2 候选包以 `d59f63d` 为基础，包含本次发布契约修改。它保留两级诊断契约并新增结构化可观察性。SHA256 为 `7a0757798643b0e88cd22d73ec1d88e36b0801f0ad78c2858cd14e0f3dd716a6`。
 
-Editor 0.2.1 候选包的分析 Worker 使用该引擎候选，并要求 `reactive-md@^0.9.2` peer。它同样是预备候选。SHA256 为 `a703894489d558a5a5adbb8994dcd0451c933171fe267ddb09497af7f63517d7`。
+编辑器 0.2.1 候选包以 `df11b8c` 为基础，包含本次诊断契约修改。分析 Worker 使用该引擎候选，peer 范围为 `reactive-md@^0.9.2`。SHA256 为 `910d8496099b79ab9ad53598a17b3a3ace64be1e07d5b8cb244ae4d6a102fe7c`。
 
 主题夹具由提交 `351b341` 构建，SHA256 为 `525cab7ab93fda6331e8fd5260c2c85aec5935559032bc951ad0ed827f7d4277`。
