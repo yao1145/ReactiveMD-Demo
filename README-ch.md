@@ -2,7 +2,7 @@
 
 **中文** · [English](README.md)
 
-Reactive MD 的 Playground 提供编辑器、实时预览、文档库、HTML 和 PDF 导出及双语示例。站点组件和主题位于 `plugin/` 和 `theme/`。构建使用 `vendor/` 中锁定的引擎和编辑器 tarball。
+Reactive MD 的 Playground 提供编辑器、实时预览、文档库、HTML 和 PDF 导出及双语示例。站点组件和主题位于 `plugin/` 和 `theme/`。本仓库构建使用 `vendor/` 中锁定的 `reactive-md@0.9.2` 和 `reactive-md-editor@0.2.1`。
 
 在线站点：[yaozi.raricy.com](https://yaozi.raricy.com/)。
 

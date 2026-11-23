@@ -2,7 +2,7 @@
 
 **English** · [中文](README-ch.md)
 
-The Reactive MD Playground includes an editor, live preview, a document library, HTML and PDF export, and bilingual examples. Site components and themes live under `plugin/` and `theme/`. The repository builds with the engine and editor tarballs pinned in `vendor/`.
+The Reactive MD Playground includes an editor, live preview, a document library, HTML and PDF export, and bilingual examples. Site components and themes live under `plugin/` and `theme/`. This repository builds with `reactive-md@0.9.2` and `reactive-md-editor@0.2.1` from the tarballs pinned in `vendor/`.
 
 Live site: [yaozi.raricy.com](https://yaozi.raricy.com/).
 
